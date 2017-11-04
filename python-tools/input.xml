@@ -1,0 +1,39 @@
+<qmc>
+  
+  <system>
+    <dimensions>1</dimensions>
+    <particles label="1" m="1" n="11" />
+  </system>
+
+  <algorithm>
+    
+    
+    <calculation detailed_balance="false" kind="vmc">
+      
+      <sigma_diff>0.01</sigma_diff>
+      <mean_walkers>50</mean_walkers>
+      <delta_walkers>20</delta_walkers>
+      <delta_tau>1e-3</delta_tau>
+    </calculation>
+    
+  </algorithm>
+  
+  
+  <measures jumps="0" skip="100">
+    <density bins="1000" history="false" />
+    <pair_correlation bins="1000" history="false" />
+    
+    <cm history="true" skip="99" />
+      
+    
+  </measures>
+  
+  
+  
+  <wavefunction kind="bill_jastrow" label="main">
+    <two_body_jastrow file="jastrow.in" kind="delta" />
+     <one_body_jastrow file="jastrowi.in" kind="delta" /> 
+  </wavefunction>
+  
+
+</qmc>

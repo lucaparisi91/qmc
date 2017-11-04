@@ -1,0 +1,64 @@
+<qmc>
+  <seed>26785</seed>  
+  <nBlocks>100000000</nBlocks>
+  <stepsPerBlock>50000</stepsPerBlock>
+  <warmupBlocks>0</warmupBlocks>
+  <warmupOptimize>100</warmupOptimize>
+  <correlatedEnergySteps>1000</correlatedEnergySteps>
+  <system>
+    <lBox>30.0</lBox>
+    <dimensions>1</dimensions>
+    <particles index="0" m="1" n="15" />
+    <particles index="1" m="1" n="15" />
+    <g>inf</g>
+    <g_tilde>1</g_tilde>
+  </system>
+ 
+  <method kind="vmc" optimize="true">
+    <sigma_diff>1e-3</sigma_diff>
+    <mean_walkers>1</mean_walkers>
+    <delta_walkers>10</delta_walkers>
+    <delta_tau>0.001</delta_tau>
+  </method>
+  
+  <measures>
+    <pair_correlation bins="1000" history="false" setA="0" setB="1" skip="9" /> 
+    <pair_correlation bins="1000" history="false" setA="0" setB="0" skip="9" />
+    <pair_correlation bins="1000" history="false" setA="1" setB="1" skip="9" />
+  </measures>
+
+  
+  <wavefunctions>
+
+    <wavefunction jastrow_type="2b" kind="bill_jastrow" label="B-B" setA="0" setB="0">
+    <jastrow file="jastrow.in" kind="delta" />
+    </wavefunction>
+    
+   <wavefunction jastrow_type="2b" kind="bill_jastrow" label="B-I" setA="0" setB="1">
+    <jastrow file="jastrowi.in" kind="delta_bound_state" />
+   </wavefunction>
+
+    <wavefunction jastrow_type="2b" kind="bill_jastrow" label="I-I" setA="1" setB="1">
+       <jastrow file="jastrow.in" kind="delta" />
+   </wavefunction>
+
+  
+  </wavefunctions>
+  
+  <total_wavefunction label="main">
+    <wavefunction label="B-B" />
+    <wavefunction label="I-I" />
+    <wavefunction label="B-I" />
+  </total_wavefunction>
+  
+  <total_wavefunction label="no-impurity">
+    <wavefunction label="B-B" />    
+  </total_wavefunction>
+  
+  <optimizationPlan delta="0.001">
+    <parameter>
+      <p param="0" wavefunction="2" />
+    </parameter>
+  </optimizationPlan>
+  
+</qmc>

@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<save.xml>
+  <n_walkers>50</n_walkers>
+  <walkers_file>walkers.dat</walkers_file>
+  <current_step>0</current_step>
+</save.xml>

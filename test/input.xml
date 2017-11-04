@@ -1,0 +1,56 @@
+<qmc>
+  <seed>26785</seed>
+  <nBlocks>10</nBlocks>
+  <stepsPerBlock>100</stepsPerBlock>
+  <warmupBlocks>0</warmupBlocks>
+  <warmupOptimize>1000</warmupOptimize>
+  <correlatedEnergySteps>1000</correlatedEnergySteps>
+  <system>
+    <dimensions>1</dimensions>
+    <lBox>30</lBox>    
+    <particles index="0" m="1" n="30" />
+    <g>Inf</g>
+    <initialCondition kind="uniform" length="10" />
+    <!--
+    <oneBodyPotential kind="harmonic">
+      <oneBodyPotential center="-0.0" omega="1" setA="0" />
+      </oneBodyPotential>
+    -->
+  </system>
+  
+  <method kind="svmc" optimize="false">
+    <mean_walkers>5120</mean_walkers>
+    <delta_walkers>10</delta_walkers>
+    <delta_tau>0.0001</delta_tau>
+  </method>
+  
+  <measures>
+    
+    <density bins="1000" history="false" setA="0" skip="9" />
+    
+    <pair_correlation bins="1000" history="false" setA="0" setB="0" skip="99" />
+    
+ </measures>
+     
+   <wavefunctions>
+     
+    <wavefunction jastrow_type="2b" kind="bill_jastrow" label="B-B" setA="0" setB="0">
+    <jastrow file="jastrow.in" kind="delta" />
+    </wavefunction>
+    
+    <!--
+    <wavefunction jastrow_type="1b" kind="bill_jastrow" label="B-G1" setA="0" setB="0">
+      <jastrow file="jastrowGauss.in" kind="gauss" />
+    </wavefunction>
+    -->
+    
+   </wavefunctions>
+   
+  <total_wavefunction label="main">
+    <wavefunction label="B-B" />
+    <!--
+	<wavefunction label="B-G1" />
+    -->
+  </total_wavefunction>
+
+</qmc>

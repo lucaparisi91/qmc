@@ -1,0 +1,10 @@
+#!/bin/sh
+cd $1
+#rm *.dat
+#rm save.xml
+cp ../qmc .
+cp ../qmc.pbs .
+#cp ../walkers.xml .
+qsub qmc.pbs
+echo $JOB_ID
+
