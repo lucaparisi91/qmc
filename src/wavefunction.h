@@ -20,7 +20,6 @@ class measure_scalar;
 class overlap_measure;
 class measure_energy_difference;
 
-
 // the wavefunction class previously studied
 template<class tm>
 class wavefunction
@@ -66,6 +65,7 @@ public:
   /* 
      Optimization
   */
+  
   virtual void setParameter(double x,int i){throw notYetSsupported("setParameter");};
   
   virtual double getParameter(int i){throw notYetSsupported("getParameter");};

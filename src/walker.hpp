@@ -34,14 +34,11 @@ void walker<comp>::set(qmc_t* qmc_obj)
   particlesGradientBackup.clone(particlesGradient);
   ev=qmc_obj->potential_obj->evaluate(state);
   e=e+ev;
-  //cout << "wavefunction: " << wavefunction_value << endl;
-  //cout << "e: " << e <<endl;
-  //state->print();
   e_old=e;
   weight=0;
 }
 
-// set the particles for the walkers
+
 template<class comp>
 void walker<comp>::set_particles(walker<comp>::all_particles_t * p)
 {
@@ -252,14 +249,12 @@ void dmc_walker<comp>::update(qmc_type* dmc_obj)
       // store F(R)
       this->particlesGradientBackup.clone(this->particlesGradient);
     }
-
+  
   dmc_obj->timers[2]->stop();
-
   
   dmc_obj->timers[3]->start();
   dmc_obj->qmcMoverO->move( (*(this->state)),this->particlesGradient);
   dmc_obj->timers[3]->stop();
-  
   
   //state->particle_sets[1]->position_no_pbc[0]=0;
   dmc_obj->geo->all_particles_pbc(this->state);
@@ -322,7 +317,6 @@ void dmc_walker<comp>::update(qmc_type* dmc_obj)
       this->particlesGradient.clone(this->particlesGradientBackup);
       this->e_old=this->e;
     }
-  
   
 }
 //sets the number of descendants

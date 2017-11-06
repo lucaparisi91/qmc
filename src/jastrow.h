@@ -14,6 +14,7 @@
 template<class jastrowT>
 class jastrow
 {
+  
   typedef typename traits<jastrowT>::position_t position_t;
   typedef typename traits<jastrowT>::value_t value_t;
   
@@ -39,6 +40,7 @@ class jastrow
   }
   
 };
+
 class jastrow_gaussian : public jastrow<jastrow_gaussian>
 {
 public:
@@ -110,7 +112,6 @@ public:
   }
 
 };
-
 
 class jastrow_delta : public jastrow<jastrow_delta>
 {
