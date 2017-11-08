@@ -2,7 +2,6 @@
 #include "cassert"
 #include "../ptools.h"
 
-
 template<class T>
 void vectorAccumulator<T>::accumulateMean(const vector<T> & vectorName)
 {
@@ -77,6 +76,20 @@ void  vectorAccumulatorVariance<T>::getMeanSquares(vector<T> & vectorOut) const
 }
 
 template<class T>
+void  vectorAccumulatorVariance<T>::getVariances(vector<T> & vectorOut) const
+{
+  vector<T> tmp;
+  tmp.resize(this->getSize());
+  assert(this->getSize()==vectorOut.size());
+  this->getMean(vectorOut);
+  getMeanSquares(tmp);
+  for(int i=0;i<vectorOut.size();i++)
+    {
+      vectorOut[i]=tmp[i]-pow(vectorOut[i],2);
+    }
+}
+
+template<class T>
 void  vectorAccumulatorVariance<T>::accumulateMeanSquares(const vector<T> & vectorName)
 {
   assert(vectorName.size()==vectorAccumulatorSquares.size() );
@@ -89,8 +102,6 @@ void  vectorAccumulatorVariance<T>::accumulateMeanSquares(const vector<T> & vect
   nMeasuresSquares+=1;
   
 }
-
-
 
 template class vectorAccumulator<double>;
 template class vectorAccumulatorVariance<double>;

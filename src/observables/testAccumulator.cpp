@@ -24,7 +24,7 @@ int main(int argc,char** argv)
   
   if (task==0)
     {
-      testAccumulator.getMean(vec);
+      testAccumulator.getVariances(vec);
       
       for(int i=0;i<vec.size();i++)
 	{

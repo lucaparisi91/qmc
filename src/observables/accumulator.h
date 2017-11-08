@@ -6,11 +6,10 @@ template<class T >
 class vectorAccumulator
 {
 public:
-  
   vectorAccumulator(int n){vectorAccumulatorMean.resize(n,0);nMeasurements=0;}
-
   
   void accumulateMean(const vector<T> & vectorName);
+  int getSize() const {return vectorAccumulatorMean.size();};
   virtual void accumulate(const vector<T> & vectorName){accumulateMean(vectorName);}
   void getMean(vector<T> &vecOut) const;
   void incrementCounter(){nMeasurements+=1;};
@@ -21,7 +20,6 @@ public:
 private:
   int nMeasurements;
   vector<T> vectorAccumulatorMean;
-  
 };
 
 template<class T>

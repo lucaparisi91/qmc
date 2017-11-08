@@ -24,6 +24,7 @@ public:
   
 public :
   qmc();
+
   
   counter *c;
   
