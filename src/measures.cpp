@@ -380,7 +380,6 @@ void measure_scalar::reduce(int root)
 	    }
 	  
 	}
-	
       
     }
   
@@ -464,8 +463,6 @@ void measure_vector_mult_index::reduce(int root)
 	}
       
     }
-  
-  
 }
 
 // // reduce a vector with multiple indices

@@ -21,6 +21,7 @@ optimizationMethodLinear::optimizationMethodLinear()
 }
 
 void optimizationMethodLinear::buildHMatrix(vector<double> &obs)
+  
 {
   H[0]=obs[0];
   H[1]=obs[1]-obs[2]*obs[0];
@@ -66,7 +67,7 @@ double optimizationMethodLinear::getParameterVariation()
   info=LAPACKE_dggev(LAPACK_COL_MAJOR,'N','V',N,H,N,S,N,alphaR,alphaI,beta,leftEigenVectors,N,rightEigenVectors,N);
   if(info != 0)
     {
-      cout << "Error in computeing generalized eigenvectors"<<endl;
+      cout << "Error in computing generalized eigenvectors"<<endl;
       exit(3);
     }
 
@@ -111,7 +112,6 @@ double optimizationMethodLinear::getParameterVariation()
   
   cout << "rightEigenVector"<<endl;
   printColumnArray(rightEigenVectors,2,2);
-  
   
   // avoid an infinite parameter variation
   if (rightEigenVectors[iMin*N]==0)

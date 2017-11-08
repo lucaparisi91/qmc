@@ -20,6 +20,7 @@ class measure_scalar;
 class overlap_measure;
 class measure_energy_difference;
 
+
 // the wavefunction class previously studied
 template<class tm>
 class wavefunction
@@ -69,7 +70,7 @@ public:
   virtual void setParameter(double x,int i){throw notYetSsupported("setParameter");};
   
   virtual double getParameter(int i){throw notYetSsupported("getParameter");};
-
+  
   double getParameter(){return getParameter(optParameter);}
   double setParameter(double x){setParameter(x,optParameter);}
   
@@ -108,7 +109,6 @@ private:
   
 };
 
-
 // defines a bill jastrow form wavefunction
 template<class jastrow_t,class tm>
 class bill_jastrow_wavefunction : public wavefunction< tm >
@@ -119,8 +119,11 @@ public:
   typedef typename wavefunction<tm>::potential_t potential_t;
   typedef typename wavefunction<tm>::all_particles_t all_particles_t;
   typedef typename wavefunction<tm>::value_t value_t;
+  
+  //--------------------------- parameters
   virtual double getParameter(int i){throw notYetSsupported("get_parameter bill_jastrow_wavefunction " + this->label );};
   virtual void setParameter(double x,int i){throw notYetSsupported("setParameter bill_jastrow_wavefunction");};
+  
   bill_jastrow_wavefunction(qmc_t* qmc_obj_,xml_input* xml_wave,string filename);
 
   
@@ -128,7 +131,6 @@ public:
   void overlap(const double &w1,const double &w2,measure_scalar* m);
   virtual void print(int i); 
   virtual double log_evaluate(all_particles_t *p)=0;
-  
   
   virtual double potential(empty_t *p,all_particles_t* state) {return 0;};
   

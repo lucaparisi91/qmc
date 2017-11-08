@@ -24,7 +24,6 @@ void optimizationObservablesLinearMethod<walker_t,wave_t>::make_measurement(walk
     optObs[6]=psiPrime*psiPrime;
     
     this->ms->add(optObs,0);
-    
   }
 
 template<class walker_t,class wave_t>

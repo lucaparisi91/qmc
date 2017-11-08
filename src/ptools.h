@@ -142,6 +142,9 @@ int optimal_n(int n_walkers,int tasks, int task);
 namespace pTools
 {
   template<class T> int get_pack_size(const T & x);
+  void transferSum(vector<double> & vec,int root);
+  void transferSum(int &n,int root);
+  
 }
 #include "ptools.hpp"
 

@@ -543,3 +543,32 @@ void dock::print_populations()
       cout << i << " "<<core_populations[i] << endl;
     }
 }
+
+void pTools::transferSum(vector<double> &sum,int root)
+{
+  // saves the sum of tasks in the same input vector if root
+  // otherwise reset to zero
+  vector<double> sumMPIStore;
+  sumMPIStore.resize(sum.size());
+  
+  MPI_Reduce(&sum.front(),&sumMPIStore.front(), sum.size(), MPI_DOUBLE, MPI_SUM, root,MPI_COMM_WORLD);
+  //copy back into input vector
+  
+  for(int i=0;i<sum.size();i++)
+    {
+      sum[i]=sumMPIStore[i];
+    } 
+  
+}
+
+void pTools::transferSum(int &n,int root)
+{
+  // saves the sum of tasks in the same input variable if root otherwise reset to zero
+  int MPIStore;
+  
+  MPIStore=0;
+  
+  MPI_Reduce(&n,&MPIStore, 1, MPI_INT, MPI_SUM, root,MPI_COMM_WORLD);
+  
+  n=MPIStore;
+}
