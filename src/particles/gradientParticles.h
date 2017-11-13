@@ -40,4 +40,6 @@ private:
   
 };
 
+allParticlesGradient1D* buildAllParticlesGradient1D(string filename);
+
 #endif

@@ -5,6 +5,7 @@
 #include <sstream>
 #include <complex>
 #include <fstream>
+#include "tools.h"
 
 using namespace std;
 // trim a strip
@@ -336,4 +337,14 @@ int minIndex(vector <double> &vec)
 	}
     }
   return iMin;
+}
+
+void tools::print(vector<double> &vec)
+{
+  int i=0;
+  for (i=0;i<vec.size()-1;i++)
+    {
+      printf("%f ,",vec[i]);
+    }
+  printf("%f\n",vec[i]);
 }

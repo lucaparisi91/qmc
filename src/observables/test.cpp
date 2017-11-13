@@ -1,5 +1,6 @@
 #include "accumulator.h"
 #include <iostream>
+
 int main(int argc,char** argv)
 {
   vectorAccumulator<double,varianceAccumulatorVectorStrategy<double> > testAccumulator(4);

@@ -1,20 +1,20 @@
 # compilation flags for the system
 LAPACKDIR=~/software/lapack-3.6.1
-CFLAGS=  -O2    -I $(LAPACKDIR)/LAPACKE/include 
+CFLAGS=  -O2    -I $(LAPACKDIR)/LAPACKE/include -D VERBOSE
 BUILD_DIR=../build
 
 # compiler
 CC=mpic++
 
 # linking flags
-LFLAGS= -L $(LAPACKDIR) -llapacke -llapack -lblas -lgfortran -lm  -pg
+LFLAGS= -L $(LAPACKDIR) -llapacke -llapack -lblas -lgfortran -lm  
 
 # l directory of libxml2 ( necessary for IO )
 XMLDIR=/home/luca/software/libxml
 
 all:	qmc
 
-SRCS= spline.cpp xml-input.cpp ranlxd.cpp timer.cpp tools.cpp ptools.cpp mesh.cpp random.cpp circular_vector.cpp input.cpp functions.cpp particles.cpp particles/gradientParticles.cpp qmcDriver/qProbability.cpp observables/optimizationObservablesLinearMethod.cpp observables/optimizationMatrixLinearMethod.cpp observables/correlatedEnergyDifference.cpp jastrow.cpp jastrow_collection.cpp geometry.cpp potential.cpp factory.cpp  wavefunction.cpp measures.cpp dmc.cpp vmc.cpp buildQMCDriver.cpp main.cpp qmc.cpp
+SRCS= spline.cpp xml-input.cpp ranlxd.cpp timer.cpp tools.cpp ptools.cpp mesh.cpp random.cpp circular_vector.cpp input.cpp functions.cpp particles.cpp particles/gradientParticles.cpp qmcDriver/qProbability.cpp observables/accumulator.cpp   observables/correlatedEnergyDifference.cpp observables/optimizeTools.cpp observables/optimizePlan.cpp jastrow.cpp jastrow_collection.cpp geometry.cpp potential.cpp factory.cpp  wavefunction.cpp measures.cpp dmc.cpp vmc.cpp buildQMCDriver.cpp main.cpp qmc.cpp
 
 OBJS=$(SRCS:%.cpp=$(BUILD_DIR)/%.o)
 

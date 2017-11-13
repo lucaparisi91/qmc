@@ -149,7 +149,11 @@ void cleanMatrix(T &M)
     }
 }
 
-
 void printColumnArray(double* A,int n,int m);
+
+namespace tools
+{
+  void print(vector<double> &vector);
+}
 
 #endif

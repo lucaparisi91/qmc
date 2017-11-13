@@ -8,6 +8,7 @@
 #include "potential.h"
 #include "traits.h"
 #include "tools.h"
+#include "observables/optimizePlan.h"
 #include "qmc.h"
 #include "exception_classes.h"
 #include "measures.h"
@@ -488,12 +489,28 @@ public:
       }
   }
   
-  void setParameter(double x,int i,int j)
+  void setParameter(double x,int i,int j){waves[j]->setParameter(x,i);}
+
+  
+  void getParameters( const optimizePlan & plan,vector<double> &parameters) const
   {
-    
-    waves[j]->setParameter(x,i);
-    
-  }
+    int iParam,iWave;
+    optimizePlan::const_iterator it;
+    parameters.resize(0);
+    for(it = plan.begin(); it != plan.end(); it++)
+    {
+      for(int i=0;i<it->second.size();i++)
+	{
+	  iWave=it->second[i].first;
+	  iParam=it->second[i].second;
+	  
+	  parameters.push_back( getParameter(iParam,iWave) );
+	  
+	}
+    }
+  
+}
+  void incrementParameter(int i,int j,double delta){setParameter(getParameter(i,j)+delta,i,j);}
   
   void setParameter(double x)
   {

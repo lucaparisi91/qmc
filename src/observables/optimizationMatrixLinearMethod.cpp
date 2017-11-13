@@ -86,7 +86,7 @@ double optimizationMethodLinear::getParameterVariation()
     {
       if (beta[i]==0)
 	{
-	  alpha2=0;
+	  alpha2=alpha;
 	}
       else
 	{
@@ -106,7 +106,7 @@ double optimizationMethodLinear::getParameterVariation()
   
   cout << "alphaI"<<endl;
   printColumnArray(alphaI,1,2);
-
+  
   cout << "beta"<<endl;
   printColumnArray(beta,1,2);
   

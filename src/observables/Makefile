@@ -19,5 +19,15 @@ XML_FLAGS=`${XMLDIR}/bin/xml2-config --cflags`
 XML_IDIR=${XMLDIR}/include/libxml2
 XML_LIBS=`${XMLDIR}/bin/xml2-config --libs`
 
-test:	accumulator.cpp testAccumulator.cpp ../ptools.cpp 
+all:	qmc
+
+qmc:		
+	cd ..;make
+
+accumulator:	accumulator.cpp testAccumulator.cpp ../ptools.cpp 
 	$(CC) $(CFLAGS) $(LFLAGS) $(XML_LIBS) -I $(XML_IDIR) accumulator.cpp testAccumulator.cpp ../tools.cpp ../ptools.cpp   -o test
+
+plan: optimizeTest.cpp optimizePlan.cpp optimizePlan.h
+	$(CC) -I $(XML_IDIR) $(CFLAGS) $(LFLAGS)  ../xml-input.cpp optimizeTest.cpp optimizePlan.cpp -o test $(XML_LIBS)	
+optimize: optimizeTest.cpp optimizeTools.cpp optimizeTools.h
+	$(CC) $(CFLAGS)  optimizeTest.cpp optimizeTools.cpp -o test $(LFLAGS)

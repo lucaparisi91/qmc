@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include "wavefunction.h"
+#include "observables/optimize.h"
 
 //**************** Variational Monte Carlo [ using the Metropolis Algorithm]
 
@@ -45,8 +46,8 @@ public:
   typedef allParticlesGradient1D grad_t;
   typedef typename all_particles_t::particles_t particles_t;
   typedef qmcMover1Order<vmc<comp> > qmcMover_t;
-  typedef optimizationObservablesLinearMethod<walker_t,wave_t>  mesOpt_t;
-  typedef  optimizationMethodLinear optimizer_t;
+  typedef linearMethodOptimize<wave_t,walker_t>  mesOpt_t;
+  
   typedef correlatedEnergyDifference<walker_t,wave_t> mEnergyCorrelated_t;
   
   int warmupOptimizeSteps;
@@ -74,13 +75,17 @@ public:
   qmcMover_t moveEngine;
   wave_t* wave;
   vector<swave_t*> waves;
-  mesOpt_t* mO;
-  bool optimize;
-  optimizer_t optimizer;
-  mEnergyCorrelated_t *mEnergyCorrelated;
+  
+  void setOptimize(bool optimize_) {optimize=optimize_;};
+  bool isOptimize() const {return optimize;}
+  
 private:
-  vector<double> params;
+  mEnergyCorrelated_t *mEnergyCorrelated;
+  bool optimize;
+  vector<double> optParams;
+  mesOpt_t mO;
   int correlatedEnergySteps;
+  
 };
 
 #include "walker_vmc.hpp"

@@ -52,17 +52,24 @@ public :
   double n_metropolis;
   double success_metropolis;
   int nBlocks;
+  
   vector<timer*> timers;
   void saveGeneralQmc();
   void loadGeneralQmc();
   void startTimers();
   void stopTimers();
   void printTimers();
+  void setInputFile(string inputFileName_){inputFileName=inputFileName_;}
+  string getInputFileName() const {return inputFileName;}
+  
   //virtual void run()=0;
   //virtual void save()=0;// saves the state of the system
   //virtual void load()=0;// loads the state of the system
   //virtual void step()=0;//performs a single state of the Quantum Monte Carlo algorithm
-  //virtual void load_wavefunctions(xml_input* xml_wave);  
+  //virtual void load_wavefunctions(xml_input* xml_wave);
+private:
+  string inputFileName;
+  
 };
 
 empty_t* build_potential(xml_input* input,const empty_t*   pot);

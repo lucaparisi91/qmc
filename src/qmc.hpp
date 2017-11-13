@@ -38,6 +38,7 @@ qmc<comp>::qmc()
 {  
   int i;
   xml_save=new xml_input;
+  inputFileName="input.xml";
   
   xml_save->new_doc("save.xml");
   // adds a child to the total possible number of walkers

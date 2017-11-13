@@ -365,6 +365,7 @@ class jastrow_barrier(jastrow):
             return self.parameters["A"]*cosh(self.parameters["k1"]*x)
         else:
             return sin(self.parameters["k0"]*x + self.parameters["delta"])
+        
 ##################### jastrow delta in trap #########################################
 
 class jastrow_delta_in_trap(jastrow):

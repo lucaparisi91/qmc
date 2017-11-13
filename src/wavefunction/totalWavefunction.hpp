@@ -30,6 +30,7 @@ void total_wavefunction<tm>::laplacianGradient(const all_particles_t & p,value_t
   // multiply for the diffusion coefficient
   e=-e/2.;
   eF=eF/2;
+  
 }
 
 template< class tm>

@@ -1,5 +1,6 @@
 #include "gradientParticles.h"
 #include "../ptools.h"
+#include "../xml-input.h"
 #include <cassert>
 
 allParticlesGradient1D::allParticlesGradient1D(const vector<int> & ns)
@@ -49,7 +50,6 @@ int allParticlesGradient1D::getPackSize()
   return sizePack;
   
 }
-
 
 void allParticlesGradient1D::resize(const vector<int> &ns)
 {
@@ -102,5 +102,31 @@ void allParticlesGradient1D::print()
 	}
       cout <<endl;
     }
-    
-}  
+  
+}
+
+allParticlesGradient1D* buildAllParticlesGradient1D(string filename)
+{
+  vector<int> ns;
+  xml_input inputFile;
+  inputFile.open(filename);
+  inputFile.get_child("system")->get_first_child();
+  while( inputFile.check() )
+    {
+      if (inputFile.get_name() == "particles")
+	 {
+	   if (inputFile.get_attribute("n") != NULL)
+	     {
+	       ns.push_back(inputFile.get_int());
+	     }
+	   else
+	     {
+	       printf("Error in input file: number of particles not specified");
+	     }
+	 }
+      inputFile.get_next();
+    }
+  
+  return new allParticlesGradient1D(ns);
+  
+}

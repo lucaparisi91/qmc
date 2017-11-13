@@ -1,6 +1,6 @@
 template<class comp>
 template<class qmc_type>
-#include "observables/optimizationObservablesLinearMethod.h"
+#include "observables/optimize.h"
 #include "observables/correlatedEnergyDifference.h"
 
 void vmc_walker<comp>::update(qmc_type* vmc_obj)
@@ -77,7 +77,7 @@ void vmc<comp>::optimizationStep()
   w->ev=this->potential_obj->evaluate(w->state);
   w->e+=w->ev;
   // accumulate the necessary quantitities for optimization
-  mO->make_measurement(w,this->wave);
+  mO.accumulate(w);
   
 }
 template<class comp>
@@ -132,19 +132,32 @@ vmc<comp>::vmc() : qmc<comp>(), moveEngine(*this->rand,this->delta_tau)
   // check whatever to optimize the wavefunction
   
   if (this->main_input->reset()->get_child("method")->get_attribute("optimize") != NULL)
-    
     {
-      optimize=this->main_input->get_bool();
+      setOptimize(this->main_input->get_bool());
+    }
+  else
+    {
+      setOptimize(false);
     }
   
-  if (optimize==true)
+  if ( isOptimize() )
     {
-      mO=buildOptimizationObservablesLinearMethod<walker_t,wave_t>(this->main_input,this->wave);
-
+      
+      optimizePlan vmcOptplan;
+      vector<double> parameters;
+      
+      
+      vmcOptplan=buildOptimizePlan(this->getInputFileName());
+      this->wave->getParameters(vmcOptplan,parameters);
+      mO.setPlan(vmcOptplan ,this->wave);
+      this->wave->getParameters(vmcOptplan,parameters);
+      
+      mO.setGradient(buildAllParticlesGradient1D(this->getInputFileName()));
+      
+      optParams.resize(mO.getNParams());
       
       mEnergyCorrelated=buildCorrelatedEnergy<walker_t,wave_t>(this->main_input,this->wave);
       
-      params.resize(3);
       
       warmupOptimizeSteps=this->main_input->reset()->get_child("warmupOptimize")->get_value()->get_int();
 
@@ -283,28 +296,15 @@ void vmc<comp>::optimizationOut()
   double paramStep;
   double eOpt;
   ofstream f;
-  vector<double> obs;
-  mO->reduce(0);
+  int status;
+  
+  mO.transfer(0);
   if (this->mpi_task == 0)
     {
-      
-      //paramStep=mO->estimateStep();
-      
-      //wave->setParameter(param+paramStep);
-      
-      //cout << "Param: "<<param<<endl;
-      //cout << "paramStep: "<<paramStep<<endl;
-      // print to file the optimization results
       save();
-      param=mO->getParameter();
-      eOpt=mO->getEnergy();
-      
-      f.open("optimization.dat",std::ios_base::app);
-      
-      f<< param <<" "<<eOpt<<endl;
-      
-      f.close();
-      
+      vector<double> parameters;
+      vector<double> step;
+      this->wave->getParameters(mO.getPlan(),parameters);
       /*
 	Prints out information on the last run
        */
@@ -313,97 +313,31 @@ void vmc<comp>::optimizationOut()
       
       cout<<"step:"<<this->current_step<<endl;
       cout<<"ratio: "<<this->success_metropolis/this->n_metropolis<<endl;
-      cout<<"energy: "<<eOpt<<endl;
-      cout<<"param: "<<param<<endl;
-      
-      cout<<"------------------------------------------"<<endl;
-      /* Predict the next optimal parameter */
-      
-      obs=mO->getMean();
-      paramStep=optimizer.getParameterVariation(obs);
-      
-      if (( (param+paramStep) > 10) or (  (param+paramStep)<=0 ))
+      printf("Parameters\n");
+      tools::print(parameters);
+      mO.print();
+      status=mO.getStep(step);
+      printf("Step\n");
+      if (status==0)
 	{
-	  paramStep=0;
+	  printf("Sucessfull stepping!\n");
+	}
+
+      if (status<0)
+	{
+	  printf("Failed stepping!\n");
+	}
+
+      if (status>0)
+	{
+	  printf("Complex eigenvalues!\n");
 	}
       
-      
-      
-     
-      /* Choose the next 3 set of possible optimal parameters  and broadcast to other jobs*/
-      params[0]=param+ paramStep;
-      params[1]=param + paramStep/10.;
-      params[2]=param + paramStep/100.;
-      
-      
-      
+      tools::print(step);
+      cout<<"------------------------------------------"<<endl;
     }
-
-  MPI_Bcast(&params[0],3,MPI_DOUBLE,0,MPI_COMM_WORLD);
-  /* Set up correlated energy measurements for stabilization */
-  
-  cout << "params"<<endl;
-  print_vector(params);
-  mO->setParameter(params[0],mEnergyCorrelated->getWave(0));
-  mO->setParameter(params[1],mEnergyCorrelated->getWave(1));
-  mO->setParameter(params[2],mEnergyCorrelated->getWave(2));
-  mO->clear();
-  //mO->setParameter(param,wave);
-  //mO->init();
-  w->set(this);
-  w->make_measurements(m,this->wave,this->current_step);
   
 }
-
-template<class comp>
-void vmc<comp>::optimizationAfterCorrOut()
-{
-  
-  unsigned int i;
-  int j;
-  int mpi_task;
-  double param;
-  ofstream f;
-  vector<double> obs;
-  int iMin;
-  mEnergyCorrelated->reduce(0);
-  
-  if (this->mpi_task == 0)
-    {
-      
-      //paramStep=mO->estimateStep();
-      
-      //wave->setParameter(param+paramStep);
-      
-      //cout << "Param: "<<param<<endl;
-      //cout << "paramStep: "<<paramStep<<endl;
-      // print to file the optimization results
-      //f.open("optimization.dat",std::ios_base::app);
-      
-      //f << param <<" "<<eOpt<<endl;
-      //f.close();
-
-      
-      obs=mEnergyCorrelated->getMean();
-      cout << "Correlated energies"<<endl;
-      print_vector(obs);
-      
-      iMin=minIndex(obs);
-      param=params[iMin];
-      cout << "param min index: "<<iMin<<endl;
-
-      
-    }
-  MPI_Bcast(&param,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
-  
-  mEnergyCorrelated->clear();
-  mO->setParameter(param,wave);
-  mO->init();
-  w->set(this);
-  w->make_measurements(m,this->wave,this->current_step);
-  
-}
-
 
 template<class comp>
 void vmc<comp>::run()
@@ -467,7 +401,7 @@ void vmc<comp>::runOptimize()
   cout << "Starting Optimization run..."<<endl;
   
   this->startTimers();
-
+  
   // initial warmup
   for(i=0;i<this->warmupBlocks;i++)
     {
@@ -491,17 +425,12 @@ void vmc<comp>::runOptimize()
 	  optimizationStep(); // performs a MC step 
       	}
       
-      
       optimizationOut();
       // correlated energy measurements for stabilization
       for(j=0;j<correlatedEnergySteps;j++)
 	{
-	  correlatedEnergyOptimizationStep();
+	  //correlatedEnergyOptimizationStep();
 	}
-
-      // choose the parameter with the minimum energy and reinitialize the wavefunction
-      
-      optimizationAfterCorrOut();
       
       this->success_metropolis=0;
       this->n_metropolis=0;
