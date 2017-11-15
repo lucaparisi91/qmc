@@ -1,5 +1,6 @@
 template<class comp>
 template<class qmc_type>
+
 #include "observables/optimize.h"
 #include "observables/correlatedEnergyDifference.h"
 
@@ -111,6 +112,7 @@ template<class comp>
 vmc<comp>::vmc() : qmc<comp>(), moveEngine(*this->rand,this->delta_tau)
 {
   e_t=0;
+  xmlNodePtr cur;
   load_wavefunctions<vmc<comp> >(this->main_input,waves,this);
   wave=new total_wavefunction<vmc<comp> >(this);
   wave->link_wavefunctions(this->main_input,waves,"main");
@@ -129,11 +131,13 @@ vmc<comp>::vmc() : qmc<comp>(), moveEngine(*this->rand,this->delta_tau)
     {
       inputDmc=false;
     }
+  
   // check whatever to optimize the wavefunction
   
   if (this->main_input->reset()->get_child("method")->get_attribute("optimize") != NULL)
     {
       setOptimize(this->main_input->get_bool());
+      
     }
   else
     {
@@ -145,7 +149,7 @@ vmc<comp>::vmc() : qmc<comp>(), moveEngine(*this->rand,this->delta_tau)
       
       optimizePlan vmcOptplan;
       vector<double> parameters;
-      
+      statusGeneralizedEigenValue=0;
       
       vmcOptplan=buildOptimizePlan(this->getInputFileName());
       this->wave->getParameters(vmcOptplan,parameters);
@@ -154,20 +158,43 @@ vmc<comp>::vmc() : qmc<comp>(), moveEngine(*this->rand,this->delta_tau)
       
       mO.setGradient(buildAllParticlesGradient1D(this->getInputFileName()));
       
-      optParams.resize(mO.getNParams());
+      optParameters.resize(mO.getNParams());
+      parametersProposal.resize(3);
+      for(int k=0;k<parametersProposal.size();k++)
+	{
+	  parametersProposal[k].resize(optParameters.size());
+	}
       
-      mEnergyCorrelated=buildCorrelatedEnergy<walker_t,wave_t>(this->main_input,this->wave);
+      // build the correlated energy estimator
+      mEnergyCorrelated=new mEnergyCorrelated_t();
+      mEnergyCorrelated->setGradient(buildAllParticlesGradient1D(this->getInputFileName()));
       
+      for(int k1=0;k1<3;k1++)
+	{
+	  mEnergyCorrelated->addWavefunction(new wave_t(this->wave));
+	}
       
       warmupOptimizeSteps=this->main_input->reset()->get_child("warmupOptimize")->get_value()->get_int();
 
       correlatedEnergySteps=this->main_input->reset()->get_child("correlatedEnergySteps")->get_value()->get_int();
-      
-    }
-  
-  
 
-  
+      unCorrelationSteps=this->main_input->reset()->get_child("unCorrelationSteps")->get_value()->get_int();
+
+     
+      this->main_input->reset()->get_child("absErrOptimization");
+      if (this->main_input->check())
+	{
+	  optimizationMode=absErrMode;
+	  absErrorLimit=this->main_input->get_value()->get_real();
+	 
+	}
+      else
+	{
+	  absErrorLimit=0;
+	  optimizationMode=countStepsMode;
+	  this->main_input->reset();
+	} 
+    }
 }
 
 
@@ -289,22 +316,21 @@ template<class comp>
 void vmc<comp>::optimizationOut()
 {
   
-  unsigned int i;
-  int j;
-  int mpi_task;
-  double param;
-  double paramStep;
-  double eOpt;
-  ofstream f;
   int status;
   
   mO.transfer(0);
+  
   if (this->mpi_task == 0)
     {
-      save();
-      vector<double> parameters;
       vector<double> step;
-      this->wave->getParameters(mO.getPlan(),parameters);
+      vector<double> means;
+      vector<double> errors;
+      
+      save();
+      
+      this->wave->getParameters(mO.getPlan(),optParameters);
+      mO.getMeanError(means,errors);
+      
       /*
 	Prints out information on the last run
        */
@@ -313,28 +339,84 @@ void vmc<comp>::optimizationOut()
       
       cout<<"step:"<<this->current_step<<endl;
       cout<<"ratio: "<<this->success_metropolis/this->n_metropolis<<endl;
+      cout<<"energy: "<<means[means.size()-1]<<"+-"<< errors[errors.size()-1] << endl;
       printf("Parameters\n");
-      tools::print(parameters);
+      tools::print(optParameters);
+      
+      statusGeneralizedEigenValue=mO.getStep(step);
+      #ifdef VERBOSE
       mO.print();
-      status=mO.getStep(step);
       printf("Step\n");
-      if (status==0)
+      if (statusGeneralizedEigenValue==0)
 	{
 	  printf("Sucessfull stepping!\n");
 	}
-
-      if (status<0)
+      
+      if (statusGeneralizedEigenValue<0)
 	{
 	  printf("Failed stepping!\n");
 	}
-
-      if (status>0)
+      
+      if (statusGeneralizedEigenValue>0)
 	{
 	  printf("Complex eigenvalues!\n");
 	}
+      #endif 
+      //tools::print(step);
+      assert(step.size()==optParameters.size());
       
-      tools::print(step);
       cout<<"------------------------------------------"<<endl;
+      tools::add(optParameters,step,parametersProposal[0]);
+  
+      status=mO.getStep(step,abs(means[means.size()-1])*0.1);
+      if (status==0)
+	{
+	  tools::add(optParameters,step,parametersProposal[1]);
+	}
+      else
+	{
+	  parametersProposal[1]=parametersProposal[0];
+	}
+      
+      status=mO.getStep(step,abs(means[means.size()-1])*100);
+      if (status==0)
+	{
+	  tools::add(optParameters,step,parametersProposal[2]);
+	}
+      else
+	{
+	  parametersProposal[2]=parametersProposal[0];
+	}
+      
+      #ifdef VERBOSE
+      printf("Proposed parameters [%i] \n",this->mpi_task);
+      tools::print(parametersProposal[0]);
+      tools::print(parametersProposal[1]);
+      tools::print(parametersProposal[2]);
+      #endif
+      
+      if (optimizationMode==absErrMode)
+	{
+	  
+	  if (errors[errors.size()-1]>absErrorLimit)
+	    {
+	      statusGeneralizedEigenValue=-1;
+	    }
+	}
+    }
+
+  pTools::broadcast(statusGeneralizedEigenValue,0);
+  pTools::broadcast(parametersProposal[0],0);
+  pTools::broadcast(parametersProposal[1],0);
+  pTools::broadcast(parametersProposal[2],0);
+  
+  if (statusGeneralizedEigenValue==0)
+    {
+      mEnergyCorrelated->getWaves()[0]->setParameters(mO.getPlan(),parametersProposal[0]);
+  
+      mEnergyCorrelated->getWaves()[1]->setParameters(mO.getPlan(),parametersProposal[1]);
+  
+      mEnergyCorrelated->getWaves()[2]->setParameters(mO.getPlan(),parametersProposal[2]);
     }
   
 }
@@ -344,13 +426,13 @@ void vmc<comp>::run()
 {
   if (optimize)
     {
-     
       runOptimize();
     }
   else
     {
       runStandard();
     }
+  
 };
 
 template<class comp>
@@ -395,7 +477,7 @@ void vmc<comp>::runStandard()
 template<class comp>
 void vmc<comp>::runOptimize()
 {
-  int i,j;
+  int i,j,k;
   
   load();
   cout << "Starting Optimization run..."<<endl;
@@ -420,17 +502,35 @@ void vmc<comp>::runOptimize()
 	}
       
       // assumes termalized
-      for (j=0;j<this->stepsPerBlock;j++)
-      	{
-	  optimizationStep(); // performs a MC step 
-      	}
+      do
+	{
+	  
+	  for (j=0;j<this->stepsPerBlock;j++)
+	    {
+	      for(k=0;k<this->unCorrelationSteps;k++)
+		{
+		  warmup_step(); // performs a MC step
+		}
+	      optimizationStep();
+	    }
+	  
+	  optimizationOut();
+	}
       
-      optimizationOut();
+      while(statusGeneralizedEigenValue!=0);
+	
       // correlated energy measurements for stabilization
       for(j=0;j<correlatedEnergySteps;j++)
 	{
-	  //correlatedEnergyOptimizationStep();
+	  for(k=0;k<this->unCorrelationSteps;k++)
+	    {
+	      warmup_step(); // performs a MC step
+	    }
+	  stabilizationStep();
 	}
+      
+      stabilizationOut();
+      chooseNextOptimizationParameters();
       
       this->success_metropolis=0;
       this->n_metropolis=0;
@@ -454,3 +554,92 @@ void vmc_walker<comp>::print()
 // template class vmc_walker<spinor1D>;
 // template class vmc<D1_t>;
 // template class vmc<spinor1D>;
+
+
+
+template<class comp>
+void vmc<comp>::stabilizationStep()
+{
+  w->update(this);
+  
+  this->wave->laplacianGradient((*w->state),w->e,w->e_f,w->getParticlesGradient());
+  
+  w->ev=this->potential_obj->evaluate(w->state);
+  w->e+=w->ev;
+  
+  mEnergyCorrelated->accumulate(w);
+}
+
+template<class comp>
+void vmc<comp>::stabilizationOut()
+{
+  if(correlatedEnergySteps==0)
+    {
+      indexMinEnergyProposal=0;
+    }
+  else
+    {
+      mEnergyCorrelated->transfer(0);
+      if (this->mpi_task == 0)
+	{
+	  indexMinEnergyProposal=mEnergyCorrelated->getMinCorrelatedEnergy();
+          #ifdef VERBOSE
+	  mEnergyCorrelated->print();
+      
+	  printf("Chosen Parameter: %i\n",indexMinEnergyProposal);
+      
+          #endif
+      
+    }
+      
+    }
+  mEnergyCorrelated->reset();
+  
+}
+
+template<class comp>
+void vmc<comp>::chooseNextOptimizationParameters()
+{
+  int changeParameter;
+  changeParameter=-1;
+  if (this->mpi_task==0)
+    {
+      if (statusGeneralizedEigenValue==0)
+	{
+	  if(indexMinEnergyProposal<3)
+	    {
+	      ofstream f;
+	      vector<double> mean;
+	      f.open("optimization.dat",fstream::app);
+	      mO.getMean(mean);
+
+	      f<<mean[mean.size()-1]<< " ";
+	      for(int k=0;k<optParameters.size();k++)
+		{
+		  f<<optParameters[k]<<" ";
+		}
+	      f<<endl;
+	      f.close();
+	      changeParameter=0;
+	      
+	    }
+
+	  
+	}
+    }
+  
+  pTools::broadcast(changeParameter,0);
+  pTools::broadcast(indexMinEnergyProposal,0);
+  
+  if(changeParameter==0)
+    {
+      optParameters=parametersProposal[indexMinEnergyProposal];
+      this->wave->setParameters(mO.getPlan(),optParameters);
+      
+      mO.reset();
+      mO.setParameters(optParameters);
+      w->set(this);
+      
+    }
+	     
+}

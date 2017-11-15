@@ -1,11 +1,12 @@
 <qmc>
   <seed>26785</seed>  
   <nBlocks>1000</nBlocks>
-  <stepsPerBlock>10000</stepsPerBlock>
+  <stepsPerBlock>1000</stepsPerBlock>
   <warmupBlocks>0</warmupBlocks>
-  <warmupOptimize>1000</warmupOptimize>
-  <correlatedEnergySteps>100000</correlatedEnergySteps>
-
+  <warmupOptimize>100</warmupOptimize>
+  <unCorrelationSteps>200</unCorrelationSteps>
+  <correlatedEnergySteps>0</correlatedEnergySteps>
+  <absErrOptimization>0.01</absErrOptimization>
   <system>
     <lBox>20</lBox>
     <dimensions>1</dimensions>
@@ -16,15 +17,15 @@
     <initialCondition kind="uniform" length="10" />
     <oneBodyPotential kind="harmonic">
       <oneBodyPotential center="-0.0" omega="1" setA="0" />
-      
     </oneBodyPotential>
+    
   </system>
   
   <method kind="vmc" optimize="true">
     <sigma_diff>1e-3</sigma_diff>
     <mean_walkers>1</mean_walkers>
     <delta_walkers>10</delta_walkers>
-    <delta_tau>0.001</delta_tau>
+    <delta_tau>0.005</delta_tau>
     
   </method>
   

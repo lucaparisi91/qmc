@@ -5,6 +5,7 @@
 #include <string>
 #include "wavefunction.h"
 #include "observables/optimize.h"
+#include "observables/correlated.h"
 
 //**************** Variational Monte Carlo [ using the Metropolis Algorithm]
 
@@ -48,7 +49,7 @@ public:
   typedef qmcMover1Order<vmc<comp> > qmcMover_t;
   typedef linearMethodOptimize<wave_t,walker_t>  mesOpt_t;
   
-  typedef correlatedEnergyDifference<walker_t,wave_t> mEnergyCorrelated_t;
+  typedef correlatedEstimatorEnergyDifference<wave_t,walker_t> mEnergyCorrelated_t;
   
   int warmupOptimizeSteps;
   vmc();
@@ -66,6 +67,9 @@ public:
   void load();
   void runStandard();
   void warmup_step();
+  void stabilizationStep();
+  void stabilizationOut();
+  
   // step in which gather information about optimization
   //void optimizationStep();
   
@@ -78,13 +82,21 @@ public:
   
   void setOptimize(bool optimize_) {optimize=optimize_;};
   bool isOptimize() const {return optimize;}
-  
+  void chooseNextOptimizationParameters();
 private:
   mEnergyCorrelated_t *mEnergyCorrelated;
   bool optimize;
-  vector<double> optParams;
   mesOpt_t mO;
+  int unCorrelationSteps;
   int correlatedEnergySteps;
+  int statusGeneralizedEigenValue;
+  int statusCorrelatedMeasurements;
+  vector<double> optParameters;
+  vector< vector<double> > parametersProposal;
+  int indexMinEnergyProposal;
+  enum mode{absErrMode=1,countStepsMode=0};
+  mode optimizationMode;
+  double absErrorLimit;
   
 };
 

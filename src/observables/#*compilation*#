@@ -1,0 +1,11 @@
+-*- mode: compilation; default-directory: "~/source/cqmc/src/" -*-
+Compilation started at Mon Nov 13 18:35:46
+
+make
+mpic++ -c -g    -I ~/software/lapack-3.6.1/LAPACKE/include -D VERBOSE -I /home/luca/software/libxml/include/libxml2 wavefunction.cpp -o ../build/wavefunction.o
+mpic++ -c -g    -I ~/software/lapack-3.6.1/LAPACKE/include -D VERBOSE -I /home/luca/software/libxml/include/libxml2 measures.cpp -o ../build/measures.o
+mpic++ -c -g    -I ~/software/lapack-3.6.1/LAPACKE/include -D VERBOSE -I /home/luca/software/libxml/include/libxml2 vmc.cpp -o ../build/vmc.o
+mpic++ -c -g    -I ~/software/lapack-3.6.1/LAPACKE/include -D VERBOSE -I /home/luca/software/libxml/include/libxml2 main.cpp -o ../build/main.o
+mpic++ ../build/spline.o ../build/xml-input.o ../build/ranlxd.o ../build/timer.o ../build/tools.o ../build/ptools.o ../build/mesh.o ../build/random.o ../build/circular_vector.o ../build/input.o ../build/functions.o ../build/particles.o ../build/particles/gradientParticles.o ../build/qmcDriver/qProbability.o ../build/observables/accumulator.o ../build/observables/correlatedEnergyDifference.o ../build/observables/optimizeTools.o ../build/observables/optimizePlan.o ../build/jastrow.o ../build/jastrow_collection.o ../build/geometry.o ../build/potential.o ../build/factory.o ../build/wavefunction.o ../build/measures.o ../build/dmc.o ../build/vmc.o ../build/buildQMCDriver.o ../build/main.o ../build/qmc.o -L ~/software/lapack-3.6.1 -llapacke -llapack -lblas -lgfortran -lm   `/home/luca/software/libxml/bin/xml2-config --libs`   -o ../qmc
+
+Compilation finished at Mon Nov 13 18:36:26

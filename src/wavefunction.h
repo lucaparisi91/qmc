@@ -52,7 +52,9 @@ public:
   void setLabel(string label_){label=label_;};
   virtual double evaluate_derivative(all_particles_t *p){throw notYetSsupported("evaluate_derivative");};
   virtual double evaluate_derivative_second(all_particles_t *p,double phi){throw notYetSsupported("evaluate_derivative_second");};
+  
   virtual wavefunction<tm>* clone(){throw notYetSsupported("Clone wavefunction " + label);};
+  
   
   void setOptParameter(int i){optParameter=i;}
   int getOptParamater(){return optParameter;}
@@ -510,6 +512,28 @@ public:
     }
   
 }
+  
+  void setParameters( const optimizePlan & plan,const vector<double> &parameters)
+  {
+    int iParam,iWave;
+    optimizePlan::const_iterator it;
+    int k;
+    k=0;
+    
+    for(it = plan.begin(); it != plan.end(); it++)
+    {
+      for(int i=0;i<it->second.size();i++)
+	{
+	  iWave=it->second[i].first;
+	  iParam=it->second[i].second;
+	  assert(k<parameters.size());
+	  setParameter(parameters[k],iParam,iWave);
+	  k++;
+	}
+    }
+  
+  }
+  
   void incrementParameter(int i,int j,double delta){setParameter(getParameter(i,j)+delta,i,j);}
   
   void setParameter(double x)

@@ -145,6 +145,10 @@ namespace pTools
   void transferSum(vector<double> & vec,int root);
   void transferSum(int &n,int root);
   
+  void broadcast(vector<double> &vec,int root);
+  void broadcast(vector<vector<double> > &vec,int root);
+  void broadcast(int &b,int root);
+  
 }
 #include "ptools.hpp"
 

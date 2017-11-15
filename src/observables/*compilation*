@@ -1,0 +1,40 @@
+-*- mode: compilation; default-directory: "~/source/cqmc/src/" -*-
+Compilation started at Mon Nov 13 18:34:43
+
+make
+mpic++ -c -g    -I ~/software/lapack-3.6.1/LAPACKE/include -D VERBOSE -I /home/luca/software/libxml/include/libxml2 wavefunction.cpp -o ../build/wavefunction.o
+mpic++ -c -g    -I ~/software/lapack-3.6.1/LAPACKE/include -D VERBOSE -I /home/luca/software/libxml/include/libxml2 measures.cpp -o ../build/measures.o
+mpic++ -c -g    -I ~/software/lapack-3.6.1/LAPACKE/include -D VERBOSE -I /home/luca/software/libxml/include/libxml2 vmc.cpp -o ../build/vmc.o
+mpic++ -c -g    -I ~/software/lapack-3.6.1/LAPACKE/include -D VERBOSE -I /home/luca/software/libxml/include/libxml2 main.cpp -o ../build/main.o
+In file included from vmc.h:97:0,
+                 from main.cpp:14:
+vmc.hpp: In instantiation of ‘void vmc<comp>::optimizationOut() [with comp = D1_t<pbc1d>]’:
+vmc.hpp:462:22:   required from ‘void vmc<comp>::runOptimize() [with comp = D1_t<pbc1d>]’
+vmc.hpp:381:18:   required from ‘void vmc<comp>::run() [with comp = D1_t<pbc1d>]’
+main.cpp:100:20:   required from here
+vmc.hpp:361:3: error: invalid use of non-static member function
+   mO.getStep(step,10);
+   ^
+vmc.hpp:364:16: error: invalid use of member function (did you forget the ‘()’ ?)
+   for(int k=0;k<step.size();k++)
+                ^
+vmc.hpp:366:49: error: invalid use of member function (did you forget the ‘()’ ?)
+       parametersProposal[k]=parameters[k] + step[k];
+                                                 ^
+vmc.hpp: In instantiation of ‘void vmc<comp>::optimizationOut() [with comp = D1_t<noPbcD1>]’:
+vmc.hpp:462:22:   required from ‘void vmc<comp>::runOptimize() [with comp = D1_t<noPbcD1>]’
+vmc.hpp:381:18:   required from ‘void vmc<comp>::run() [with comp = D1_t<noPbcD1>]’
+main.cpp:107:21:   required from here
+vmc.hpp:361:3: error: invalid use of non-static member function
+   mO.getStep(step,10);
+   ^
+vmc.hpp:364:16: error: invalid use of member function (did you forget the ‘()’ ?)
+   for(int k=0;k<step.size();k++)
+                ^
+vmc.hpp:366:49: error: invalid use of member function (did you forget the ‘()’ ?)
+       parametersProposal[k]=parameters[k] + step[k];
+                                                 ^
+Makefile:29: recipe for target '../build/main.o' failed
+make: *** [../build/main.o] Error 1
+
+Compilation exited abnormally with code 2 at Mon Nov 13 18:35:00

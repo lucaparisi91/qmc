@@ -11,7 +11,7 @@ class vectorAccumulator
 public:
   vectorAccumulator(int n){resize(n);}
   void resize(int n){vectorAccumulatorMean.resize(n,0);weights.resize(n,0);}
-  vectorAccumulator(){}
+  vectorAccumulator(){nMeasurements=0;}
   
   void accumulateMean(const vector<T> & vectorName);
   void accumulateMean(const vector<T> & vectorName,const vector<T> & weightsIn);
@@ -27,9 +27,9 @@ public:
   virtual void transfer(int root); // sum over all tasks and store result in root. Other tasks are reset.
 
   T getTotWeight() const;
-  
+  int getNmeasurements() const {return nMeasurements;};
 private:
-  
+  int nMeasurements;
   vector<T> weights;
   vector<T> vectorAccumulatorMean;  
 };
@@ -61,7 +61,7 @@ public:
   virtual void reset(){vectorAccumulatorType::reset();accumulatorSquares.reset();};
   
   virtual void transfer(int root){vectorAccumulatorType::transfer(root);accumulatorSquares.transfer(root);};
-  
+  void getMeanError(vector<T> &mean,vector<T> &out) const;
 private:
   vectorAccumulatorType accumulatorSquares;
   vector<T> scratch;

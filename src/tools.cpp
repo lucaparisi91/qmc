@@ -6,7 +6,7 @@
 #include <complex>
 #include <fstream>
 #include "tools.h"
-
+#include <cassert>
 using namespace std;
 // trim a strip
 string trim(string str){
@@ -347,4 +347,15 @@ void tools::print(vector<double> &vec)
       printf("%f ,",vec[i]);
     }
   printf("%f\n",vec[i]);
+}
+
+void tools::add(const vector<double> & vec1,const vector<double> & vec2,vector<double> &res)
+{
+  assert(vec1.size()==vec2.size());
+  res.resize(vec1.size());
+  for(int i=0;i<res.size();i++)
+    {
+      res[i]=vec1[i]+vec2[i];
+    }
+ 
 }

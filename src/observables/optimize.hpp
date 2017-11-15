@@ -101,8 +101,6 @@ template<class wave_t,class walker_t>
 const void linearMethodOptimize<wave_t,walker_t>::print() const
 {
   
-  #ifdef VERBOSE
-  
   printf("Raw measurements for optimization\n");
   vector<double> averages;
   vector<double> variances;
@@ -117,27 +115,50 @@ const void linearMethodOptimize<wave_t,walker_t>::print() const
   for(int i=0;i<averages.size();i++)
     {
       mean=averages[i];
-      error=sqrt(variances[i]/averages.size())/sqrt(rawAccumulators.getNmeasurements());
+      assert(mean!=0);
+      error=sqrt(abs(variances[i])/averages.size())/sqrt(rawAccumulators.getNmeasurements());
       
       printf("%f+-%f(%f%%)\n",mean,error,error/abs(mean)*100 );
     }
-  
   printf("\n");
-  #endif
-  
-  
 }
-
-
+ 
 template<class wave_t,class walker_t>
 int linearMethodOptimize<wave_t,walker_t>::getStep(vector<double> &params)
 {
   vector<double> mean;
   rawAccumulators.getMean(mean);
   stepEstimator.buildMatrix(mean,getNParams());
-  #ifdef VERBOSE
-  stepEstimator.print();
-  #endif
+  
   
   return stepEstimator.getStep(params);
 }
+
+template<class wave_t,class walker_t>
+int linearMethodOptimize<wave_t,walker_t>::getStep(vector<double> &params,double shift)
+{
+  vector<double> mean;
+  rawAccumulators.getMean(mean);
+  stepEstimator.buildMatrix(mean,getNParams());
+  stepEstimator.addDiagonal(shift);
+  
+  return stepEstimator.getStep(params);
+}
+
+template<class wave_t,class walker_t>
+void linearMethodOptimize<wave_t,walker_t>::setParameters(vector<double> params)
+{
+  
+  assert(params.size()==waves.size());
+  for(int i=0;i<params.size();i++)
+    {
+      params[i]+=plan.getDelta();
+    }
+  
+  for(int i=0;i<waves.size();i++)
+    {
+      waves[i]->setParameters(plan,params);
+    }
+  
+}
+

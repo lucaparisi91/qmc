@@ -138,8 +138,10 @@ int linearMethodStepEstimator::getStep(vector<double> &parameters)
   
   //set step to minimum eigenvalue
   int iMin=getMinRealPartEigenValue(alphaR,alphaI,beta);
+  #ifdef VERBOSE
   printf("Right eigenvectors\n");
   REIGS.print();
+  #endif
   
   for(int j=0;j<nP;j++)
     {
@@ -219,7 +221,7 @@ void linearMethodStepEstimator::buildMatrix(const vector<double> &accumulatedDat
 void linearMethodStepEstimator::addDiagonal(double element)
 {
   
-  for(int i=0;i<nP+1;i++)
+  for(int i=1;i<nP+1;i++)
     {
       H(i,i)+=element;
     }
