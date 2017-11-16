@@ -1,7 +1,3 @@
-CC=mpic++
-XMLDIR=/home/luca/software/libxml
-LAPACKDIR=~/software/lapack-3.6.1
-OPTIMIZATION_LEVEL=O2
 BUILD_DIR=../build
 # compilation flags for the system
 CFLAGS=  -$(OPTIMIZATION_LEVEL)    -I $(LAPACKDIR)/LAPACKE/include -D VERBOSE
