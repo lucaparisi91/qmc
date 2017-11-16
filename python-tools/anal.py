@@ -647,8 +647,21 @@ def getMinPol(p,xmin,xmax):
     r=r[r>xmin]
 
     return r
-    
 
+def getOptimizationTable(filename):
     
+    df=pd.read_csv(filename,sep=" ",index_col=False,header=None,names=["energy","parameter"])
+    df["step"]=df.index
+    return df
+    
+def getMinEnergyParameter(df,cutOff=0):
+    parameters=df[df["step"]>cutOff]["parameter"]
+    energies=df[df["step"]>cutOff]["energy"]
+    
+    weights=1./energies
+    mean=np.average(parameters,weights=weights)
+    error=np.sqrt(np.average(parameters**2,weights=weights) - mean**2)
+
+    return [mean,error]
     
     
