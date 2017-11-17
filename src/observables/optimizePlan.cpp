@@ -1,6 +1,6 @@
 #include "optimizePlan.h"
 #include "../xml-input.h"
-
+#include <cassert>
 // print the plan to file
 void optimizePlan::print()
 {
@@ -13,11 +13,57 @@ void optimizePlan::print()
       for(int i=0;i<it->second.size();i++)
 	{
 	  printf("(%i,%i) ",it->second[i].first,it->second[i].second);
+	  
 	}
+      
+      if (it->second.isBoundedBelow())
+	{
+	  printf("Min: %f ;",it->second.getMinParameter());
+	}
+      
+      if (it->second.isBoundedAbove())
+	{
+	  printf("Max: %f ;",it->second.getMaxParameter());
+	}
+      
       printf("\n");
+      
       printf("Delta: %f \n",getDelta());
     }
+}
+
+
+bool optimizePlan::checkBoundsParameters(const vector<double> &parameters) const
+{
+  registerType::const_iterator it;
+  int k=0;
+  bool pass=true;
   
+  for(it = parameterRegister.begin(); it != parameterRegister.end(); it++)
+    {
+      assert(k<parameters.size());
+      if (
+	      
+	    ( it->second.isBoundedBelow() ) and
+	    ( parameters[k] < it->second.getMinParameter()  )
+	  )
+	{
+	  pass=false;
+	}
+
+      if (
+	  (it->second.isBoundedAbove()) and
+	    (parameters[k] > it->second.getMaxParameter() )
+	  )
+	{
+	  pass=false;
+	}
+
+      k++;
+    }
+      
+  
+  return pass;
 }
 
 optimizePlan buildOptimizePlan(string filename)
@@ -29,11 +75,14 @@ optimizePlan buildOptimizePlan(string filename)
   string key;
   double delta;
   xmlNodePtr cur;
+  double minParameter=0;
+  double maxParameter=0;
   //printf("building optimization Plan...\n");
   //printf("Label Wave Param \n");
   inputFile.open(filename);
   
   inputFile.get_child("optimizationPlan");
+  
    if (inputFile.get_attribute("delta")!=NULL)
      {
        delta=inputFile.get_real();
@@ -49,6 +98,30 @@ optimizePlan buildOptimizePlan(string filename)
     {
       inputFile.get_child("parameter");
       
+      if (inputFile.get_attribute("label")!=NULL)
+	{
+	  key=inputFile.get_string();
+	}
+      
+      else
+	{
+	  printf("Key label error\n");
+	  exit(1);
+	}
+      
+       if (inputFile.get_attribute("minParameter")!=NULL)
+	{
+	  minParameter=inputFile.get_real();
+	  plan.setMinParameter(key,minParameter);
+	}
+
+       
+       if (inputFile.get_attribute("maxParameter")!=NULL)
+	{
+	  maxParameter=inputFile.get_real();
+	  plan.setMaxParameter(key,maxParameter);
+	}
+       
       while( inputFile.check() )
 	{// loop on individual wavefunction parameters
 	  cur=inputFile.cur;
@@ -84,16 +157,9 @@ optimizePlan buildOptimizePlan(string filename)
 			exit(0);
 		      }
 		    
-		    if (inputFile.get_attribute("label")!=NULL)
-		      {
-			key=inputFile.get_string();
-		      }
-		    
-		    else
-		      {
-			printf("Key label error\n");
-			exit(0);
-		      }
+
+
+
 		    
 		    plan.add(key,waveKey,paramKey);
 		    

@@ -648,7 +648,3 @@ def getMinPol(p,xmin,xmax):
 
     return r
     
-
-    
-    
-    

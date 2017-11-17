@@ -5,7 +5,7 @@ template<class qmc_type>
 #include "observables/correlatedEnergyDifference.h"
 
 void vmc_walker<comp>::update(qmc_type* vmc_obj)
-{
+{  
   double old_wavefunction_value;
   // make a copy of the old configuration
   (*this->state_tmp)=(*this->state);
@@ -180,10 +180,11 @@ vmc<comp>::vmc() : qmc<comp>(), moveEngine(*this->rand,this->delta_tau)
 
       unCorrelationSteps=this->main_input->reset()->get_child("unCorrelationSteps")->get_value()->get_int();
 
-     
+      
       this->main_input->reset()->get_child("absErrOptimization");
       if (this->main_input->check())
 	{
+	  
 	  optimizationMode=absErrMode;
 	  absErrorLimit=this->main_input->get_value()->get_real();
 	 
@@ -196,8 +197,6 @@ vmc<comp>::vmc() : qmc<comp>(), moveEngine(*this->rand,this->delta_tau)
 	} 
     }
 }
-
-
 
 template<class comp>
 void vmc<comp>::save()
@@ -288,6 +287,7 @@ template<class comp>
 void vmc<comp>::out()
 {
   unsigned int i;
+  
   int mpi_task;
   m->reduce();
   if (this->mpi_task == 0)
@@ -311,6 +311,37 @@ void vmc<comp>::out()
   m->clear();
 }
 
+#define MAX_ITER_STABILIZATION 50
+
+template<class optimizerType>
+int proposeStabilizationStep(optimizerType &mO, const vector<double> &parameters,vector<double> &parametersNew,double &value)
+{
+  int status;
+  int k;
+  do
+    {
+      status=mO.getStep(parametersNew,value);
+      if (status!=0)
+	{
+          value=0;
+          return status;
+        }    
+      
+      tools::add(parameters,parametersNew,parametersNew);
+      value=2*value+0.1;
+      tools::print(parametersNew);
+      k++;
+      if (k>MAX_ITER_STABILIZATION)
+	{
+          value=0;
+          return -1;
+	}
+    }
+  
+  while(!mO.getPlan().checkBoundsParameters(parametersNew));
+  value=(value-0.1)/2;
+  return status;
+}
 
 template<class comp>
 void vmc<comp>::optimizationOut()
@@ -322,15 +353,18 @@ void vmc<comp>::optimizationOut()
   
   if (this->mpi_task == 0)
     {
-      vector<double> step;
       vector<double> means;
       vector<double> errors;
-      
+      double diagOffset;
+      int statusProposal1;
+      int statusProposal2;
+      int statusProposal3;
+  
       save();
       
       this->wave->getParameters(mO.getPlan(),optParameters);
       mO.getMeanError(means,errors);
-      
+    
       /*
 	Prints out information on the last run
        */
@@ -343,57 +377,22 @@ void vmc<comp>::optimizationOut()
       printf("Parameters\n");
       tools::print(optParameters);
       
-      statusGeneralizedEigenValue=mO.getStep(step);
-      #ifdef VERBOSE
-      mO.print();
-      printf("Step\n");
-      if (statusGeneralizedEigenValue==0)
-	{
-	  printf("Sucessfull stepping!\n");
-	}
-      
-      if (statusGeneralizedEigenValue<0)
-	{
-	  printf("Failed stepping!\n");
-	}
-      
-      if (statusGeneralizedEigenValue>0)
-	{
-	  printf("Complex eigenvalues!\n");
-	}
-      #endif 
-      //tools::print(step);
-      assert(step.size()==optParameters.size());
       
       cout<<"------------------------------------------"<<endl;
-      tools::add(optParameters,step,parametersProposal[0]);
-  
-      status=mO.getStep(step,abs(means[means.size()-1])*0.1);
-      if (status==0)
-	{
-	  tools::add(optParameters,step,parametersProposal[1]);
-	}
-      else
-	{
-	  parametersProposal[1]=parametersProposal[0];
-	}
       
-      status=mO.getStep(step,abs(means[means.size()-1])*100);
-      if (status==0)
-	{
-	  tools::add(optParameters,step,parametersProposal[2]);
-	}
-      else
-	{
-	  parametersProposal[2]=parametersProposal[0];
-	}
       
-      #ifdef VERBOSE
-      printf("Proposed parameters [%i] \n",this->mpi_task);
-      tools::print(parametersProposal[0]);
-      tools::print(parametersProposal[1]);
-      tools::print(parametersProposal[2]);
-      #endif
+      //status=mO.getStep(step,abs(means[means.size()-1])*0.1);
+      diagOffset=0;
+      
+      statusProposal1=proposeStabilizationStep(mO, optParameters,parametersProposal[0],diagOffset);
+      diagOffset=means[means.size()-1]*0.1;
+      statusProposal2=proposeStabilizationStep(mO, optParameters,parametersProposal[1],diagOffset);
+      diagOffset*=1000;
+      statusProposal3=proposeStabilizationStep(mO, optParameters,parametersProposal[2],diagOffset);
+      
+      if (statusProposal1!=0) {statusGeneralizedEigenValue=statusProposal1;}
+      if (statusProposal2!=0) {statusGeneralizedEigenValue=statusProposal2;}
+      if (statusProposal3!=0) {statusGeneralizedEigenValue=statusProposal3;}
       
       if (optimizationMode==absErrMode)
 	{
@@ -403,22 +402,41 @@ void vmc<comp>::optimizationOut()
 	      statusGeneralizedEigenValue=-1;
 	    }
 	}
+      
+      if (statusGeneralizedEigenValue==0)
+	{
+	  printf("Successfull step estimation\n");
+          #ifdef VERBOSE
+	  printf("Proposed parameters [%i] \n",this->mpi_task);
+	  tools::print(parametersProposal[0]);
+	  tools::print(parametersProposal[1]);
+	  tools::print(parametersProposal[2]);
+          #endif
+      
+	}
+      else
+	{
+	  printf("Unsucessfull step estimation: %i %i %i %i\n",statusProposal1,statusProposal2,statusProposal3,statusGeneralizedEigenValue);
+	  
+	}
     }
-
-  pTools::broadcast(statusGeneralizedEigenValue,0);
-  pTools::broadcast(parametersProposal[0],0);
-  pTools::broadcast(parametersProposal[1],0);
-  pTools::broadcast(parametersProposal[2],0);
   
+  pTools::broadcast(statusGeneralizedEigenValue,0);
+
   if (statusGeneralizedEigenValue==0)
     {
+      pTools::broadcast(parametersProposal[0],0);
+      pTools::broadcast(parametersProposal[1],0);
+      pTools::broadcast(parametersProposal[2],0);
+  
+      
       mEnergyCorrelated->getWaves()[0]->setParameters(mO.getPlan(),parametersProposal[0]);
   
       mEnergyCorrelated->getWaves()[1]->setParameters(mO.getPlan(),parametersProposal[1]);
   
       mEnergyCorrelated->getWaves()[2]->setParameters(mO.getPlan(),parametersProposal[2]);
+	
     }
-  
 }
 
 template<class comp>

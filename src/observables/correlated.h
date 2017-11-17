@@ -30,7 +30,7 @@ public:
       }
     
     scratch[waves.size()]=walker->e;
-    scratchWeights[waves.size()]=walker->e;
+    scratchWeights[waves.size()]=1.;
     accumulator.accumulate(scratch,scratchWeights);
     
   }

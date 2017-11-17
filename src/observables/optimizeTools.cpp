@@ -138,10 +138,6 @@ int linearMethodStepEstimator::getStep(vector<double> &parameters)
   
   //set step to minimum eigenvalue
   int iMin=getMinRealPartEigenValue(alphaR,alphaI,beta);
-  #ifdef VERBOSE
-  printf("Right eigenvectors\n");
-  REIGS.print();
-  #endif
   
   for(int j=0;j<nP;j++)
     {
@@ -153,9 +149,9 @@ int linearMethodStepEstimator::getStep(vector<double> &parameters)
       else
 	{
 	  parameters[j]=REIGS(j+1,iMin)/REIGS(0,iMin);
-	  
 	}
     }
+  
   return status;
 }
 
