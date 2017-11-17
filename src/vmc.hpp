@@ -318,22 +318,27 @@ int proposeStabilizationStep(optimizerType &mO, const vector<double> &parameters
 {
   int status;
   int k;
+  k=0;
   do
     {
       status=mO.getStep(parametersNew,value);
       if (status!=0)
 	{
           value=0;
-          return status;
+	  parametersNew=parameters;
+          return -3;
+	  
         }    
       
       tools::add(parameters,parametersNew,parametersNew);
       value=2*value+0.1;
-      tools::print(parametersNew);
+      //tools::print(parametersNew);
       k++;
       if (k>MAX_ITER_STABILIZATION)
 	{
+	  printf("Warning: max iter for stabilization reached.");
           value=0;
+	  parametersNew=parameters;
           return -1;
 	}
     }
@@ -387,13 +392,14 @@ void vmc<comp>::optimizationOut()
       statusProposal1=proposeStabilizationStep(mO, optParameters,parametersProposal[0],diagOffset);
       diagOffset=means[means.size()-1]*0.1;
       statusProposal2=proposeStabilizationStep(mO, optParameters,parametersProposal[1],diagOffset);
-      diagOffset*=1000;
+      diagOffset=means[means.size()-1]*10;
       statusProposal3=proposeStabilizationStep(mO, optParameters,parametersProposal[2],diagOffset);
       
-      if (statusProposal1!=0) {statusGeneralizedEigenValue=statusProposal1;}
-      if (statusProposal2!=0) {statusGeneralizedEigenValue=statusProposal2;}
-      if (statusProposal3!=0) {statusGeneralizedEigenValue=statusProposal3;}
-      
+      //if (statusProposal1!=0) {statusGeneralizedEigenValue=statusProposal1;}
+      //if (statusProposal2!=0) {statusGeneralizedEigenValue=statusProposal2;}
+      //if (statusProposal3!=0) {statusGeneralizedEigenValue=statusProposal3;}
+
+      if ((statusProposal1!=0) and (statusProposal2!=0) and (statusProposal3!=0)) statusGeneralizedEigenValue=-2;
       if (optimizationMode==absErrMode)
 	{
 	  
