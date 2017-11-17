@@ -130,7 +130,6 @@ int linearMethodOptimize<wave_t,walker_t>::getStep(vector<double> &params)
   rawAccumulators.getMean(mean);
   stepEstimator.buildMatrix(mean,getNParams());
   
-  
   return stepEstimator.getStep(params);
 }
 

@@ -383,7 +383,7 @@ void vmc<comp>::optimizationOut()
       
       //status=mO.getStep(step,abs(means[means.size()-1])*0.1);
       diagOffset=0;
-      
+      statusGeneralizedEigenValue=0;
       statusProposal1=proposeStabilizationStep(mO, optParameters,parametersProposal[0],diagOffset);
       diagOffset=means[means.size()-1]*0.1;
       statusProposal2=proposeStabilizationStep(mO, optParameters,parametersProposal[1],diagOffset);
