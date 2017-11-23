@@ -422,6 +422,7 @@ void dmc_walker<comp>::print()
   
 }
 
+
 template<class comp>
 void dmc<comp>::step()
 {
@@ -451,29 +452,18 @@ void dmc<comp>::step()
   
   for (i_walker=0;i_walker< ws->n;i_walker++)
     {
-      this->timers[0]->start();
       ws->ws[i_walker]->update(this);
-      this->timers[0]->stop();
-
-      this->timers[1]->start();
       ws->ws[i_walker]->make_measurements(ws->m,this->wave,this->current_step);
-      this->timers[1]->stop();
     }
   
-  this->timers[8]->start();
-  //dmc_dock->receive_walkers_async(ws,this);
-  this->timers[8]->stop();
+  this->timers[0]->start();
+  dmc_dock->receive_walkers_async(ws,this);
+  this->timers[0]->stop();
   
   for (;i_walker< ws->n;i_walker++)
     {
-      this->timers[0]->start();
       ws->ws[i_walker]->update(this);
-      this->timers[0]->stop();
-
-      this->timers[1]->start();
       ws->ws[i_walker]->make_measurements(ws->m,this->wave,this->current_step);
-      this->timers[1]->stop();
-      
     }
   
   e_t_tmp=0;
@@ -491,7 +481,6 @@ void dmc<comp>::step()
     }
   i_walker=0;
   
-  this->timers[6]->start();
   // do not branch in a VMC calculation
    if (!smart_vmc)
       {
@@ -500,12 +489,11 @@ void dmc<comp>::step()
 	  {
 	    ws->branch(i_walker,this);
 	  }
-	
 	//assert(n_walkers2 == ws->n);
       }
    
    e_t_tmp=e_t_tmp/ws->n;
-   this->timers[6]->stop();
+   
   //timers[3]->start();
   //MPI_Barrier(MPI_COMM_WORLD);
   //timers[3]->stop();
@@ -528,16 +516,15 @@ void dmc<comp>::step()
    //start=MPI_Wtime();
    //timers[6]->start();
    
-   this->timers[9]->start();
-   //MPI_Allreduce( &e_t_tmp,&e_t,1,MPI_DOUBLE,MPI_SUM,MPI_COMM_WORLD);
-   this->timers[9]->stop();
+   this->timers[2]->start();
    
+   MPI_Allreduce( &e_t_tmp,&e_t,1,MPI_DOUBLE,MPI_SUM,MPI_COMM_WORLD);
+   this->timers[2]->stop();
    e_t=e_t/this->mpi_tasks;
-   //e_t=e_t_tmp;
-   this->timers[7]->start();
-   //dmc_dock->send_walkers_async(ws);
-   
-   this->timers[7]->stop();
+
+   this->timers[1]->start();
+   dmc_dock->send_walkers_async(ws);
+   this->timers[1]->stop();
    //timers[6]->stop();
    //dmc_dock->energies[mpi_task]=e_t_tmp;
    //dmc_dock->send_energy(e_t_tmp);
@@ -567,6 +554,9 @@ void dmc<comp>::step()
    //timers[7]->stop();
    //cout << "send/recv: "<< stop - start<<endl;
 }
+
+
+
 // installs a population control check
 template<class comp>
 void dmc<comp>::warmup_step()
