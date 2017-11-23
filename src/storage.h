@@ -1,3 +1,4 @@
+#include "ptools.h"
 template<class T>
 class storageObject
 {

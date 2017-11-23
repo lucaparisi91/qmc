@@ -57,6 +57,7 @@ public:
   double dP2(const double &x){return 0;};
   void setParameter(double x,int i)
   {
+
     if(i==0)
       {
 	parameters[0]=x;

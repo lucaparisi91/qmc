@@ -20,7 +20,7 @@ class particles
   vector<double> work;
   vector<double> position;
   vector<double> position_no_pbc;
-
+  
   vector<value_t> drift_force_derivative;
   particles(int n_);
   particles();
