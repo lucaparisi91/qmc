@@ -149,6 +149,7 @@ vmc<comp>::vmc() : qmc<comp>(), moveEngine(*this->rand,this->delta_tau)
       
       optimizePlan vmcOptplan;
       vector<double> parameters;
+      
       statusGeneralizedEigenValue=0;
       
       vmcOptplan=buildOptimizePlan(this->getInputFileName());
@@ -159,7 +160,7 @@ vmc<comp>::vmc() : qmc<comp>(), moveEngine(*this->rand,this->delta_tau)
       mO.setGradient(buildAllParticlesGradient1D(this->getInputFileName()));
       
       optParameters.resize(mO.getNParams());
-      parametersProposal.resize(3);
+      parametersProposal.resize(5);
       for(int k=0;k<parametersProposal.size();k++)
 	{
 	  parametersProposal[k].resize(optParameters.size());
@@ -169,7 +170,7 @@ vmc<comp>::vmc() : qmc<comp>(), moveEngine(*this->rand,this->delta_tau)
       mEnergyCorrelated=new mEnergyCorrelated_t();
       mEnergyCorrelated->setGradient(buildAllParticlesGradient1D(this->getInputFileName()));
       
-      for(int k1=0;k1<3;k1++)
+      for(int k1=0;k1<5;k1++)
 	{
 	  mEnergyCorrelated->addWavefunction(new wave_t(this->wave));
 	}
@@ -319,32 +320,38 @@ int proposeStabilizationStep(optimizerType &mO, const vector<double> &parameters
   int status;
   int k;
   k=0;
+  printf("proposal from %f ...\n",value);
   do
     {
+      printf("stepping of %f...\n",value);
       status=mO.getStep(parametersNew,value);
       if (status!=0)
 	{
           value=0;
 	  parametersNew=parameters;
           return -3;
-	  
         }    
       
-      tools::add(parameters,parametersNew,parametersNew);
+      
       value=2*value+0.1;
       //tools::print(parametersNew);
       k++;
       if (k>MAX_ITER_STABILIZATION)
 	{
 	  printf("Warning: max iter for stabilization reached.");
+	  exit(3);
           value=0;
 	  parametersNew=parameters;
           return -1;
 	}
+      tools::add(parameters,parametersNew,parametersNew);
+      printf("parametersNew");
+      tools::print(parametersNew);
     }
   
   while(!mO.getPlan().checkBoundsParameters(parametersNew));
   value=(value-0.1)/2;
+  
   return status;
 }
 
@@ -364,7 +371,8 @@ void vmc<comp>::optimizationOut()
       int statusProposal1;
       int statusProposal2;
       int statusProposal3;
-  
+      int statusProposal4;
+      int statusProposal5;
       save();
       
       this->wave->getParameters(mO.getPlan(),optParameters);
@@ -383,23 +391,26 @@ void vmc<comp>::optimizationOut()
       tools::print(optParameters);
       
       
-      cout<<"------------------------------------------"<<endl;
+      cout<<"------------------------------------------"<<endl<<std::flush;
       
       
       //status=mO.getStep(step,abs(means[means.size()-1])*0.1);
       diagOffset=0;
       statusGeneralizedEigenValue=0;
       statusProposal1=proposeStabilizationStep(mO, optParameters,parametersProposal[0],diagOffset);
-      diagOffset=means[means.size()-1]*0.1;
+      diagOffset=abs(means[means.size()-1]*0.1);
       statusProposal2=proposeStabilizationStep(mO, optParameters,parametersProposal[1],diagOffset);
-      diagOffset=means[means.size()-1]*10;
+      diagOffset=abs(means[means.size()-1]*10);
       statusProposal3=proposeStabilizationStep(mO, optParameters,parametersProposal[2],diagOffset);
-      
+      diagOffset=abs(means[means.size()-1]*100);
+      statusProposal4=proposeStabilizationStep(mO, optParameters,parametersProposal[3],diagOffset);
+      diagOffset=abs(means[means.size()-1]*1000.);
+      statusProposal5=proposeStabilizationStep(mO, optParameters,parametersProposal[4],diagOffset);
       //if (statusProposal1!=0) {statusGeneralizedEigenValue=statusProposal1;}
       //if (statusProposal2!=0) {statusGeneralizedEigenValue=statusProposal2;}
       //if (statusProposal3!=0) {statusGeneralizedEigenValue=statusProposal3;}
 
-      if ((statusProposal1!=0) and (statusProposal2!=0) and (statusProposal3!=0)) statusGeneralizedEigenValue=-2;
+      if ((statusProposal1!=0) and (statusProposal2!=0) and (statusProposal3!=0) and (statusProposal4!=0) and (statusProposal5!=0)) statusGeneralizedEigenValue=-2;
       if (optimizationMode==absErrMode)
 	{
 	  
@@ -417,6 +428,8 @@ void vmc<comp>::optimizationOut()
 	  tools::print(parametersProposal[0]);
 	  tools::print(parametersProposal[1]);
 	  tools::print(parametersProposal[2]);
+	  tools::print(parametersProposal[3]);
+	  tools::print(parametersProposal[4]);
           #endif
       
 	}
@@ -434,14 +447,16 @@ void vmc<comp>::optimizationOut()
       pTools::broadcast(parametersProposal[0],0);
       pTools::broadcast(parametersProposal[1],0);
       pTools::broadcast(parametersProposal[2],0);
-  
+      pTools::broadcast(parametersProposal[3],0);
+      pTools::broadcast(parametersProposal[4],0);
       
       mEnergyCorrelated->getWaves()[0]->setParameters(mO.getPlan(),parametersProposal[0]);
   
       mEnergyCorrelated->getWaves()[1]->setParameters(mO.getPlan(),parametersProposal[1]);
   
       mEnergyCorrelated->getWaves()[2]->setParameters(mO.getPlan(),parametersProposal[2]);
-	
+      mEnergyCorrelated->getWaves()[3]->setParameters(mO.getPlan(),parametersProposal[3]);
+      mEnergyCorrelated->getWaves()[3]->setParameters(mO.getPlan(),parametersProposal[4]);
     }
 }
 
@@ -542,7 +557,9 @@ void vmc<comp>::runOptimize()
 	}
       
       while(statusGeneralizedEigenValue!=0);
-	
+
+      do
+	{
       // correlated energy measurements for stabilization
       for(j=0;j<correlatedEnergySteps;j++)
 	{
@@ -554,6 +571,8 @@ void vmc<comp>::runOptimize()
 	}
       
       stabilizationOut();
+	}
+      while(statusCorrelated!=0);
       chooseNextOptimizationParameters();
       
       this->success_metropolis=0;
@@ -600,6 +619,7 @@ void vmc<comp>::stabilizationOut()
   if(correlatedEnergySteps==0)
     {
       indexMinEnergyProposal=0;
+      statusCorrelated=0;
     }
   else
     {
@@ -609,12 +629,33 @@ void vmc<comp>::stabilizationOut()
 	  indexMinEnergyProposal=mEnergyCorrelated->getMinCorrelatedEnergy();
           #ifdef VERBOSE
 	  mEnergyCorrelated->print();
-      
+	  
 	  printf("Chosen Parameter: %i\n",indexMinEnergyProposal);
-      
+	  
           #endif
+	  // check if below error
+	  
+	  
+	  vector<double> errors;
+	  
+	  mEnergyCorrelated->getVariances(errors);
+	  for(int i=0;i<errors.size();i++)
+	    {
+	      errors[i]=sqrt(abs(errors[i])/mEnergyCorrelated->getNmeasurements()  );
+	      
+	      if ( (optimizationMode==absErrMode) and (errors[i]>absErrorLimit) )
+		{
+		  statusCorrelated=1;
+		}
+	      else
+		{
+		  statusCorrelated=0;
+		}
+	    }
+	  
+	}
       
-    }
+      pTools::broadcast(statusCorrelated,0);
       
     }
   mEnergyCorrelated->reset();
@@ -630,13 +671,13 @@ void vmc<comp>::chooseNextOptimizationParameters()
     {
       if (statusGeneralizedEigenValue==0)
 	{
-	  if(indexMinEnergyProposal<3)
+	  if(indexMinEnergyProposal<5)
 	    {
 	      ofstream f;
 	      vector<double> mean;
 	      f.open("optimization.dat",fstream::app);
 	      mO.getMean(mean);
-
+	      
 	      f<<mean[mean.size()-1]<< " ";
 	      for(int k=0;k<optParameters.size();k++)
 		{

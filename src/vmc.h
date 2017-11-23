@@ -97,7 +97,7 @@ private:
   enum mode{absErrMode=1,countStepsMode=0};
   mode optimizationMode;
   double absErrorLimit;
-  
+  int statusCorrelated;
 };
 
 #include "walker_vmc.hpp"

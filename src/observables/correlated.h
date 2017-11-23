@@ -40,6 +40,11 @@ public:
   void getVariances(vector<double> &variance) const {accumulator.getVariances(variance);}
   vector<wave_t *> & getWaves(){return waves;};
   
+  int getNmeasurements()
+  {
+    return accumulator.getNmeasurements();
+  }
+  
   void setGradient(grad_t * g){gradTmp=g;};
   
   void reset(){accumulator.reset();}
@@ -82,10 +87,10 @@ public:
     double eMin,eTrial;
     int iMin;
     eMin=0;
-    eTrial=0;
-    iMin=waves.size();
+    eTrial=mean[0]-mean[mean.size()-1];
+    iMin=0;
     
-    for(int i=0;i<waves.size();i++)
+    for(int i=0;i<waves.size()-1;i++)
       {
 	eTrial=mean[i]-mean[mean.size()-1];
 	if (eTrial<eMin)

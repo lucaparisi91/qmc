@@ -147,7 +147,6 @@ int linearMethodOptimize<wave_t,walker_t>::getStep(vector<double> &params,double
 template<class wave_t,class walker_t>
 void linearMethodOptimize<wave_t,walker_t>::setParameters(vector<double> params)
 {
-  
   assert(params.size()==waves.size());
   for(int i=0;i<params.size();i++)
     {
