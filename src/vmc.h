@@ -94,9 +94,12 @@ private:
   vector<double> optParameters;
   vector< vector<double> > parametersProposal;
   int indexMinEnergyProposal;
-  enum mode{absErrMode=1,countStepsMode=0};
-  mode optimizationMode;
+  enum mode_t{absErrMode=1,countStepsMode=0};
+  enum correlationMode_t{absErrModeCorrelated=1,countStepsModeCorrelated=0};
+  mode_t optimizationMode;
+  correlationMode_t correlationMode;
   double absErrorLimit;
+  double absErrorLimitCorrelated;
   int statusCorrelated;
 };
 

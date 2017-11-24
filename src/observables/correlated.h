@@ -86,13 +86,12 @@ public:
     assert(mean.size()>0);
     double eMin,eTrial;
     int iMin;
-    eMin=0;
-    eTrial=mean[0]-mean[mean.size()-1];
+    eMin=mean[0];
     iMin=0;
     
     for(int i=0;i<waves.size()-1;i++)
       {
-	eTrial=mean[i]-mean[mean.size()-1];
+	eTrial=mean[i];
 	if (eTrial<eMin)
 	  {
 	    eMin=eTrial;

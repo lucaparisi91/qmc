@@ -195,7 +195,21 @@ vmc<comp>::vmc() : qmc<comp>(), moveEngine(*this->rand,this->delta_tau)
 	  absErrorLimit=0;
 	  optimizationMode=countStepsMode;
 	  this->main_input->reset();
-	} 
+	}
+
+      this->main_input->reset()->get_child("absErrCorrelated");
+      if (this->main_input->check())
+	{ 
+	  correlationMode=absErrModeCorrelated;
+	  absErrorLimitCorrelated=this->main_input->get_value()->get_real();
+	 
+	}
+      else
+	{
+	  absErrorLimitCorrelated=0;
+	  correlationMode=countStepsModeCorrelated;
+	  this->main_input->reset();
+	}
     }
 }
 
@@ -616,10 +630,11 @@ void vmc<comp>::stabilizationStep()
 template<class comp>
 void vmc<comp>::stabilizationOut()
 {
+  statusCorrelated=0;
   if(correlatedEnergySteps==0)
     {
       indexMinEnergyProposal=0;
-      statusCorrelated=0;
+      
     }
   else
     {
@@ -639,18 +654,16 @@ void vmc<comp>::stabilizationOut()
 	  vector<double> errors;
 	  
 	  mEnergyCorrelated->getVariances(errors);
+	  printf ("nMeasurements: %i",mEnergyCorrelated->getNmeasurements());
 	  for(int i=0;i<errors.size();i++)
 	    {
 	      errors[i]=sqrt(abs(errors[i])/mEnergyCorrelated->getNmeasurements()  );
 	      
-	      if ( (optimizationMode==absErrMode) and (errors[i]>absErrorLimit) )
+	      if ( (correlationMode==absErrModeCorrelated) and (errors[i]>absErrorLimitCorrelated) )
 		{
 		  statusCorrelated=1;
 		}
-	      else
-		{
-		  statusCorrelated=0;
-		}
+	      
 	    }
 	  
 	}
@@ -658,7 +671,10 @@ void vmc<comp>::stabilizationOut()
       pTools::broadcast(statusCorrelated,0);
       
     }
-  mEnergyCorrelated->reset();
+  if (statusCorrelated==0)
+    {
+      mEnergyCorrelated->reset();
+    }
   
 }
 
