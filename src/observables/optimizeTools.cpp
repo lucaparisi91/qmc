@@ -105,6 +105,13 @@ int linearMethodStepEstimator::getStep(vector<double> &parameters)
   assert(S.getN()==H.getN());
   n=H.getN();
   assert(n>0);
+
+  #ifdef VERBOSE
+  printf("H\n");
+  H.print();
+  printf("S\n");
+  S.print();
+  #endif
   
   vector<double> alphaR;
   vector<double> alphaI;
@@ -136,6 +143,10 @@ int linearMethodStepEstimator::getStep(vector<double> &parameters)
 	} 
     }
   
+  #ifdef VERBOSE
+  printf("Reigs\n");
+  REIGS.print();
+  #endif
   //set step to minimum eigenvalue
   int iMin=getMinRealPartEigenValue(alphaR,alphaI,beta);
   
@@ -211,7 +222,10 @@ void linearMethodStepEstimator::buildMatrix(const vector<double> &accumulatedDat
 	  k++;
 	}
     }
-  H(0,0)=e;  
+  
+  H(0,0)=e;
+
+ 
 }
 
 void linearMethodStepEstimator::addDiagonal(double element)
@@ -219,7 +233,7 @@ void linearMethodStepEstimator::addDiagonal(double element)
   
   for(int i=1;i<nP+1;i++)
     {
-      H(i,i)+=element;
+      H(i,i)=H(i,i)+element;
     }
 }
 
