@@ -1,3 +1,4 @@
+#include "observables/dynamicForwardWalker.h"
 template<class comp>
 template<class qmc_type>
 walker<comp>::walker(qmc_type* qmc_obj)
@@ -93,7 +94,9 @@ void walker_load_dynamic_measures(vector<measure_dynamic<qt> *> & md ,xml_input*
       
       if(xml_md->get_name()=="center_of_mass_differenceSquared" and futureWalkers==true )
 	{
-	  md.push_back(new futureWalkerScalar<qt,scalarStorage<double> >() ); 
+	  md.push_back(new scalarForwardWalking<qt>(bins) );
+	  
+	  
 	}
       
       if(xml_md->get_name()=="static_structure_factor" and futureWalkers==true )

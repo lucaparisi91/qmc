@@ -171,7 +171,7 @@ class measure_scalar : public measure
   void load();
   double get_error(){return dec.get_error();}
   bool is_converged(){return dec.is_converged();}
-  void record(double step);// record the mean value and the last time step in an array
+  virtual void record(double step);// record the mean value and the last time step in an array
   double mean_t();
   //void average_with(measure* ms);
   
@@ -324,10 +324,11 @@ class measure_dynamic
   typedef typename qt::walker_t walker_t;
  public:
   //virtual void make_measurement(all_particles* state,total_wavefunction* wave)=0;
+  measure_dynamic(){set_a=0;};
   measure_dynamic(const int &set){set_a=set;}
   virtual void print()=0;
   virtual void reset()=0;
-  virtual bool isFilled()=0;
+  virtual bool isFilled() {throw notYetSsupported("isFilled");};
   virtual void pack(packed_data* packed_data)=0;
   virtual void unpack(packed_data* packed_data)=0;
   virtual int get_pack_size()=0;
@@ -414,6 +415,7 @@ class measure_dynamic_scalar : public measure_dynamic<comp>
   bool isFilled(){return filled;};
   measure_dynamic<comp>& operator=(measure_dynamic<comp> &);
   //void clear();
+  
 };
 // compute the difference between center of masses
 
@@ -1363,33 +1365,37 @@ template<class walker_t,class wave_t>
 class center_of_mass_differenceSquared_future_walker : public measurement_scalar<walker_t,wave_t>
 {
 public:
-  center_of_mass_differenceSquared_future_walker(measure_scalar* m_,int setA_,int setB_,int iW_,int nFutureWalkers) : measurement_scalar<walker_t,wave_t>::measurement_scalar(m_){iW=iW_;setA=setA_;setB=setB_;filled=false;nMeasures=nFutureWalkers;nC=0;}
+  center_of_mass_differenceSquared_future_walker(measure_scalar* m_,int setA_,int setB_,int iW_) : measurement_scalar<walker_t,wave_t>::measurement_scalar(m_){iW=iW_;setA=setA_;setB=setB_;accumulator=0;nMeasures=0;}
+
+  virtual void make_measurement(walker_t* w,wave_t* wave)
+  {
+    
+    // add to the walker the measurement just done
+    if (w->md[iW]->isFilled())
+      {
+        accumulator+=w->md[iW]->average();
+	nMeasures+=1;
+      }
+    
+    w->md[iW]->add(pow( wave->center_of_mass_no_pbc(w->state,setA) - wave->center_of_mass_no_pbc(w->state,setB),2));
+    
+  }
   
 private:
   int iW;
   int setA;
   int setB;
+  double accumulator;
   int nMeasures;
-  int nC;
-  bool filled;
-  
-  virtual void make_measurement(walker_t* w,wave_t* wave)
+  virtual void record(double step)
   {
-    // add to the walker the measurement just done
-    w->md[iW]->add(
-		   pow( wave->center_of_mass_no_pbc(w->state,setA) - wave->center_of_mass_no_pbc(w->state,setB),2));
-    
-    if (w->md[iW]->get_n()>=nMeasures)
+    if (nMeasures>0)
       {
-	if (w->md[iW]->isFilled())
-	  {
-	    this->ms->add(w->md[iW]->average(),0);
-	  }
-	w->md[iW]->reset();
-	nC=0;
-      }  
+	this->ms->add(accumulator/nMeasures,step);
+      }
+    nMeasures=0;
+    accumulator=0;
   }
-
   
 };
 

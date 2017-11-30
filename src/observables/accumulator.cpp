@@ -2,10 +2,11 @@
 #include "cassert"
 #include "../ptools.h"
 
+
 template<class T>
 void vectorAccumulator<T>::accumulateMean(const vector<T> & vectorName)
 {
-  assert(vectorName.size()==getSize());
+  assert(vectorName.size()==size());
   for(int i=0;i<vectorName.size();i++)
     {
       vectorAccumulatorMean[i]+=vectorName[i];
@@ -18,9 +19,9 @@ template<class T>
 void vectorAccumulator<T>::accumulateMean(const vector<T> & vectorName,const vector<T> &weightsIn)
 {
   
-  assert(vectorName.size()==getSize());
-  assert(weightsIn.size()==getSize());
-  assert(weights.size()==getSize());
+  assert(vectorName.size()==size());
+  assert(weightsIn.size()==size());
+  assert(weights.size()==size());
   
   for(int i=0;i<vectorName.size();i++)
     {
@@ -33,7 +34,7 @@ void vectorAccumulator<T>::accumulateMean(const vector<T> & vectorName,const vec
 template<class T>
 void vectorAccumulator<T>::getMean(vector<T> & vectorOut) const
 {
-  vectorOut.resize(this->getSize());
+  vectorOut.resize(this->size());
   
   for(int i=0;i<vectorOut.size();i++)
     {
@@ -78,8 +79,8 @@ template<class T>
 void  vectorAccumulatorVariance<T>::getVariances(vector<T> & vectorOut) const
 {
   vector<T> tmp;
-  tmp.resize(this->getSize());
-  vectorOut.resize(this->getSize());
+  tmp.resize(this->size());
+  vectorOut.resize(this->size());
   this->getMean(vectorOut);
   getMeanSquares(tmp);
   for(int i=0;i<vectorOut.size();i++)
@@ -91,10 +92,10 @@ void  vectorAccumulatorVariance<T>::getVariances(vector<T> & vectorOut) const
 template<class T>
 void  vectorAccumulatorVariance<T>::accumulateMeanSquares(const vector<T> & vectorName)
 {
-  assert(vectorName.size()==this->getSize() );
-  scratch.resize(this->getSize());
+  assert(vectorName.size()==this->size() );
+  scratch.resize(this->size());
   
-  for(int i=0;i<this->getSize();i++)
+  for(int i=0;i<this->size();i++)
     {
       scratch[i]=vectorName[i]*vectorName[i];
     }
@@ -106,10 +107,10 @@ void  vectorAccumulatorVariance<T>::accumulateMeanSquares(const vector<T> & vect
 template<class T>
 void  vectorAccumulatorVariance<T>::accumulateMeanSquares(const vector<T> & vectorName,const vector<T> & weightsIn)
 {
-  assert(vectorName.size()==this->getSize() );
-  scratch.resize(this->getSize());
+  assert(vectorName.size()==this->size() );
+  scratch.resize(this->size());
   
-  for(int i=0;i<this->getSize();i++)
+  for(int i=0;i<this->size();i++)
     {
       scratch[i]=vectorName[i]*vectorName[i];
     }
@@ -124,7 +125,7 @@ void  vectorAccumulatorVariance<T>::getMeanError(vector<T> & meanOut,vector<T> &
   assert(this->getNmeasurements()>0);
   this->getMean(meanOut);
   getMeanSquares(errorOut);
-  for(int i=0;i<this->getSize();i++)
+  for(int i=0;i<this->size();i++)
     {
       errorOut[i]=sqrt(abs(errorOut[i]-meanOut[i]))/this->getNmeasurements();
     }

@@ -818,7 +818,7 @@ public:
   bool isSupported(){return true;}
   center_of_mass_differenceSquared_future_walker<walker_t,wave_t>* create(xml_input* main_input,string label,int setA,int setB,int id,int nSteps)
   {
-    return new center_of_mass_differenceSquared_future_walker<walker_t,wave_t>(build_measure_scalar(main_input,label),setA,setB,id,nSteps);
+    return new center_of_mass_differenceSquared_future_walker<walker_t,wave_t>(build_measure_scalar(main_input,label),setA,setB,id);
     
   }
   
@@ -1044,8 +1044,6 @@ measures<tm>::measures(string filename,tm *qmc_obj)
 	  
        
 	}
-
-
 
       if (main_input->get_name() == "center_of_mass_differenceSquared")
 	{
