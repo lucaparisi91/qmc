@@ -132,7 +132,7 @@ def getMean(filename,method="blocking",jumps=0,makePlot=False):
     
     return [np.mean(y),err[0],err[1],err[2]]
 
-y=np.array(tools.read_matrix_from_file("center_of_mass_differenceSquared.dat")[1])
-x=np.linspace(0,len(y),num=len(y))
+#y=np.array(tools.read_matrix_from_file("center_of_mass_differenceSquared.dat")[1])
+#x=np.linspace(0,len(y),num=len(y))
 #plt.plot(x,y)
 
