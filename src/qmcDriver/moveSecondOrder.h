@@ -34,9 +34,9 @@ public:
   void moveGaussian(all_particles_t & p)
   {
     int i,j,ni;
-    for(i=0;i<p.getN();i++)
+    for(i=0;i<p.size();i++)
       {
-	ni=p[i].getN();
+	ni=p[i].size();
 	//cout << "ni: "<<ni << " " << work.size()<<endl;
 	assert(work.size() >= ni );
 	// generates the random numbers
@@ -45,7 +45,7 @@ public:
 	for(j=0;j<ni;j++)
 	  {
 	    //cout << work[j]<<endl;
-	    p[i].getNoBC(j)+=sqrt(this->delta_tau)*work[j];
+	    p[i][j].positionNoBC()+=sqrt(this->delta_tau)*work[j];
 	  }
       }
   }
@@ -54,11 +54,11 @@ public:
   void drift(all_particles_t & p,const grad_t & grad,double delta)
   {
     
-    for(int i=0;i<p.getN();i++)
+    for(int i=0;i<p.size();i++)
       {
-	for(int j=0;j<p[i].getN();j++)
+	for(int j=0;j<p[i].size();j++)
 	  {
-	    p[i].getNoBC(j)+=delta*grad[i][j];
+	    p[i][j].positionNoBC()+=delta*grad[i][j];
 	  }
       }
   }
@@ -70,10 +70,10 @@ public:
   
   // initializes temporary gradient and particles object from inputfile
   
-  void init(xml_input* main_input)
+  void init(string filename)
   {
-    ptmp.init(main_input);
-    ptmp.getNs(ns);
+    buildAllOrbitals(filename,ptmp);
+    ptmp.sizes(ns);
     gradTmp.resize(ns);
   }
   
@@ -83,13 +83,13 @@ public:
     ptmp=p;
     //first drift
     drift(ptmp,grad,this->delta_tau/2.);
-    geo->all_particles_pbc(&ptmp);
+    geo->all_particles_pbc(ptmp);
     // second drift
     wave->gradient(ptmp,gradTmp);
     ptmp=p;
     gradTmp+=grad;
     drift(ptmp,gradTmp,this->delta_tau/4.);
-    geo->all_particles_pbc(&ptmp);
+    geo->all_particles_pbc(ptmp);
     
     wave->gradient(ptmp,gradTmp);
     

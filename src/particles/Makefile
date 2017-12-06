@@ -24,5 +24,5 @@ all:	qmc
 qmc:		
 	cd ..;make
 
-orbitals:	 spinOrbital.cpp testOrbital.cpp spinOrbital.h 
-	$(CC) $(CFLAGS) $(LFLAGS) $(XML_LIBS) -I $(XML_IDIR) testOrbital.cpp spinOrbital.cpp ../tools.cpp ../ptools.cpp   -o test
+orbitals:	 orbital.cpp  orbital.h
+	$(CC) $(CFLAGS)  -I $(XML_IDIR) ../xml-input.cpp  orbital.cpp ../tools.cpp ../ptools.cpp  $(LFLAGS) $(XML_LIBS)  testOrbital.cpp -o test

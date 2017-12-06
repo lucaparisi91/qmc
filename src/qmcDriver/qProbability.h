@@ -13,7 +13,7 @@ double Q_probability(grad_t & drift_force_new,grad_t & drift_force_old,all_parti
       for(int j=0;j<drift_force_old[i].size();j++)
 	{
 	  q=q+(drift_force_old[i][j] + drift_force_new[i][j])*(
-							       (drift_force_old[i][j] - drift_force_new[i][j])*(1/2.)*delta_tau - (position[i].getNoBC(j) - position2[i].getNoBC(j))
+							       (drift_force_old[i][j] - drift_force_new[i][j])*(1/2.)*delta_tau - (position[i][j].positionNoBC() - position2[i][j].positionNoBC())
 							       );
 	}
     }

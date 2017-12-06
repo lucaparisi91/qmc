@@ -55,15 +55,17 @@ public:
   double evaluate(geometry_t* geo,all_particles_t * p)
   {
     typedef typename all_particles_t::particles_t particles_t;
-    particles_t* p1;
+    
     int i;
     double value;
     value=0;
-    p1=p->particle_sets[set];
+
+    particles_t& p1=(*p)[set];
    
-    for(i=0;i<p1->n;i++)
+   
+    for(i=0;i<p1.size();i++)
       {
-	value+=pow(geo->distance_pbc(p1->position[i],x0),2);
+	value+=pow(geo->distance_pbc(p1[i].position(),x0),2);
       }
     
     return value*1./2*omega*omega;

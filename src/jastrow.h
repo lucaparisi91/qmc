@@ -131,7 +131,7 @@ class jastrow_delta : public jastrow<jastrow_delta>
   double dP1(const double &x){return 0;};
   double dP2(const double &x){return 0;};
   void setParameter(double x,int i){}
-  int getParameter(int i){};
+  double getParameter(int i){};
 private:
   double d;
   double c;
@@ -153,7 +153,7 @@ public:
   inline double dP1(const double &x){return 0;};
   inline double dP2(const double &x){return 0;};
   void setParameter(double x,int i){}
-  int getParameter(int i){};
+  double getParameter(int i){};
 };
 
 class jastrow_delta_phonons : public jastrow<jastrow_delta_phonons>

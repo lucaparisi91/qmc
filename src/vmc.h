@@ -6,6 +6,7 @@
 #include "wavefunction.h"
 #include "observables/optimize.h"
 #include "observables/correlated.h"
+#include "particles/orbital.h"
 
 //**************** Variational Monte Carlo [ using the Metropolis Algorithm]
 

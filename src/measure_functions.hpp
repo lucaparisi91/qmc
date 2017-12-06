@@ -99,19 +99,19 @@ void total_wavefunction<comp>::pair_correlation_asymm(total_wavefunction<comp>::
   // compute the pair correlation of the system
   int i,j;
   double dg,x;
-  particles_t* p1,*p2;
+  particles_t& p1=(*p)[set_a];
+  particles_t& p2=(*p)[set_b];
+  
   //cout << max<<endl;
-  p1=p->particle_sets[set_a];
-  p2=p->particle_sets[set_b];
   //cout << g->set_a << " "<<g->set_b<<endl;
   // loop on all particles and update the frequency bin
-  dg=(qmc_obj->geo->l_box/g->get_step())/(p1->n*p2->n);
+  dg=(qmc_obj->geo->l_box/g->get_step())/(p1.size()*p2.size());
   
-  for (i=0;i<p1->n;i++)  
+  for (i=0;i<p1.size();i++)  
     {
-      for(j=0;j<p2->n;j++)
+      for(j=0;j<p2.size();j++)
 	{
-	  x=abs(qmc_obj->geo->distance_pbc(p1->position[i],p2->position[j]));
+	  x=abs(qmc_obj->geo->distance_pbc(p1[i].position(),p2[j].position()));
 	  if(x<=max)
 	    {
 	      
@@ -119,6 +119,7 @@ void total_wavefunction<comp>::pair_correlation_asymm(total_wavefunction<comp>::
 	    }
 	}
     }
+  
   g->increment_index();
   
 }
@@ -193,12 +194,13 @@ void total_wavefunction<comp>::structure_factor(total_wavefunction<comp>::all_pa
   // compute the pair correlation of the system
   int i,k;
   double dg,x;
-  particles_t* p1,*p2;
+  
+  particles_t& p1=(*p)[setA];
   complex<double> j;
   j=(0,1);
   //cout << max<<endl;
   
-  p1=p->particle_sets[setA];
+  
   
   //cout << g->set_a << " "<<g->set_b<<endl;
   // loop on all particles and update the frequency bin
@@ -207,12 +209,12 @@ void total_wavefunction<comp>::structure_factor(total_wavefunction<comp>::all_pa
     {
       work[k]=complex<double>(0,0);
       
-      for (i=0;i<p1->n;i++)  
+      for (i=0;i<p1.size();i++)  
 	{    
-	  work[k]+=exp(complex<double>( 0,qs[k]*p1->position[i]))	;
+	  work[k]+=exp(complex<double>( 0,qs[k]*p1[i].position()))	;
 	}
       
-      s->increment_value(pow(abs(work[k]),2)/p1->n,k,qmc_obj->current_step);
+      s->increment_value(pow(abs(work[k]),2)/p1.size(),k,qmc_obj->current_step);
     }
   
   s->increment_index();
@@ -226,14 +228,15 @@ void total_wavefunction<comp>::structure_factor(total_wavefunction<comp>::all_pa
   // compute the pair correlation of the system
   int i,k;
   double n;
-  particles_t* p1,*p2;
+
+  particles_t& p1=(*p)[setA];
+  particles_t& p2=(*p)[setB];
+  
   complex<double> j;
   j=(0,1);
   //cout << max<<endl;
   
-  p1=p->particle_sets[setA];
-  p2=p->particle_sets[setB];
-  n=p1->n+p2->n;
+  n=p1.size()+p2.size();
   //cout << g->set_a << " "<<g->set_b<<endl;
   // loop on all particles and update the frequency bin
   
@@ -241,14 +244,14 @@ void total_wavefunction<comp>::structure_factor(total_wavefunction<comp>::all_pa
     {
       work[k]=complex<double>(0,0);
       
-      for (i=0;i<p1->n;i++)  
+      for (i=0;i<p1.size();i++)  
 	{    
-	  work[k]+=exp(complex<double>( 0,qs[k]*p1->position[i]))	;
+	  work[k]+=exp(complex<double>( 0,qs[k]*p1[i].position()))	;
 	}
       
-      for(i=0;i<p2->n;i++)
+      for(i=0;i<p2.size();i++)
 	{
-	  work[k]+=exp(complex<double>( 0,qs[k]*p2->position[i]))	;
+	  work[k]+=exp(complex<double>( 0,qs[k]*p2[i].position()))	;
 	}
       
       s->increment_value(pow(abs(work[k]),2)/n,k,qmc_obj->current_step);
@@ -265,13 +268,15 @@ void total_wavefunction<comp>::structure_factorSpin(total_wavefunction<comp>::al
   // compute the pair correlation of the system
   int i,k;
   double n;
-  particles_t* p1,*p2;
+  
+  particles_t& p1=(*p)[setA];
+  particles_t& p2=(*p)[setB];
+  
   //cout << max<<endl;
   complex<double> j;
   j=(0,1);
-  p1=p->particle_sets[setA];
-  p2=p->particle_sets[setB];
-  n=p1->n+p2->n;
+  
+  n=p1.size()+p2.size();
   //cout << g->set_a << " "<<g->set_b<<endl;
   // loop on all particles and update the frequency bins
   
@@ -279,14 +284,14 @@ void total_wavefunction<comp>::structure_factorSpin(total_wavefunction<comp>::al
     {
       work[k]=complex<double>(0,0);
       
-      for (i=0;i<p1->n;i++)  
+      for (i=0;i<p1.size();i++)  
 	{    
-	  work[k]+=exp(complex<double>( 0,qs[k]*p1->position[i]))	;
+	  work[k]+=exp(complex<double>( 0,qs[k]*p1[i].position()))	;
 	}
       
-      for(i=0;i<p2->n;i++)
+      for(i=0;i<p2.size();i++)
 	{
-	  work[k]-=exp(complex<double>( 0,qs[k]*p2->position[i]))	;
+	  work[k]-=exp(complex<double>( 0,qs[k]*p2[i].position()))	;
 	}
       
       s->increment_value(pow(abs(work[k]),2)/n,k,qmc_obj->current_step);
@@ -300,7 +305,7 @@ template<class comp>
 void total_wavefunction<comp>::oneBodyDensityMatrixOffdiagonal(total_wavefunction<comp>::all_particles_t * p,space_measure<measure_vector_mult_index>* g,int nMCM,int Max)
 {
   int i,j,k;
-  particles_t * p1;
+  
   double r,rnew;
   double swap;
   double l,dg;
@@ -308,10 +313,10 @@ void total_wavefunction<comp>::oneBodyDensityMatrixOffdiagonal(total_wavefunctio
   ratio=0;
   l=qmc_obj->geo->l_box;
   dg=1;
+  particles_t& p1=(*p)[g->set_a];
   
-  p1=p->particle_sets[g->set_a];
   
-  for(i=0;i<p1->n;i++)
+  for(i=0;i<p1.size();i++)
     {
       // compute the unmodified ratio
       logRatioUnmodified=0;
@@ -319,7 +324,7 @@ void total_wavefunction<comp>::oneBodyDensityMatrixOffdiagonal(total_wavefunctio
       for(k=0;k<waves.size();k++)
 	{
 	  // comput the jastrow terms un modified
-	  logRatioUnmodified+=waves[k]->one_particle_log_evaluate(p,p1->position[i],i,g->set_a);
+	  logRatioUnmodified+=waves[k]->one_particle_log_evaluate(p,p1[i].position(),i,g->set_a);
 	}
       
       // generate distances randomly
@@ -327,7 +332,7 @@ void total_wavefunction<comp>::oneBodyDensityMatrixOffdiagonal(total_wavefunctio
 	{
 	  // generates uniformely in [-l/2,l/2]
 	  r=(qmc_obj->rand->uniform())*(g->grid->b - g->grid->a ) + g->grid->a ;
-	  rnew=qmc_obj->geo->pbc( p1->position[i] + r);
+	  rnew=qmc_obj->geo->pbc( p1[i].position() + r);
 	  // compute the jastrow terms modified
 	  logRatio=0;
 	  
@@ -355,18 +360,19 @@ template<class comp>
 void total_wavefunction<comp>::oneBodyDensityMatrixOffdiagonalFutureWalkers(total_wavefunction<comp>::all_particles_t* p,space_measure<measure_vector_mult_index>* g,int nMCM,int Max,miniDMCDriver< comp >* driver)
 {
   int i,j,k;
-  particles_t * p1;
+  
   double r,rnew;
   double weight;
   double swap;
   double l,dg;
   double logRatio,logRatioUnmodified,ratio;
+  particles_t& p1=(*p)[g->set_a];
   ratio=0;
   l=qmc_obj->geo->l_box;
   dg=1;
-  p1=p->particle_sets[g->set_a];
   
-  for(i=0;i<p1->n;i++)
+  
+  for(i=0;i<p1.size();i++)
     {
       // compute the unmodified ratio
       logRatioUnmodified=0;
@@ -374,7 +380,7 @@ void total_wavefunction<comp>::oneBodyDensityMatrixOffdiagonalFutureWalkers(tota
       for(k=0;k<waves.size();k++)
 	{
 	  // comput the jastrow terms un modified
-	  logRatioUnmodified+=waves[k]->one_particle_log_evaluate(p,p1->position[i],i,g->set_a);
+	  logRatioUnmodified+=waves[k]->one_particle_log_evaluate(p,p1[i].position(),i,g->set_a);
 	}
       
       // generate distances randomly
@@ -382,7 +388,7 @@ void total_wavefunction<comp>::oneBodyDensityMatrixOffdiagonalFutureWalkers(tota
 	{
 	  // generates uniformely in [-l/2,l/2]
 	  r=(qmc_obj->rand->uniform())*(g->grid->b - g->grid->a ) + g->grid->a ;
-	  rnew=qmc_obj->geo->pbc( p1->position[i] + r);
+	  rnew=qmc_obj->geo->pbc( p1[i].position() + r);
 	  // compute the jastrow terms modified
 	  logRatio=0;
 	  
@@ -412,18 +418,18 @@ void total_wavefunction<comp>::pair_correlation_symm(total_wavefunction<comp>::a
   // compute the pair correlation of the system
   int i,j;
   double dg,x;
-  particles_t* p1;
   
-  p1=p->particle_sets[set_a];
+  particles_t& p1=(*p)[set_a];
+  
   
   // loop on all particles and update the frequency bin
   dg=(qmc_obj->geo->l_box/g->get_step())/pow(qmc_obj->geo->l_box,2);
   
-  for (i=0;i<p1->n;i++)
+  for (i=0;i<p1.size();i++)
     {
       for(j=0;j<i;j++)
 	{
-	  x=abs(qmc_obj->geo->distance_pbc(p1->position[i],p1->position[j]));
+	  x=abs(qmc_obj->geo->distance_pbc(p1[i].position(),p1[j].position()));
 	  if(x<=max)
 	    {
 	      g->increment_value(dg,x,qmc_obj->current_step);
@@ -461,14 +467,14 @@ void total_wavefunction<comp>::density(total_wavefunction<comp>::all_particles_t
 {
   int i;
   double x;
-  particles_t* state;
+  
   double alpha;
+
+  particles_t& state=(*p)[g->set_a];
   
-  state=p->particle_sets[g->set_a];
-  
-  for(i=0;i<state->position.size();i++)
+  for(i=0;i<state.size();i++)
     {
-      x=state->position[i];
+      x=state[i].position();
       
       g->increment_value(1./(g->grid->step),x,qmc_obj->current_step);
     }
@@ -493,16 +499,16 @@ template<class comp>
 double total_wavefunction<comp>::center_of_mass_no_pbc(total_wavefunction<comp>::all_particles_t* p,const int set)
 {
   int i;
-  particles_t* p1;
-  double r;
   
-  p1=p->particle_sets[set];
+  double r;
+  particles_t& p1=(*p)[set];
+  
   r=0;
-  for(i=0;i<p1->n;i++)
+  for(i=0;i<p1.size();i++)
     {
-      r+=p1->position_no_pbc[i];
+      r+=p1[i].position();
     }
-  return r/p1->n;
+  return r/p1.size();
 }
 
 // template class total_wavefunction<dmc<D1_t> >;

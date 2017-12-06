@@ -18,25 +18,26 @@ public:
       vec[i]=static_cast<T*>(this)->bc(vec[i]);
     }
   }
-
+  
   template<class particles_t>
-  void particles_bc(particles_t * p)
+  void particles_bc(particles_t& p)
   {
     int i;
-    for(i=0;i<p->position.size();i++)
+    for(i=0;i<p.size();i++)
       {
-	p->position[i]=static_cast<T*>(this)->bc(p->position_no_pbc[i]);
+	p[i].positionBC()=static_cast<T*>(this)->bc(p[i].positionNoBC());
       }
     
   }
+  
   // pbc conditions on all particles
   template<class all_particles_t>
-  void all_particles_bc(all_particles_t* p)
+  void all_particles_bc(all_particles_t& p)
   {
     int i=0;
-    for(i=0;i<p->particle_sets.size();i++)
+    for(i=0;i<p.size();i++)
       {
-	particles_bc(p->particle_sets[i]);
+	particles_bc(p[i]);
       }
   }
   
@@ -112,16 +113,26 @@ class geometry
   }
 
   template<class particles_t>
-  void particles_pbc(particles_t * p)
+  void particles_pbc(particles_t & p)
   {
     bco->particles_bc(p);
   }
 
-template<class all_particles_t>
-void all_particles_pbc(all_particles_t* p)
-{
-  bco->all_particles_bc(p);
-}
+  template<class all_particles_t>
+  void all_particles_pbc(all_particles_t& p)
+  {
+    bco->all_particles_bc(p);
+  }
+
+  double getBoxDimensions()
+  {
+    return l_box;
+  }
+  void setBoxDimension(double lBox2)
+  {
+    l_box=lBox2;
+  }
+  
 private:
   bc_t *bco;
 };

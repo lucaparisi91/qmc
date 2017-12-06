@@ -11,6 +11,7 @@
 #include "wavefunction.h"
 #include "particles/gradientParticles.h"
 #include "qmcDriver/qProbability.h"
+#include "particles/orbital.h"
 
 using namespace std;
 
@@ -132,13 +133,19 @@ public:
   void unpack(packed_data* walker_pack);
   template<class walker2_t>
   void clone(walker2_t & w);
-  void save(xml_input* save_walker_xml);
-  template<class qmc_type>
-  void load(xml_input* load_walker_xml,qmc_type* qmc_o);
+
+  template<class comp1>
+  friend ostream& operator<<(ostream& out, const walker<comp1> & walker);
+
+  template<class comp1>
+  friend istream& operator>>(istream& in, walker<comp1> & walker);
+
+  
   gradient_t & getParticlesGradient()
   {
     return particlesGradient;
   }
+  
   int get_pack_size();
 protected:
   template<class qmc_type>
@@ -245,12 +252,23 @@ public:
   template<class qmc_t>
   void generate_all_to(int n_to_add,double pos,qmc_t* dmc_obj);
   template<class qmc_t>
-  void generate_uniform(int n_to_add,double pos,random1* randg,qmc_t* dmc_obj);
+  void generate_uniform(int n_to_add,double lBox,qmc_t* dmc_obj);
   template<class qmc_t>
-  void generate_gaussian(int n_to_add,double sigma,double position,random1* randg,qmc_t* dmc_obj);
-  void save(string &filename);
+  void generate_gaussian(int n_to_add,double sigma,double position,qmc_t* dmc_obj);
+  void save(const string &filename);
   string saveToString(const string &filename);
-  void saveAppend(xml_input* xmlI);
+  void saveAppend(const string & filename);
+  
+  template<class comp1>
+  friend ostream& operator<<(ostream& out,const walkers<comp1> & walkers);
+  
+  template<class comp1>
+  friend istream& operator<<(istream& in,walkers<comp1> & walkers);
+
+  
+  
+  
+  
   
 };
 

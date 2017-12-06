@@ -7,14 +7,13 @@ walker<comp>::walker(qmc_type* qmc_obj)
   vector<int> ns;
   state=new all_particles_t();
   state_tmp=new all_particles_t();
-  state->init(qmc_obj->main_input);
-  state_tmp->init(qmc_obj->main_input);
+  buildAllOrbitals(qmc_obj->getInputFileName(),*state);
+  state_tmp=state;
   ev=0;
   e=0;
-  state->getNs(ns);
-  
+  state->sizes(ns);
   particlesGradient.resize(ns);
-  particlesGradientBackup.resize(ns);  
+  particlesGradientBackup.resize(ns);
 }
 
 template<class comp>
@@ -44,14 +43,6 @@ template<class comp>
 void walker<comp>::set_particles(walker<comp>::all_particles_t * p)
 {
   *state=*p;
-}
-
-template<class comp>
-template<class qmc_type>
-void walker<comp>::load(xml_input* xml_walkers,qmc_type* qmc_o)
-{
-  state->load(xml_walkers);
-  qmc_o->geo->all_particles_pbc(state);
 }
 
 // export the correct number of measurements
@@ -260,7 +251,7 @@ void dmc_walker<comp>::update(qmc_type* dmc_obj)
   dmc_obj->timers[3]->stop();
   
   //state->particle_sets[1]->position_no_pbc[0]=0;
-  dmc_obj->geo->all_particles_pbc(this->state);
+  dmc_obj->geo->all_particles_pbc(*this->state);
   
   // update the wavefunction
   dmc_obj->timers[5]->start();
@@ -479,10 +470,15 @@ void dmc_walker<comp>::unpack(packed_data* walker_pack)
     }
 }
 
-// saves xml elements
 template<class comp>
-void walker<comp>::save(xml_input* xml_walkers)
+ostream& operator<<(ostream& out, const walker<comp> & walker)
 {
-  state->save(xml_walkers);
- 
+  out << *(walker.state);
 }
+
+template<class comp>
+istream& operator>>(istream& in, walker<comp> & walker)
+{
+  in>>(*walker.state);
+}
+

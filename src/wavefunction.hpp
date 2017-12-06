@@ -87,7 +87,7 @@ double bill_jastrow_wavefunction_two_body_asymmetric<jastrow_t,comp>::one_partic
 {
   int set_to_cycle;
   double ro,x,value;
-  particles_t * p1;
+  
   int j;
   
   value=0;
@@ -108,13 +108,12 @@ double bill_jastrow_wavefunction_two_body_asymmetric<jastrow_t,comp>::one_partic
 	  return value;
 	}
     }
+
+  particles_t& p1=(*p)[set_to_cycle];
   
-  // position of the i-th particle
-  p1=p->particle_sets[set_to_cycle];
-  
-  for (j=0;j<p1->n;j++)
+  for (j=0;j<p1.size();j++)
     {
-      x=abs(this->qmc_obj->geo->distance_pbc(r,p1->position[j]));
+      x=abs(this->qmc_obj->geo->distance_pbc(r,p1[j].position()));
 
       value+=log(this->jastrowc.d0(x));
       
@@ -128,32 +127,32 @@ double bill_jastrow_wavefunction_two_body_asymmetric<jastrow_t,comp>::log_evalua
 {
   int i,j;
   double x,tmp,value;
-  particles_t * p1,*p2;
+  particles_t& p1=(*p)[this->src_particle_set];
+  particles_t& p2=(*p)[this->target_particle_set];
+  
   value=0;    
-  p2=p->particle_sets[this->src_particle_set];
-  p1=p->particle_sets[this->target_particle_set];
   
   // assert that the required jastrows are defined
-      for (i=0;i<p1->n;i++)
+  for (i=0;i<p1.size();i++)
+    {
+      
+      for (j=0;j<p2.size();j++)
 	{
-      
-	  for (j=0;j<p2->n;j++)
-	    {
-	      x=abs(this->qmc_obj->geo->distance_pbc(p1->position[i],p2->position[j]));
-	
-	      value=value+log(this->jastrowc.d0(x));
-	    }	  
-	}
-      
-      this->log_wavefunction_value=value;
-      return value;
+	  x=abs(this->qmc_obj->geo->distance_pbc(p1[i].position(),p2[j].position()));
+	  value=value+log(this->jastrowc.d0(x));
+	}	  
+    }
+  
+  this->log_wavefunction_value=value;
+  return value;
 }
 
 template<class jastrow_t,class comp>
 double bill_jastrow_wavefunction_two_body_symmetric<jastrow_t,comp>::one_particle_log_evaluate(bill_jastrow_wavefunction_two_body_symmetric<jastrow_t,comp>::all_particles_t * p,double r,int iP, int set_a)
 {
   double ro,x,value;
-  particles_t * p1;
+  
+  particles_t& p1=(*p)[this->src_particle_set];
   int j;
   
   value=0;
@@ -163,22 +162,21 @@ double bill_jastrow_wavefunction_two_body_symmetric<jastrow_t,comp>::one_particl
       return 0;
     }
   
-  // position of the i-th particle
-  p1=p->particle_sets[this->src_particle_set];
   
   for (j=0;j<iP;j++)
     {
       
-      x=abs(this->qmc_obj->geo->distance_pbc(r,p1->position[j]));
+      x=abs(this->qmc_obj->geo->distance_pbc(r,p1[j].position()));
+      
 
       value+=log(this->jastrowc.d0(x));
      
     }
   
-  for (j=iP+1;j<p1->n;j++)
+  for (j=iP+1;j<p1.size();j++)
     {
       
-      x=abs(this->qmc_obj->geo->distance_pbc(r,p1->position[j]));
+      x=abs(this->qmc_obj->geo->distance_pbc(r,p1[j].position()));
 
       value+=log(this->jastrowc.d0(x));
      
@@ -192,19 +190,19 @@ double bill_jastrow_wavefunction_two_body_symmetric<X,comp>::log_evaluate(bill_j
 {
   int i,j;
   double x,tmp,value;
-  particles_t * p1;
   
+  particles_t& p1=(*p)[this->src_particle_set];
   value=0;
   
-  p1=p->particle_sets[this->src_particle_set];  
+  
   
   // assert that the required jastrows are defined
-  for (i=0;i<p1->n;i++)
+  for (i=0;i<p1.size();i++)
     {
       
       for (j=0;j<i;j++)
       {
-	x=abs(this->qmc_obj->geo->distance_pbc(p1->position[i],p1->position[j]));
+	x=abs(this->qmc_obj->geo->distance_pbc(p1[i].position(),p1[j].position()));
 	
 	value=value+log(this->jastrowc.d0(x));
       }
@@ -247,15 +245,15 @@ template<class X,class comp>
 double bill_jastrow_wavefunction_one_body<X,comp>::one_particle_log_evaluate(bill_jastrow_wavefunction_one_body<X,comp>::all_particles_t * p,double r,int iP, int set_a)
 {
   double x;
-  particles_t * p1;
+  
   
   if (set_a != this->src_particle_set)
     {
       return 0;
     }
   
-  // position of the i-th particle
-  p1=p->particle_sets[this->src_particle_set];
+ 
+ 
   
   x=abs(this->qmc_obj->geo->distance_pbc(r,this->jastrowc.center));
   return (log(this->jastrowc.d0(x))); 
@@ -266,15 +264,14 @@ double bill_jastrow_wavefunction_one_body<X,comp>::log_evaluate(bill_jastrow_wav
 {
   int i,j;
   double x,tmp,value;
-  particles_t* p1;
-  
-  p1=p->particle_sets[this->src_particle_set];
+  particles_t& p1=(*p)[this->src_particle_set];
+ 
   value=0;
   // assert that the required jastrows are defined
-  for (i=0;i<p1->n;i++)
+  for (i=0;i<p1.size();i++)
     {  
       //x=(qmc_obj->geo->pbc(p1->position[i]));
-      x=abs(this->qmc_obj->geo->distance_pbc(p1->position[i],this->jastrowc.center));
+      x=abs(this->qmc_obj->geo->distance_pbc(p1[i].position(),this->jastrowc.center));
       value=value+log(this->jastrowc.d0(x));
     }
   
@@ -287,15 +284,15 @@ double bill_jastrow_wavefunction_one_body<X,comp>::evaluate_derivative(bill_jast
 {
   int i,j;
   double x,tmp,value;
-  particles_t* p1;
+  particles_t& p1=(*p)[this->src_particle_set];
   
-  p1=p->particle_sets[this->src_particle_set];
+  
   value=0;
   // assert that the required jastrows are defined
-  for (i=0;i<p1->n;i++)
+  for (i=0;i<p1.size();i++)
     {  
       //x=(qmc_obj->geo->pbc(p1->position[i]));
-      x=this->qmc_obj->geo->distance_pbc(p1->position[i],this->jastrowc.center);
+      x=this->qmc_obj->geo->distance_pbc(p1[i].position(),this->jastrowc.center);
       
       value=value+this->jastrowc.dP0(x);
     }
@@ -311,19 +308,18 @@ double bill_jastrow_wavefunction_two_body_asymmetric<X,comp>::evaluate_derivativ
 {
   int i,j;
   double x,tmp,value;
-  particles_t  * p1,*p2;
   
-  p1=p->particle_sets[this->src_particle_set];
-  p2=p->particle_sets[this->target_particle_set];
+  particles_t& p1=(*p)[this->src_particle_set];
+  particles_t& p2=(*p)[this->target_particle_set];
   
   value=0;
   // assert that the required jastrows are defined
-  for (i=0;i<p1->n;i++)
+  for (i=0;i<p1.size();i++)
     {
-      for(j=0;j<p2->n;j++)
+      for(j=0;j<p2.size();j++)
 	{
 	  //x=(qmc_obj->geo->pbc(p1->position[i]));
-	  x=this->qmc_obj->geo->distance_pbc(p1->position[i],p2->position[j]);
+	  x=this->qmc_obj->geo->distance_pbc(p1[i].position(),p2[j].position());
 	  value=value+this->jastrowc.dP0(x);
 	}
     }
@@ -343,16 +339,16 @@ double bill_jastrow_wavefunction_one_body<X,comp>::evaluate_derivative_second(bi
 {
   int i,j;
   double x,tmp,value;
-  particles_t* p1;
+  particles_t& p1=(*p)[this->src_particle_set];
   
-  p1=p->particle_sets[this->src_particle_set];
+  
   
   value=0;
   // assert that the required jastrows are defined
-  for (i=0;i<p1->n;i++)
+  for (i=0;i<p1.size();i++)
     {  
       //x=(qmc_obj->geo->pbc(p1->position[i]));
-      x=this->qmc_obj->geo->distance_pbc(p1->position[i],this->jastrowc.center);
+      x=this->qmc_obj->geo->distance_pbc(p1[1].position(),this->jastrowc.center);
       
       value=value+this->jastrowc.pD0(x);
     }
@@ -368,20 +364,20 @@ double bill_jastrow_wavefunction_two_body_asymmetric<X,comp>::evaluate_derivativ
 {
   int i,j;
   double x,tmp,value;
-  particles_t* p1,*p2;
   
-  p1=p->particle_sets[this->src_particle_set];
-  p2=p->particle_sets[this->target_particle_set];
   
+  particles_t& p1=(*p)[this->src_particle_set];
+  particles_t& p2=(*p)[this->target_particle_set];
+    
   value=0;
   
   // assert that the required jastrows are well defined
-  for (i=0;i<p1->n;i++)
+  for (i=0;i<p1.size();i++)
     {
-      for(j=0;j<p2->n;j++)
+      for(j=0;j<p2.size();j++)
 	{
 	  //x=(qmc_obj->geo->pbc(p1->position[i]));
-	  x=this->qmc_obj->geo->distance_pbc(p1->position[i],p2->position[j]);
+	  x=this->qmc_obj->geo->distance_pbc(p1[i].position(),p2[j].position());
 	  value=value+this->jastrowc.pD0(x);
 	}
     }

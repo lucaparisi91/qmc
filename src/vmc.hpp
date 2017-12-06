@@ -18,7 +18,7 @@ void vmc_walker<comp>::update(qmc_type* vmc_obj)
   
   vmc_obj->moveEngine.moveGaussian(*(this->state));
   
-  vmc_obj->geo->all_particles_pbc(this->state);
+  vmc_obj->geo->all_particles_pbc(*this->state);
   
   // update the wavefunction
   
@@ -217,17 +217,11 @@ template<class comp>
 void vmc<comp>::save()
 {
   qmc<comp>::saveGeneralQmc();
-  // save the walker
-  xml_input* xml_save;
-  xml_save= new xml_input;
-  xml_save->new_doc("walkers");
-  // saves some settings
-  xml_save->reset()->add_child("walker","");
-  //cout <<xml_save->reset()->get_name();
-  w->save(xml_save);
+  ofstream f;
+  f.open("walkers.dat");
+  f<<w;
+  f.close();
   
-  xml_save->save("walkers.xml");
-  delete xml_save;
 }
 // add a walker to the configurations file
 
@@ -235,23 +229,10 @@ template<class comp>
 void vmc<comp>::saveAddWalker()
 {
   qmc<comp>::saveGeneralQmc();
-  xml_input* xml_save;
-  
-  xml_save= new xml_input;
-  if ( check_file_exists("walkers.xml"))
-    {
-      xml_save->open("walkers.xml");
-    }
-  else
-    {
-      xml_save->new_doc("walkers");
-    }
-  
-  xml_save->reset()->add_child("walker","");
-  //cout <<xml_save->reset()->get_name();
-  w->save(xml_save);
-  xml_save->save("walkers.xml");
-  
+  ofstream f;
+  f.open("walkers.dat",fstream::app);
+  f<<w;
+  f.close();
 }
 
 template<class comp>
@@ -262,23 +243,14 @@ void vmc<comp>::load()
   
   xml_input* load_xml;
   load_xml=new xml_input;
-  if (check_file_exists("walkers.xml"))
+  if (check_file_exists("walkers.dat"))
     {
-      
-      load_xml->open("walkers.xml");
-      load_xml->get_child("walker");
+      ifstream walkersFile;
+      walkersFile.open("walkers.dat");
       delete w;
       w=new walker_t(this);
       
-      if (load_xml->check())
-	{
-	  w->load(load_xml,this);
-	}
-      else
-	{
-	  cout << "No walker to load."<<endl;
-	  exit(1);
-	}
+      walkersFile>>*w;
     }
   else
     {
@@ -286,14 +258,15 @@ void vmc<comp>::load()
       cout << "Generating a starting a position..."<<endl;
       // set a uniform distribution for the particles
       
-      w->state->set_uniform(this->geo->l_box,this->rand);
+      generateUniform(*w->state,-this->geo->getBoxDimensions()/2.,this->geo->getBoxDimensions()/2.);
+      
       
     }
       
   // initialize properties of the walker
   w->set(this);
   // reserbe memory for the move engine
-  moveEngine.reserve(w->state->getNTot());
+  moveEngine.reserve(w->state->nParticles());
   w->make_measurements(m,this->wave,this->current_step);
   
 }

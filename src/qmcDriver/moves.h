@@ -72,10 +72,10 @@ public:
   void moveGaussian(all_particles_t & p)
   {
     int i,j,ni;
-    for(i=0;i<p.getN();i++)
+    for(i=0;i<p.size();i++)
       {
 	
-	ni=p[i].getN();
+	ni=p[i].size();
 	//cout << "ni: "<<ni << " " << work.size()<<endl;
        
 	assert(work.size() >= ni );
@@ -85,7 +85,7 @@ public:
 	for(j=0;j<ni;j++)
 	  {
 	    //cout << work[j]<<endl;
-	    p[i].getNoBC(j)+=sqrt(this->delta_tau)*work[j];
+	    p[i][j].positionNoBC()+=sqrt(this->delta_tau)*work[j];
 	  }
       }
   }
@@ -95,11 +95,11 @@ public:
   void drift(all_particles_t & p,const grad_t & grad)
   {
     
-    for(int i=0;i<p.getN();i++)
+    for(int i=0;i<p.size();i++)
       {
-	for(int j=0;j<p[i].getN();j++)
+	for(int j=0;j<p[i].size();j++)
 	  {
-	    p[i].getNoBC(j)+=this->delta_tau*grad[i][j];
+	    p[i][j].positionNoBC()+=this->delta_tau*grad[i][j];
 	  }
       }
   }
@@ -150,7 +150,7 @@ qmcMover<comp>* buildQMCMover(comp* qmcObj)
     {
       qmcMover2Order<comp>* ret;
       ret=new qmcMover2Order<comp>(*qmcObj->rand,qmcObj->delta_tau,qmcObj->wave,qmcObj->geo);
-      ret->init(qmcObj->main_input);
+      ret->init(qmcObj->getInputFileName());
       return ret;
     }
   

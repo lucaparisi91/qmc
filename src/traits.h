@@ -26,6 +26,9 @@ class traits
 class dmc_t{};
 class vmc_t{};
 
+class orbital1D;
+template<class > class orbitals;
+
 // Definees the dimensionality of the system
 template<class bc>
 class D1_t
@@ -33,8 +36,8 @@ class D1_t
 public:
   typedef double position_t;
   typedef double value_t;
-  typedef particles<value_t> particles_t ;
-  typedef all_particles<particles_t> all_particles_t;
+  typedef orbitals<orbital1D> particles_t;
+  typedef orbitals<particles_t> all_particles_t;
   typedef geometry<bc> geometry_t;
 };
 

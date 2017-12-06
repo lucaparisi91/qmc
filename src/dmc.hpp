@@ -10,8 +10,7 @@ dmc<comp>::dmc() : qmc<comp>()
   
   xml_walkers=new xml_input;
   detailed_balance=0;
-  // import variables from an input file
-  inBuffer=new char[1000000];
+  
   
   mean_walkers=this->main_input->reset()->get_child("method")->get_child("mean_walkers")->get_value()->get_int();
   
@@ -167,11 +166,12 @@ void walkers<comp>::generate_all_to(int n_to_add,double pos,qmc_t* dmc_obj)
 
 template<class comp>
 template<class qmc_t>
-void walkers<comp>::generate_uniform(int n_to_add,double pos,random1* randg,qmc_t* dmc_obj)
+void walkers<comp>::generate_uniform(int n_to_add,double lBox,qmc_t* dmc_obj)
 {
   // add n walkers to the system
   int i;
   double e_f;
+  
   ws.resize(0);
   n=0;
   dmc_obj->e_t=0;
@@ -179,34 +179,12 @@ void walkers<comp>::generate_uniform(int n_to_add,double pos,random1* randg,qmc_
     {      
       n=n+1;
       ws.push_back(new walker_t(dmc_obj));
-      // generate a gaussian initial dsitribution
-      ws[n-1]->state->set_uniform(pos,randg);
+      // generate a gaussian initial distribution
+      
+      generateUniform(*ws[n-1]->state,-lBox/2.,lBox/2.);
       // apply periodic boundary condition
       
-      dmc_obj->geo->all_particles_pbc(ws[n-1]->state);
-      ws[n-1]->descendants=1;
-    }
-  assert((n) > 0);
-}
-
-template<class comp>
-template<class qmc_t>
-void walkers<comp>::generate_gaussian(int n_to_add,double sigma,double position,random1* randg,qmc_t* dmc_obj)
-{
-  // add n walkers to the system
-  int i;
-  double e_f;
-  ws.resize(0);
-  n=0;
-  dmc_obj->e_t=0;
-  for (i=0;i<n_to_add;i++)
-    {      
-      n=n+1;
-      ws.push_back(new walker_t(dmc_obj));
-      // generate a gaussian initial dsitribution
-      ws[n-1]->state->set_gaussian(randg,sigma,position);
-      // apply periodic boundary condition
-      dmc_obj->geo->all_particles_pbc(ws[n-1]->state);
+      dmc_obj->geo->all_particles_pbc(*ws[n-1]->state);
       ws[n-1]->descendants=1;
     }
   assert((n) > 0);
@@ -223,7 +201,7 @@ void dmc<comp>::save()
   string filename;
   
   qmc<comp>::saveGeneralQmc();
-  filename="walkers.xml";
+  filename="walkers.dat";
   ws->save(filename);  
 }
 
@@ -232,38 +210,49 @@ void dmc<comp>::saveParallel(const string & filename)
 {
   // build the output string
   char* outBuffer;
+  
   ofstream f;
-  string outString;
   int * stringLengths;
+  ostringstream outStringStream;
+  string outString;
   int j,position;
   int size;
   stringLengths=new int[this->mpi_tasks];
   MPI_Status recvStatus[this->mpi_tasks];
-  outString=ws->saveToString(filename);
+  outStringStream<<(*ws);
+  outString=outStringStream.str();
   outBuffer=(char *)outString.c_str();
   size=outString.size();
   
   // find out all lengths
   MPI_Gather(&size,1,MPI_INT,stringLengths,1,MPI_INT,0,MPI_COMM_WORLD);
   //
+  
   j=0;
   if (this->mpi_task==0)
     {
-      inBuffer=strncpy(inBuffer,outBuffer,stringLengths[0]);
+      int totLength=0;
+      for(int i=0;i<this->mpi_tasks;i++)
+	{
+	  totLength+=stringLengths[i];
+	}
+      char gatheredBuffer[totLength];
+      
+      strncpy(gatheredBuffer,outBuffer,stringLengths[0]);
       position=stringLengths[0];
       
       for(j=1;j<(this->mpi_tasks);j++)
 	{
-	  MPI_Recv(&inBuffer[position],stringLengths[j],MPI_CHAR,j,167,MPI_COMM_WORLD,&recvStatus[j]);
+	  MPI_Recv(&gatheredBuffer[position],stringLengths[j],MPI_CHAR,j,167,MPI_COMM_WORLD,&recvStatus[j]);
 	  position+=stringLengths[j];
 	}
-      inBuffer[position]='\0';      
-      outString="<?xml version='1.0' ?><walkers>"+string(inBuffer) + "</walkers>";
-  
+      gatheredBuffer[position]='\0';      
+      outString=string(gatheredBuffer);
+      
       f.open(filename.c_str());
- 
+      
       f<<outString<<endl;
-  
+      
       f.close();
     }
   else
@@ -282,6 +271,8 @@ void dmc<comp>::load()
   int n_walkers;
   stringstream s;
   string line;
+  string dummy;
+  int nWalkersInputFile;
   xml_input* load_xml;
   ifstream load_file;
   double e_f;
@@ -292,7 +283,7 @@ void dmc<comp>::load()
   if (this->mpi_task==0)
     {
   
-      if ( !check_file_exists("walkers.xml") )
+      if ( !check_file_exists("walkers.dat") )
     {
       cout<<"No file to load. Generating a random initial positions."<<endl;
       this->main_input->reset()->get_child("system")->get_child("initialCondition");
@@ -300,7 +291,7 @@ void dmc<comp>::load()
 	{
 	  
 	  // generate an uniform distribution around the system
-	  ws->generate_uniform(mean_walkers,this->geo->l_box,this->rand,this);
+	  ws->generate_uniform(mean_walkers,this->geo->getBoxDimensions(),this);
 	}
       else
 	{
@@ -319,18 +310,13 @@ void dmc<comp>::load()
 		  length=this->main_input->get_real();
 		}
 	      
-	      ws->generate_uniform(mean_walkers,length,this->rand,this);
-	    }
-	  else
-	    {
-	      if (kind=="gauss")
+	      ws->generate_uniform(mean_walkers,length,this);
+	      for(int i=0;i<ws->n;i++)
 		{
-		  double position=this->main_input->get_attribute("position")->get_real();
-		  double sigma=this->main_input->get_attribute("sigma")->get_real();
-		  ws->generate_gaussian(mean_walkers,sigma,position,this->rand,this);
-		  
+		  this->geo->all_particles_pbc(*(ws->ws[i]->state));
 		}
 	    }
+	 
 	  
 	 
 	}
@@ -338,40 +324,35 @@ void dmc<comp>::load()
     }
   else
     {
-      // creates a new xml imput
-      load_xml=new xml_input;
-      load_xml->open("walkers.xml");
-      load_xml->get_child("walker");
+      ifstream walkersSavedFile;
+      
+      walkersSavedFile.open("walkers.dat");
+      
       ws->ws.resize(0);
       ws->n=0;
+      walkersSavedFile>>dummy;
+      walkersSavedFile>>nWalkersInputFile;
   // load the walkers in file up to mean_walkers
-  do
-    {
-      ws->n=ws->n+1;
-      ws->ws.push_back(new walker_t(this));
+      while( ( !walkersSavedFile.eof() ) and (ws->n <mean_walkers) and(ws->n<nWalkersInputFile) )
+	{
+	  ws->n=ws->n+1;
+	  ws->ws.push_back(new walker_t(this));
+	  walkersSavedFile >>*(ws->ws[ws->ws.size()-1]);
+	}
       
-      ws->ws[ws->n-1]->load(load_xml,this);
-      
-      //cout<< load_xml->get_name()<<endl;
-      load_xml->get_next("walker");
-    }
-  while (load_xml->check() and (ws->n <mean_walkers) );
-  
-  delete load_xml;
-  n_walkers=ws->n;
-  for(i=n_walkers+1;i<=mean_walkers;i++)
-    {
-      ws->n=ws->n + 1;
-      ws->ws.push_back(new walker_t(this));
-      *(ws->ws[ws->n-1])=*(ws->ws[(i-n_walkers)%n_walkers]);
-      
-    }
+      n_walkers=ws->n;
+      for(i=n_walkers+1;i<=mean_walkers;i++)
+	{
+	  ws->n=ws->n + 1;
+	  ws->ws.push_back(new walker_t(this));
+	  *(ws->ws[ws->n-1])=*(ws->ws[(i-n_walkers)%n_walkers]);
+	}
   
     }
   
   e_t=0;
   
-  qmcMoverO->reserve(ws->ws[0]->state->getNTot());
+  qmcMoverO->reserve(ws->ws[0]->state->nParticles());
   for(i=0;i<ws->n;i++)
     {
       // measure the kinetic energy
@@ -407,7 +388,7 @@ void dmc<comp>::load()
   dmc_dock->send_walkers_async(ws);
   dmc_dock->print_populations();
 
-  qmcMoverO->reserve(ws->ws[0]->state->getNTot());
+  qmcMoverO->reserve(ws->ws[0]->state->nParticles());
   //dmc_dock->exchange_populations(ws->n);
   //dmc_dock->send_energy(e_t);
   //dmc_dock->recv_energy();
@@ -763,7 +744,7 @@ void dmc<comp>::out()
       save();
     }
   
-  saveParallel("walkers.xml");
+  saveParallel("walkers.dat");
   ws->m->clear();
 }
 
@@ -927,58 +908,57 @@ void rabiDMCPropagate(all_particles_t* p,double &alpha)
 
 
 
-
 template<class comp>
-void walkers<comp>::save(string & filename )
+ostream& operator<<(ostream& out,const walkers<comp> & walkers)
 {
-  int i;
-  xml_input* xml_save;
-  xml_save= new xml_input;
-  xml_save->new_doc("walkers");
+  
+  out<< "NWalkers: "<<walkers.n<<endl;
+  
   // saves some settings
-  for(i=0;i<n;i++)
+  for(int i=0;i<walkers.n;i++)
     {
-      xml_save->reset()->add_child("walker","");
       //cout <<xml_save->reset()->get_name();
-      ws[i]->save(xml_save);
+      out << (*walkers.ws[i]);
     }
-  
-  //cout << xml_save->reset()->toString()<<endl;
-  //cout << "---------"<<endl;
-  xml_save->save(filename.c_str());
-  delete xml_save;
-  
-}
-// save particles to string
-template<class comp>
-string walkers<comp>::saveToString(const string &filename)
-{
-  int i;
-  xml_input* xml_save;
-  string out;
-  xml_save= new xml_input;
-  xml_save->new_doc("walkers");
-  // saves some settings
-  out="";
-  for(i=0;i<n;i++)
-    {
-      xml_save->reset()->add_child("walker","");
-      //cout <<xml_save->reset()->get_name();
-      ws[i]->save(xml_save);
-      out=out +  xml_save->toString();
-    }
-  
-  delete xml_save;
-  return out;
 }
 
 template<class comp>
-void walkers<comp>::saveAppend(xml_input * xml_save)
+ istream& operator>>(istream& in, walkers<comp> & walkers)
 {
-  int i=0;
-  for(i=0;i<n;i++)
+  string dummy;
+  int n;
+  in >> dummy;
+  in>>n;
+  
+  // saves some settings
+  for(int i=0;i<walkers.n;i++)
     {
-      xml_save->reset()->add_child("waler","");
-      ws[i]->save(xml_save);
+      //cout <<xml_save->reset()->get_name();
+      in>> *(walkers->ws[i]);
     }
+}
+
+template<class comp>
+void walkers<comp>::save(const string & filename )
+{
+  
+  ofstream f;
+  f.open(filename.c_str());
+  
+  f<<(*this);
+  
+  f.close();
+}
+
+
+template<class comp>
+void walkers<comp>::saveAppend(const string & filename )
+{
+  
+  ofstream f;
+  f.open(filename.c_str(),fstream::app);
+  
+  f<<(*this);
+  
+  f.close();
 }

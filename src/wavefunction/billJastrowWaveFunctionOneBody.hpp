@@ -8,17 +8,15 @@ void bill_jastrow_wavefunction_one_body<X,comp>::laplacianMinusGradientSquared(c
   double x,sign,d;
   e=0;
   
-  for(int i=0;i<p1.getN();i++)
+  for(int i=0;i<p1.size();i++)
     {
-      x=this->qmc_obj->geo->distance_pbc(p1[i],this->jastrowc.center);
+      x=this->qmc_obj->geo->distance_pbc(p1[i].position(),this->jastrowc.center);
       d=abs(x);
       //returns the direction of the wavefunction
       sign=x/d;
       
-      
       tmp1=this->jastrowc.d1d0(d);
       tmp2=this->jastrowc.d2d0(d);
-      
       
       e=e+(tmp2 - tmp1*tmp1);
       grad1[i]+=sign*tmp1;
@@ -36,9 +34,9 @@ void bill_jastrow_wavefunction_one_body<X,comp>::gradient(const typename bill_ja
   gradParticles_t & grad1=grad[this->src_particle_set];
   double x,sign,d;  
   
-  for(int i=0;i<p1.getN();i++)
+  for(int i=0;i<p1.size();i++)
     {
-      x=this->qmc_obj->geo->distance_pbc(p1[i],this->jastrowc.center);
+      x=this->qmc_obj->geo->distance_pbc(p1[i].position(),this->jastrowc.center);
       d=abs(x);
       //returns the direction of the wavefunction
       sign=x/d;

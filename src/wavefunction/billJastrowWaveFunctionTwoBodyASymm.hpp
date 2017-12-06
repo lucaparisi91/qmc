@@ -16,12 +16,12 @@ void bill_jastrow_wavefunction_two_body_asymmetric<X,comp>::laplacianMinusGradie
   
   e=0;
   
-  for(i=0;i<p1.getN();i++)
+  for(i=0;i<p1.size();i++)
     {
       
-      for(j=0;j<p2.getN();j++)
+      for(j=0;j<p2.size();j++)
 	{	
-	  x=this->qmc_obj->geo->distance_pbc(p1[i],p2[j]);
+	  x=this->qmc_obj->geo->distance_pbc(p1[i].position(),p2[j].position() );
 	  d=abs(x);
 	  if (d!=0)
 	    {
@@ -60,12 +60,12 @@ void bill_jastrow_wavefunction_two_body_asymmetric<X,comp>::gradient(const typen
   
   // computes the total average energy
   
-  for(i=0;i<p1.getN();i++)
+  for(i=0;i<p1.size();i++)
     {
       
-      for(j=0;j<p2.getN();j++)
+      for(j=0;j<p2.size();j++)
 	{	
-	  x=this->qmc_obj->geo->distance_pbc(p1[i],p2[j]);
+	  x=this->qmc_obj->geo->distance_pbc(p1[i].position(),p2[j].position());
 	  d=abs(x);
 	  
 	  sign=x/d;
