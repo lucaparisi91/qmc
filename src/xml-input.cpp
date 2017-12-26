@@ -304,12 +304,12 @@ xml_input::~xml_input()
 
 string xml_input::toString()
 {
-  xmlChar *s;
-  int size;
+  
+  
   string out;
   xmlBufferPtr buffer;
   buffer= xmlBufferCreate();
-  size = xmlNodeDump(buffer, doc, cur, 0, 1);
+  xmlNodeDump(buffer, doc, cur, 0, 1);
 
   out=(char *)buffer->content;
   xmlBufferFree(buffer);

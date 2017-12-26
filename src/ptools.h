@@ -50,6 +50,24 @@ class packed_data
     
     unpack( vec[0],vec.size());
   }
+
+  template<class T>
+  void pack(vector<vector<T> > & data)
+  {
+    for(int i=0;i<data.size();i++)
+      {
+	pack(data[i]);
+      }
+  }
+  
+  template<class T>
+  void unpack(vector<vector<T> > & data)
+  {
+    for(int i=0;i<data.size();i++)
+      {
+	unpack(data[i]);
+      }
+  }
   
   void reserve(int n); // allocate n slots in the buffer
   void reserveReset(int n); // allocate n slots in the buffer
@@ -86,8 +104,8 @@ class dock
   vector<packed_data*> sent_packed_walkers;//packs to send
   vector<MPI_Request> send_requests;
   vector<MPI_Request> recv_requests;
-  int n_send_packs;
-  int n_recv_packs;
+  unsigned int n_send_packs;
+  unsigned int n_recv_packs;
   
   vector<packed_data*> received_packed_walkers;//packs to received_array
   template<class walker_t> int get_pack_size(walker_t * ws);

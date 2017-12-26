@@ -67,3 +67,7 @@ void bill_jastrow_wavefunction_two_body_symmetric<X,comp>::gradient(const typena
        }
     }
 };
+
+
+
+

@@ -98,28 +98,54 @@ measurementInterface<typename comp::walker_t,typename comp::wave_t>*  build_stru
       
       deltaQ=getDeltaQ(l_box,max,bins);
       
-      if (futureWalkers==true)
-	{
-	  //cout << "create future walkers "<< id << endl;
-	  id++;
-	  return 
-		structureFutureObj.create(main_input,label,id-1,nFutureWalkers,bins);   
-	      
-		
-	}
+      
       
       if (set_a==set_b)
 	{
-     
-	    
-	      return 
-		new structure_factor_single_complex<walker_t,wave_t>(
-								     build_measure_vector(main_input,label),bins,deltaQ,l_box,set_a
-								     );
+	  
+	  if (spin==false)
+	    {
+	      
+	      if (futureWalkers==true)
+		{
+		   return new structure_factor_density_complexOrbitalsForwardWalking<walker_t,wave_t>(
+										    build_measure_vector(main_input,label),bins,deltaQ,l_box,set_a,set_b,id);
+		   
+		}
+	      else
+		{
+		  return 
+		    new structure_factor_single_complex<walker_t,wave_t>(
+									 build_measure_vector(main_input,label),bins,deltaQ,l_box,set_a
+									 );
+		}
+	    }
+	
+	
+	  else
+	    {
+	      
+	      if (futureWalkers==true)
+		{
+		  
+		  return new structure_factor_spin_complexOrbitalsForwardWalking<walker_t,wave_t>(
+										    build_measure_vector(main_input,label),bins,deltaQ,l_box,set_a,set_b,id);
+		}
+	      else
+		{
+		  return new structure_factor_spin_complexOrbitals<walker_t,wave_t>(
+							       build_measure_vector(main_input,label),bins,deltaQ,l_box,set_a,set_b							       );
+		}
+	    }
 	}
       else
 	{
-	  
+	  if (futureWalkers==true)
+	    {
+	      cout << "Future walkers not yet supported";
+	      exit(1);
+	    }
+	    
 	  if (spin==false)
 	    {
 	      return 

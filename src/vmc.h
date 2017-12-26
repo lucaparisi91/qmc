@@ -25,11 +25,9 @@ public:
   template<class measure_kind,class wavefunction_type>
   void make_measurements(measure_kind* m,wavefunction_type* wave,double current_step);
   typedef allParticlesGradient1D grad_t;
-  
+  vector<measure_dynamic<vmc<comp> >* > md;
 };
 
-#include "observables/optimizationMatrixLinearMethod.h"
-#include "observables/correlatedEnergyDifference.h"
 
 template<class comp>
 class vmc : public qmc<comp>
@@ -47,10 +45,11 @@ public:
   typedef random1 rand_t;
   typedef allParticlesGradient1D grad_t;
   typedef typename all_particles_t::particles_t particles_t;
-  typedef qmcMover1Order<vmc<comp> > qmcMover_t;
+  typedef qmcMover<vmc<comp> > qmcMover_t;
   typedef linearMethodOptimize<wave_t,walker_t>  mesOpt_t;
-  
+  typedef comp qmcSystem_t;
   typedef correlatedEstimatorEnergyDifference<wave_t,walker_t> mEnergyCorrelated_t;
+  typedef potential<vmc<comp> > potential_t;
   
   int warmupOptimizeSteps;
   vmc();
@@ -77,13 +76,15 @@ public:
   walker_t* w;
   measures_t* m;
   bool inputDmc;
-  qmcMover_t moveEngine;
+  qmcMover_t* moveEngine;
   wave_t* wave;
   vector<swave_t*> waves;
   
   void setOptimize(bool optimize_) {optimize=optimize_;};
   bool isOptimize() const {return optimize;}
   void chooseNextOptimizationParameters();
+  potential_t* potential_obj;
+  
 private:
   mEnergyCorrelated_t *mEnergyCorrelated;
   bool optimize;
@@ -102,6 +103,8 @@ private:
   double absErrorLimit;
   double absErrorLimitCorrelated;
   int statusCorrelated;
+  
+  
 };
 
 #include "walker_vmc.hpp"

@@ -4,8 +4,8 @@
 #include "timer.h"
 #include "input.h"
 
-template<class comp>
-potential<comp>* build_potential(string filename,typename potential<comp>::geometry_t* geo)
+template<class qmc_t>
+potential<qmc_t>* build_potential(string filename,qmc_t* qmcO)
 {
   xml_input* main_input;
   main_input=new xml_input;
@@ -19,12 +19,21 @@ potential<comp>* build_potential(string filename,typename potential<comp>::geome
       kind=main_input->get_attribute("kind")->get_string();
       if (kind=="harmonic")
 	{
-	  return buildSpeciesHarmonicPotential<comp>(main_input,geo);
+	  return buildSpeciesHarmonicPotential<qmc_t>(main_input,qmcO->geo);
+	}
+      else if (kind=="rabiCoupling")
+	{
+	  return buildRabiPotential<qmc_t>(main_input,qmcO->geo,qmcO->wave);
+	}
+      else
+	{
+	  cout<<"Unkown potential;"<<endl;
+	  exit(0);
 	}
     }
   else
     {
-      return new empty_potential<comp>(geo);
+      return new empty_potential<qmc_t>(qmcO->geo);
     }
   
   delete main_input;
@@ -90,11 +99,11 @@ qmc<comp>::qmc()
   
   c=new counter(jumps,skip);
   
-  for(i=0;i<10;i++)
+  for(i=0;i<14;i++)
     {
       timers.push_back(new timer());
     }
-
+  
   timers[0]->setLabel("Walker Update");
   timers[1]->setLabel("Walker Measurements");
   timers[2]->setLabel("Metropolis");
@@ -105,14 +114,23 @@ qmc<comp>::qmc()
   timers[7]->setLabel("Sending walkers");
   timers[8]->setLabel("Receiving walkers");
   timers[9]->setLabel("Reducing");
+  timers[10]->setLabel("Step Time");
+  timers[11]->setLabel("Out Time");
+  timers[12]->setLabel("Step init");
+  timers[13]->setLabel("Walker bookkeeping");
   
   
-  potential_obj=build_potential<comp>("input.xml",geo); 
+  
+  
+  
+  
+  
+  
   stepsPerBlock=main_input->reset()->get_child("stepsPerBlock")->get_value()->get_real();
    
-   main_input->reset()->get_child("warmupBlocks");
-   
-   if (this->main_input->check() )
+  main_input->reset()->get_child("warmupBlocks");
+  
+  if (this->main_input->check() )
      {
        warmupBlocks=this->main_input->get_value()->get_int();
      }

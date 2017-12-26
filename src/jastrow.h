@@ -34,7 +34,7 @@ class jastrow
     throw notYetSsupported("setParameter");
   }
   
-  double getParameter(int i)
+  double getParameter(int i) const
   {
     throw notYetSsupported("getParameter");
   }
@@ -85,7 +85,7 @@ public:
    
   }
   
- double getParameter(int i)
+ double getParameter(int i) const
   {
     if(i==0)
       {
@@ -114,6 +114,54 @@ public:
 
 };
 
+class jastrowSpinOrbital : public jastrow<jastrowSpinOrbital>
+{
+public:
+  typedef double position_t;
+  typedef double value_t;
+  
+  jastrowSpinOrbital(string filename)
+  {
+    parameters.resize(3);
+    load_parameters(filename);
+  }
+  
+  void load_parameters(string filename)
+  {
+      xml_input *xml_jastrow=new xml_input;
+      xml_jastrow->open(filename);
+      parameters[1]=xml_jastrow->reset()->get_child("l_box")->get_value()->get_real();
+      parameters[0]=xml_jastrow->reset()->get_child("c")->get_value()->get_real();
+      parameters[2]=xml_jastrow->reset()->get_child("position")->get_value()->get_real();
+      
+      center=parameters[2];
+      a=0;
+      b=parameters[1]/2.;
+  }
+  
+  double d0(const double &x){return parameters[0];};
+  double d1d0(const double &x){return 0.;};
+  double d2d0(const double &x){return 0.;};
+  double d1(const double &x){return 0.;};
+  double d2(const double &x){return 0;};
+  double dP1(const double &x){return 0;};
+  double dP2(const double &x){return 0;};
+  
+  void setParameter(double x,int i)
+  {
+    assert(i==0);
+    parameters[i]=x;
+  }
+  
+  double getParameter(int i) const
+  {
+    assert(i==0);
+    return parameters[0];
+  }
+  
+};
+
+
 class jastrow_delta : public jastrow<jastrow_delta>
 {
   typedef double position_t;
@@ -131,7 +179,7 @@ class jastrow_delta : public jastrow<jastrow_delta>
   double dP1(const double &x){return 0;};
   double dP2(const double &x){return 0;};
   void setParameter(double x,int i){}
-  double getParameter(int i){};
+  double getParameter(int i) const {return 0;};
 private:
   double d;
   double c;
@@ -153,7 +201,8 @@ public:
   inline double dP1(const double &x){return 0;};
   inline double dP2(const double &x){return 0;};
   void setParameter(double x,int i){}
-  double getParameter(int i){};
+  double getParameter(int i) const {return 0;};
+  
 };
 
 class jastrow_delta_phonons : public jastrow<jastrow_delta_phonons>
@@ -182,7 +231,7 @@ public:
     
   }
   
-  double getParameter(int i)
+  double getParameter(int i) const
   {
     if (i==0)
       {
@@ -233,9 +282,8 @@ public:
   
   void process()
   {
-    double aP=1e-4;
+    double aP=1e-5;
     double bP=3*aP;
-    double step=1e-1;
     
     fR.z=parameters[3];
     fR.g=parameters[5];
@@ -299,7 +347,7 @@ public:
     parameters[3]=x;
     process(x);
   }
-  double getParameter(int i){return parameters[3];};
+  double getParameter(int i) const {return parameters[3];};
   double dP1(const double &x);
   double dP2(const double &x);
   
@@ -327,7 +375,7 @@ class jastrowRealSpinorSym
 {
 public:
   void setParameter(double x,int i){}
-  double getParameter(int i){};
+  double getParameter(int i) const {return 0;};
   typedef tinyVector<double,2> spinComp_t;
   
   jastrowRealSpinorSym(string filenameSame,string filenameDiff) : jS(filenameSame),jD(filenameDiff){};
@@ -361,7 +409,8 @@ class jastrow_spinor
 {
  public:
   void setParameter(double x,int i){}
-  double getParameter(int i){};
+  double getParameter(int i) const {return 0;};
+  
   void load_parameters(string filename);
   // creates a spinor of jastrow wavefunctions
   jastrow_spinor(string filenameUp,string filenameDown,string filenameUpDown,string fileParams ) : jastrow1(filenameUp),jastrow2(filenameDown),jastrow3(filenameUpDown){load_parameters(fileParams);a=1;b=-1;}
@@ -401,7 +450,7 @@ class jastrow_spinor_free_sampling : public jastrow_spinor<jastrowUp,jastrowDown
 {
 public:
   void setParameter(double x,int i){}
-  double getParameter(int i){};
+  double getParameter(int i) const {return 0;};
   inline double dP1(const double &x){return 0;};
   inline double dP2(const double &x){return 0;};
   jastrow_spinor_free_sampling(string filenameUp,string filenameDown,string filenameUpDown,string fileParams ) : jastrow_spinor<jastrowUp,jastrowDown,jastrowUpDown>(filenameUp,filenameDown,filenameUpDown,fileParams){};
@@ -489,7 +538,7 @@ typedef typename jastrowDerivative::value_t value_t;
       }
   ;
   
-  double getParameter(int i){return jastrow_t::getParameter(i);};
+  double getParameter(int i) const {return jastrow_t::getParameter(i);};
   
 public :
 jastrowDerivative *jD;
@@ -633,6 +682,6 @@ private:
 };
 
 #include "jastrow_spline.h"
-
+#include "jastrowSpinOrbital.h"
 #endif
 

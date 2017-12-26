@@ -507,7 +507,7 @@ class folder:
                     
     # copy the initial configuration from a different run
     def set_initial_condition(self,f):
-        list_init=["save.xml","walkers.xml"]
+        list_init=["save.xml","walkers.in"]
         for file_init in list_init:
             shutil.copy2(f.dir_path + "/" + file_init,self.dir_path)
     
@@ -1103,8 +1103,8 @@ def structure_factor_q_step(f,label):
 # returns the structure factor using the usual procedure
 def analStructureFactor(f,label,bins=None,makePlot=False,jumps=0):
     res=anal.analVectorHistory(f.dir_path+"/"+label+".dat",bins=bins,jumps=jumps,makePlot=makePlot)
-    df=pd.DataFrame({"x":res[:,0]+1,"value":res[:,1],"error":res[:,2]})
+    df=pd.DataFrame({"x":res[:,0],"value":res[:,1],"error":res[:,2]})
     qStep=structure_factor_q_step(f,label)
-    df["x"]=df["x"]*qStep
+    df["x"]= df["x"]*qStep + 2*pi/float(f.get_lBox()) 
     return df
 

@@ -244,10 +244,18 @@ class jastrow_delta(jastrow):
             return 0
         
 ###################### jastrow delta with gaussians#######################
+
 class jastrow_gaussian(jastrow):
     def __init__(self,l,alpha=0.5,position=0):
         jastrow.__init__(self)
         self.parameters["alpha"]=str(alpha)
+        self.parameters["position"]=str(position)
+        self.parameters["l_box"]=str(l)
+        
+class jastrow_orbital(jastrow):
+    def __init__(self,l,c=1,position=0):
+        jastrow.__init__(self)
+        self.parameters["c"]=str(c)
         self.parameters["position"]=str(position)
         self.parameters["l_box"]=str(l)
         

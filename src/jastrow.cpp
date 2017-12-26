@@ -25,7 +25,7 @@ jastrow_delta_phonons::jastrow_delta_phonons(string filename)
   {
     parameters.resize(6);
     load_parameters(filename);
-    process();
+    //process();
     
     cout  << "k: "<< parameters[0]<<endl;
     cout  << "beta: "<< parameters[2]<<endl;

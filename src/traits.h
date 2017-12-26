@@ -27,6 +27,7 @@ class dmc_t{};
 class vmc_t{};
 
 class orbital1D;
+class spinOrbital1D;
 template<class > class orbitals;
 
 // Definees the dimensionality of the system
@@ -36,7 +37,7 @@ class D1_t
 public:
   typedef double position_t;
   typedef double value_t;
-  typedef orbitals<orbital1D> particles_t;
+  typedef orbitals<spinOrbital1D> particles_t;
   typedef orbitals<particles_t> all_particles_t;
   typedef geometry<bc> geometry_t;
 };

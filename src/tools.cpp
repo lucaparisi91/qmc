@@ -10,7 +10,7 @@
 using namespace std;
 // trim a strip
 string trim(string str){
-  int pos=0;
+  unsigned int pos=0;
   // just remove white spaces at both ends
   pos=str.find_last_not_of(" \t\n");
   
@@ -36,8 +36,7 @@ int loop_index(int i/*plain index*/,int len/*length of the array*/)
 
 void print_vector(vector<double> &vec)
 {
-  int i=0;
-  for (i=0;i<vec.size();i++)
+  for (unsigned i=0;i<vec.size();i++)
     {
       cout<<vec[i]<<", ";
     }
@@ -46,8 +45,8 @@ void print_vector(vector<double> &vec)
 
 void print_vector(vector<int> &vec)
 {
-  int i=0;
-  for (i=0;i<vec.size();i++)
+  
+  for (unsigned int i=0;i<vec.size();i++)
     {
       cout<<vec[i]<<", ";
     }
@@ -129,9 +128,8 @@ string to_string(const T &e)
 template<>
 string to_string<vector<double> >(const vector<double> &v)
 {
-  int i;
   string s="";
-  for(i=0;i<v.size();i++)
+  for(unsigned int i=0;i<v.size();i++)
     {
       s=s + string(" ") + to_string(v[i]);
     }
@@ -141,9 +139,8 @@ string to_string<vector<double> >(const vector<double> &v)
 template<>
 string to_string<vector<int> >(const vector<int> &v)
 {
-  int i;
   string s="";
-  for(i=0;i<v.size();i++)
+  for(unsigned int i=0;i<v.size();i++)
     {
       s=s + string(" ") + to_string(v[i]);
     }
@@ -154,10 +151,10 @@ string to_string<vector<int> >(const vector<int> &v)
 
 vector<double> operator+(const vector<double> &v1,const vector<double> &v2)
 {
-  int i;
+  
   vector<double> v=v1;
   
-  for(i=0;i<v1.size();i++)
+  for(unsigned int i=0;i<v1.size();i++)
     {
       v[i]+=v2[i];
     }
@@ -166,9 +163,9 @@ vector<double> operator+(const vector<double> &v1,const vector<double> &v2)
 
 vector<double> operator/(const vector<double> &v1,const double &j)
 {
-  int i;
+  
   vector<double> v=v1;
-  for(i=0;i<v1.size();i++)
+  for(unsigned int i=0;i<v1.size();i++)
     {
       v[i]/=j;
     }
@@ -176,9 +173,9 @@ vector<double> operator/(const vector<double> &v1,const double &j)
 }
 vector<double> operator*(const vector<double> &v1,const vector<double> &v2)
 {
-  int i;
+  
   vector<double> v=v1;
-  for(i=0;i<v1.size();i++)
+  for(unsigned int i=0;i<v1.size();i++)
     {
       v[i]*=v2[i];
     }
@@ -186,9 +183,8 @@ vector<double> operator*(const vector<double> &v1,const vector<double> &v2)
 }
 vector<double> operator/(const vector<double> &v1,const vector<double> &v2)
 {
-  int i;
   vector<double> v=v1;
-  for(i=0;i<v1.size();i++)
+  for(unsigned int i=0;i<v1.size();i++)
     {
       v[i]/=v2[i];
     }
@@ -197,9 +193,9 @@ vector<double> operator/(const vector<double> &v1,const vector<double> &v2)
 
 vector<double> operator-(const vector<double> &v1,const vector<double> &v2)
 {
-  int i;
+  
   vector<double> v=v1;
-  for(i=0;i<v1.size();i++)
+  for(unsigned int i=0;i<v1.size();i++)
     {
       v[i]-=v2[i];
     }
@@ -298,11 +294,10 @@ vector<vector <double> > readMatrixFromFile(const string & inputString)
 
 void print_matrix(vector< vector<double> > &matrix)
 {
-  int i,j;
   
-  for(i=0;i<matrix.size();i++)
+  for(unsigned int i=0;i<matrix.size();i++)
     {
-      for(j=0;j<matrix[i].size();j++)
+      for(unsigned int j=0;j<matrix[i].size();j++)
 	{
 	  cout << matrix[i][j]<<" ";
 	}
@@ -329,7 +324,7 @@ int minIndex(vector <double> &vec)
   int iMin;
   iMin=0;
   
-  for(int i=1;i<vec.size();i++)
+  for(unsigned int i=1;i<vec.size();i++)
     {
       if (vec[i]<vec[iMin])
 	{
@@ -341,7 +336,7 @@ int minIndex(vector <double> &vec)
 
 void tools::print(vector<double> &vec)
 {
-  int i=0;
+  unsigned int i;
   for (i=0;i<vec.size()-1;i++)
     {
       printf("%f ,",vec[i]);
@@ -353,9 +348,19 @@ void tools::add(const vector<double> & vec1,const vector<double> & vec2,vector<d
 {
   assert(vec1.size()==vec2.size());
   res.resize(vec1.size());
-  for(int i=0;i<res.size();i++)
+  for(unsigned int i=0;i<res.size();i++)
     {
       res[i]=vec1[i]+vec2[i];
     }
  
 }
+
+void tools::reset(double & m){m=0;}
+  
+void tools::reset(vector<double> & m)
+  {
+    for(unsigned int i=0;i<m.size();i++)
+      {
+	m[i]=0;
+      }
+  }

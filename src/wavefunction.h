@@ -21,7 +21,6 @@ class measure_scalar;
 class overlap_measure;
 class measure_energy_difference;
 
-
 // the wavefunction class previously studied
 template<class tm>
 class wavefunction
@@ -46,6 +45,7 @@ public:
   int sign; // used in fixed diffusion monte carlo
   double phase; // used in fixed phase diffusion monte carlo
   string label;
+  void linkQmc(qmc_t* qmc_obj_){qmc_obj=qmc_obj_;}
   
   wavefunction(qmc_t * qmc_obj);
   void getLabel(){return label;};
@@ -55,14 +55,13 @@ public:
   
   virtual wavefunction<tm>* clone(){throw notYetSsupported("Clone wavefunction " + label);};
   
-  
   void setOptParameter(int i){optParameter=i;}
   int getOptParamater(){return optParameter;}
-  virtual double log_evaluate(all_particles_t *p){};//evaluates the logarithm of the jastrow
+  virtual double log_evaluate(all_particles_t *p){return 0;};//evaluates the logarithm of the jastrow
   
   virtual void print(int i)=0; // prints information about the wavefunction to file (jastrows)
   virtual double potential(empty_t *,all_particles_t* state)=0;
-  virtual double potential(rabiCoupling *,all_particles_t* state)=0;
+
   
   virtual double one_particle_log_evaluate(all_particles_t * p,double r,int iP, int set_a){throw notYetSsupported("one_particle_log_evaluate");};
   
@@ -72,10 +71,10 @@ public:
   
   virtual void setParameter(double x,int i){throw notYetSsupported("setParameter");};
   
-  virtual double getParameter(int i){throw notYetSsupported("getParameter");};
+  virtual double getParameter(int i) const{throw notYetSsupported("getParameter");};
   
-  double getParameter(){return getParameter(optParameter);}
-  double setParameter(double x){setParameter(x,optParameter);}
+  double getParameter() const {return getParameter(optParameter);}
+  void setParameter(double x){setParameter(x,optParameter);}
   
   // mark the wavefunction for later optimization
   void setOptimized(bool toOptimize_){toOptimize=toOptimize_;};
@@ -99,10 +98,20 @@ public:
     - evaluates \grad \psi 
 */
   
-  virtual void laplacianMinusGradientSquared(const all_particles_t & p,grad_t & grad,value_t & e){throw notYetSsupported("logEvaluate");};
+  virtual void laplacianMinusGradientSquared(const all_particles_t & p,grad_t & grad,value_t & e){throw notYetSsupported("laplacianminusgradientsquared");};
   
   // evaluate the value of the wavefunction
   virtual value_t logEvaluate(all_particles_t &p){throw notYetSsupported("logEvaluate");};
+  
+  virtual double spinFlip(int nFlip,const all_particles_t &p){throw notYetSsupported("spinFip in wavefunction" + label);}
+  
+  
+  void setSrcSet(int srcSet ){src_particle_set=srcSet;}
+  void getSrcSet() const {return src_particle_set;}
+  
+  void setTargetSet(int targetSet ){target_particle_set=targetSet;}
+  int getTargetSet() const {return target_particle_set;}
+  
 protected:
   wavefunction(){};
 private:
@@ -124,12 +133,14 @@ public:
   typedef typename wavefunction<tm>::value_t value_t;
   
   //--------------------------- parameters
-  virtual double getParameter(int i){throw notYetSsupported("get_parameter bill_jastrow_wavefunction " + this->label );};
-  virtual void setParameter(double x,int i){throw notYetSsupported("setParameter bill_jastrow_wavefunction");};
+  
+  virtual double getParameter(int i) const {return jastrowc.getParameter(i);};
+  
+  virtual void setParameter(double x,int i){jastrowc.setParameter(x,i);}
   
   bill_jastrow_wavefunction(qmc_t* qmc_obj_,xml_input* xml_wave,string filename);
 
-  
+  bill_jastrow_wavefunction(qmc_t* qmc_obj_,jastrow_t& jastrowO) : wavefunction<tm>::wavefunction(qmc_obj_),jastrowc(jastrowO){}
   
   void overlap(const double &w1,const double &w2,measure_scalar* m);
   virtual void print(int i); 
@@ -137,12 +148,11 @@ public:
   
   virtual double potential(empty_t *p,all_particles_t* state) {return 0;};
   
-  virtual double potential(rabiCoupling *ps,all_particles_t* state){throw notYetSsupported("potential bill_jastrow_wavefunction");};
-  
 protected:
   
   jastrow_t jastrowc;
-  bill_jastrow_wavefunction(jastrow_t &jastrowo) : jastrowc(jastrowo) {} ; 
+  bill_jastrow_wavefunction(jastrow_t &jastrowo) : jastrowc(jastrowo) {} ;
+  
   void copyTo(bill_jastrow_wavefunction<jastrow_t,tm> * wave2)
   {
     
@@ -150,7 +160,6 @@ protected:
     wave2->src_particle_set=this->src_particle_set;
     wave2->target_particle_set=this->target_particle_set;
     wave2->label=this->label;
-    
     
   }
 };
@@ -181,9 +190,6 @@ class bill_jastrow_wavefunction_two_body_symmetric : public bill_jastrow_wavefun
     return wave2;
   }
   
-  virtual double getParameter(int i){return this->jastrowc.getParameter(i);};
-  
-  virtual void setParameter(double x,int i){this->jastrowc.setParameter(x,i);}
   
   void laplacianMinusGradientSquared(const all_particles_t & p, grad_t & grad,value_t & e);
   
@@ -195,6 +201,7 @@ protected:
   {}    
   
 };
+
 
 template<typename  jastrow_t,typename comp>
 class bill_jastrow_wavefunction_one_body : public bill_jastrow_wavefunction< jastrow_t,comp>
@@ -218,9 +225,7 @@ class bill_jastrow_wavefunction_one_body : public bill_jastrow_wavefunction< jas
   // returns the value of the first derivative
   virtual double evaluate_derivative(all_particles_t *p);
   virtual double evaluate_derivative_second(all_particles_t *p,double phi);
-  virtual void setParameter(double x,int i){this->jastrowc.setParameter(x,i);}
   
-  virtual double getParameter(int i){return this->jastrowc.getParameter(i);};
   
   virtual void laplacianMinusGradientSquared(const all_particles_t & p, grad_t & grad,value_t & e);
 
@@ -251,6 +256,7 @@ class bill_jastrow_wavefunction_two_body_asymmetric : public bill_jastrow_wavefu
   typedef typename wavefunction<comp>::all_particles_t all_particles_t;
   typedef typename wavefunction<comp>::value_t value_t;
   typedef typename wavefunction<comp>::grad_t grad_t;
+  
  public:
   bill_jastrow_wavefunction_two_body_asymmetric(qmc_t* qmc_obj_,xml_input* xml_wave,string filename) : bill_jastrow_wavefunction< jastrow_t,comp>(qmc_obj_,xml_wave,filename) {}
   double log_evaluate(all_particles_t *p);
@@ -261,8 +267,6 @@ class bill_jastrow_wavefunction_two_body_asymmetric : public bill_jastrow_wavefu
   
   virtual double evaluate_derivative(all_particles_t* p);
   virtual double evaluate_derivative_second(all_particles_t* p,const double phi);
-  virtual double getParameter(int i){return this->jastrowc.getParameter(i);};
-  virtual void setParameter(double x,int i){this->jastrowc.setParameter(x,i);}
   
   virtual void laplacianMinusGradientSquared(const all_particles_t & p, grad_t & grad,value_t & e);
   
@@ -298,7 +302,7 @@ class bill_jastrow_wavefunction_spinor_two_body_symmetric : public wavefunction<
   bill_jastrow_wavefunction_spinor_two_body_symmetric(qmc_t* qmc_obj_,string filenameUp,string filenameUpDown,string fileParams) : wavefunction<comp>(qmc_obj_),jastrowc(filenameUp,filenameUpDown,fileParams) {}
   
   double log_evaluate(all_particles_t *p);
-  virtual double potential(rabiCoupling *p,all_particles_t* state);
+  
   virtual double potential(empty_t *e,all_particles_t* state){ return 0;};
   void print(int i)
   {
@@ -420,20 +424,6 @@ public:
     return w;
     
   }
-
-  int findWavesToOptimize()
-  {
-    int i;
-    wavesOptim.resize(0);
-    
-    for(i=0;i<waves.size();i++)
-      {
-	if (waves[i]->isOptimized()==true)
-	  {
-	    wavesOptim.push_back(i);
-	  }
-      } 
-  }
   
   // computes the first parameter derivative of the wavefunction
   void computeDerivatesFirst(vector<double> & phis,all_particles_t* p,double &phi_T)
@@ -498,6 +488,7 @@ public:
   {
     int iParam,iWave;
     optimizePlan::const_iterator it;
+    double param;
     parameters.resize(0);
     for(it = plan.begin(); it != plan.end(); it++)
     {
@@ -505,8 +496,8 @@ public:
 	{
 	  iWave=it->second[i].first;
 	  iParam=it->second[i].second;
-	  
-	  parameters.push_back( getParameter(iParam,iWave) );
+	  param= getParameter(iParam,iWave);
+	  parameters.push_back(param );
 	  
 	}
     }
@@ -550,7 +541,7 @@ public:
     return waves[j]->getParameter(i);
   }
   
-  double getParameter()
+  double getParameter() const
   {
     return waves[wavesOptim[0]]->getParameter();
   }
@@ -568,18 +559,32 @@ public:
   // returns the center of mass without pbc of a certain set
   double center_of_mass_no_pbc(all_particles_t* p,int set);
   void set_drift_force(all_particles_t* p);
-  void potential(empty_t * p,all_particles_t* state,double &ev){ev=0;};
-  // void potential(rabiCoupling* p,all_particles_t* state,double &ev)
-  // {
-  //   int i=0;
-  //   ev=0;
-  //   for(i=0;i<waves.size();i++)
-  //     {
-  // 	ev+=waves[i]->potential(p,state);
-  //     }
-  //   ev=ev*p->get_omega();
-  // }
   
+  double spinFlip(int nFlip,const all_particles_t& state)
+   {
+     int i=0;
+     double ev=1;
+     
+     for(i=0;i<waves.size();i++)
+       {
+	 ev*=waves[i]->spinFlip(nFlip,state);
+       }
+     
+     return ev;
+   }
+  
+  void spinFlip(const all_particles_t & p,vector<double> & spinFlipRatios)
+  {
+    
+    assert(p[0].size()==spinFlipRatios.size());
+    
+    for(int j=0;j<spinFlipRatios.size();j++)
+      {
+	spinFlipRatios[j]=spinFlip(j,p);
+      }
+     
+    
+  }
   int get_sign();
   double get_phase();
   double e;
@@ -602,6 +607,9 @@ typename comp::swave_t* createBillJastrowTwoBodyAsymmetric(comp* qmc_obj,xml_inp
     return new bill_jastrow_wavefunction_two_body_asymmetric<J,comp>(qmc_obj,xml_wave,filename);
   };
 
+
+
+
 template<class J,class comp>
 typename comp::swave_t* createBillJastrowOneBody(comp* qmc_obj,xml_input* xml_wave ,const string &filename)
   {
@@ -620,13 +628,17 @@ string createJastrowId(xml_input* xml_wave);
 
 template<class comp>
 void load_wavefunctions(xml_input * xml_wave, vector< typename comp::swave_t* > &waves,comp* qmc_obj);
-
+#include "wavefunction/billJastrowWaveFunctionTwoBodySymmSpinOrbital.hpp"
+#include "wavefunction/billJastrowWaveFunctionOneBodySpinOrbital.hpp"
 #include "wavefunction.hpp"
 #include "measure_functions.hpp"
 
 #include "wavefunction/billJastrowWaveFunctionOneBody.hpp"
+
 #include "wavefunction/billJastrowWaveFunctionTwoBodySymm.hpp"
 #include "wavefunction/billJastrowWaveFunctionTwoBodyASymm.hpp"
 #include "wavefunction/totalWavefunction.hpp"
+
+
 
 #endif

@@ -1,4 +1,5 @@
 #include "dmc.h"
+#include "particles/orbital.h"
 #include "jastrow.h"
 #include "geometry.h"
 #include "system.h"
@@ -220,6 +221,74 @@ void total_wavefunction<comp>::structure_factor(total_wavefunction<comp>::all_pa
   s->increment_index();
   
 }
+
+template<class measure_vec_t>
+void structureFactorSpin(orbitals<spinOrbital1D> & p1, measure_vec_t* s,const vector<double> &qs,vector<complex<double> > &work)  
+{
+  // compute the pair correlation of the system
+  int i,k;
+  double dg,x;
+  
+  complex<double> j;
+  j=(0,1);
+  //cout << max<<endl;
+  
+  
+  
+  //cout << g->set_a << " "<<g->set_b<<endl;
+  // loop on all particles and update the frequency bin
+  
+  for(k=0;k<qs.size();k++)
+    {
+      work[k]=complex<double>(0,0);
+      
+      for (i=0;i<p1.size();i++)  
+	{    
+	  work[k]+=complex<double>(p1[i].spin())*exp(complex<double>( 0,qs[k]*p1[i].position()))	;
+	}
+      
+      s->increment_value(pow(abs(work[k]),2)/p1.size(),k,0);
+    }
+  
+  s->increment_index();
+  
+}
+
+template<class measure_vec_t>
+void structureFactorDensity(orbitals<spinOrbital1D> & p1, measure_vec_t* s,const vector<double> &qs,vector<complex<double> > &work)  
+{
+  // compute the pair correlation of the system
+  int i,k;
+  double dg,x;
+  
+  complex<double> j;
+  j=(0,1);
+  //cout << max<<endl;
+  
+  
+  
+  //cout << g->set_a << " "<<g->set_b<<endl;
+  // loop on all particles and update the frequency bin
+  
+  for(k=0;k<qs.size();k++)
+    {
+      work[k]=complex<double>(0,0);
+      
+      for (i=0;i<p1.size();i++)  
+	{    
+	  work[k]+=exp(complex<double>( 0,qs[k]*p1[i].position()))	;
+	}
+      
+      s->increment_value(pow(abs(work[k]),2)/p1.size(),k,0);
+    }
+  
+  s->increment_index();
+  
+}
+
+
+void structureFactorSpin(orbitals<spinOrbital1D> & p1, vector<double> &res,const vector<double> &qs,vector<complex<double> > &work);
+void structureFactorDensity(orbitals<spinOrbital1D> & p1, vector<double> &res,const vector<double> &qs,vector<complex<double> > &work);
 
 template<class comp>
 template<class measure_vec_t>

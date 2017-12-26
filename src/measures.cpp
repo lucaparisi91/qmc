@@ -404,7 +404,8 @@ void measure_vector::reduce(int root)
   MPI_Reduce(&sum.front(),&sum2.front(), sum.size(), MPI_DOUBLE, MPI_SUM, root,MPI_COMM_WORLD);
   
   MPI_Reduce(&n,&n2,1,MPI_INT,MPI_SUM,root,MPI_COMM_WORLD);
-  
+  if (n2>0)
+    {
   if (task == root ) 
     {
       iBlock++;
@@ -427,7 +428,7 @@ void measure_vector::reduce(int root)
       dec.add(sum,n);    
       
     }
-  
+    }
 }
 
 void measure_vector_mult_index::reduce(int root)

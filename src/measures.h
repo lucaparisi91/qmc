@@ -204,7 +204,7 @@ public:
   {
     vector<double> res;
     res=sum;
-    for(int i=0;i<res.size();i++)
+    for(unsigned int i=0;i<res.size();i++)
       {
 	res[i]=res[i]/n;
       }
@@ -262,7 +262,7 @@ public:
   void out(vector<double> &ms,vector<double> &ns,string filename)
   {
     ofstream f;
-    int i=0;
+    unsigned int i=0;
     f.open(filename.c_str(),std::ios_base::app);
     
     for(i=0;i<ms.size();i++)
@@ -342,8 +342,18 @@ class measure_dynamic
   virtual double average(){throw notYetSsupported("distance_center_of_mass_d::time_difference_average");};
   
   virtual void average(vector<double> &){throw notYetSsupported("distance_center_of_mass_d::time_difference_average");};
+  
 
   virtual void add(double){throw notYetSsupported("Adding a scalar is not supported");};
+
+  virtual void add(vector<double>&){throw notYetSsupported("Adding a vector is not supported");};
+
+  virtual vector<double>& currentVector(){throw notYetSsupported("Getting a vector is not supported");};
+
+  virtual void incrementIndex(){throw notYetSsupported("increent index");};
+
+  
+  
   virtual int get_n(){throw notYetSsupported("get_n is not supported");};
 
   virtual void make_measurement(walker_t* w,wave_t* wave){throw notYetSsupported("No measurement supported");};
@@ -443,6 +453,7 @@ public:
   {
     
   }
+  
   template<class mesh_t>
   futureWalker(int ns,mesh_t mesh) : measure_dynamic<comp>(0),storage(ns,mesh)
   {
@@ -1117,6 +1128,7 @@ template<class walker_t,class wave_t>
 class structure_factor_symm : public measurement<walker_t,wave_t,measure_vector >
 {
 public:
+  
   structure_factor_symm(measure_vector* ms_,int bins,double deltaQ,double l_box,int setA_) : measurement<walker_t,wave_t,measure_vector >(ms_)
   {
     int i;
@@ -1257,6 +1269,8 @@ private:
   int setB;
 };
 
+
+
 template<class walker_t,class wave_t>
 class structure_factor_spin_complex : public measurement<walker_t,wave_t,measure_vector >
 {
@@ -1292,6 +1306,134 @@ private:
   int setB;
 };
 
+template<class walker_t,class wave_t>
+class structure_factor_spin_complexOrbitals : public measurement<walker_t,wave_t,measure_vector >
+{
+public:
+  
+  structure_factor_spin_complexOrbitals(measure_vector* ms_,int bins,double deltaQ,double l_box,int setA_,int setB_) : measurement<walker_t,wave_t,measure_vector >(ms_)
+  {
+    
+    int i;
+    // change the number of bins
+    qs.resize(bins);
+    qs[0]=2*M_PI/l_box;
+    for(i=1;i<bins;i++)
+      {
+	qs[i]=qs[0]+i*deltaQ;
+      }
+    
+    setA=setA_;
+    setB=setB_;
+    work.resize(bins);
+    
+  };
+  
+  virtual void make_measurement(walker_t* w,wave_t* wave)
+  {
+    structureFactorSpin((*w->state)[setA],this->ms,qs,work);
+  }
+  
+  
+private:
+ 
+  vector<double> qs;
+  vector<complex< double> >  work;
+  int setA;
+  int setB;
+};
+
+template<class walker_t,class wave_t>
+class structure_factor_spin_complexOrbitalsForwardWalking : public measurement<walker_t,wave_t,measure_vector >
+{
+public:
+  
+  structure_factor_spin_complexOrbitalsForwardWalking(measure_vector* ms_,int bins,double deltaQ,double l_box,int setA_,int setB_,int indexStorage_) : measurement<walker_t,wave_t,measure_vector >(ms_)
+  {
+    
+    int i;
+    // change the number of bins
+    qs.resize(bins);
+    qs[0]=2*M_PI/l_box;
+    for(i=1;i<bins;i++)
+      {
+	qs[i]=qs[0]+i*deltaQ;
+      }
+    
+    setA=setA_;
+    setB=setB_;
+    work.resize(bins);
+    indexStorage=indexStorage_;
+    
+  };
+  
+  virtual void make_measurement(walker_t* w,wave_t* wave)
+  {
+    if (w->md[indexStorage]->isFilled())
+      {
+	this->ms->add(w->md[indexStorage]->currentVector(),0);
+      }
+    
+    structureFactorSpin((*w->state)[setA],w->md[indexStorage]->currentVector(),qs,work);
+    w->md[indexStorage]->incrementIndex();
+    
+    
+  }
+  
+private:
+  
+  int indexStorage;
+  vector<double> qs;
+  vector<complex< double> >  work;
+  int setA;
+  int setB;
+};
+
+
+template<class walker_t,class wave_t>
+class structure_factor_density_complexOrbitalsForwardWalking : public measurement<walker_t,wave_t,measure_vector >
+{
+public:
+  
+  structure_factor_density_complexOrbitalsForwardWalking(measure_vector* ms_,int bins,double deltaQ,double l_box,int setA_,int setB_,int indexStorage_) : measurement<walker_t,wave_t,measure_vector >(ms_)
+  {
+    
+    int i;
+    // change the number of bins
+    qs.resize(bins);
+    qs[0]=2*M_PI/l_box;
+    for(i=1;i<bins;i++)
+      {
+	qs[i]=qs[0]+i*deltaQ;
+      }
+    
+    setA=setA_;
+    setB=setB_;
+    work.resize(bins);
+    indexStorage=indexStorage_;
+    
+  };
+  
+  virtual void make_measurement(walker_t* w,wave_t* wave)
+  {
+    if (w->md[indexStorage]->isFilled())
+      {
+	this->ms->add(w->md[indexStorage]->currentVector(),0);
+      }
+    
+    structureFactorDensity((*w->state)[setA],w->md[indexStorage]->currentVector(),qs,work);
+    w->md[indexStorage]->incrementIndex();
+    
+  }
+  
+private:
+  
+  int indexStorage;
+  vector<double> qs;
+  vector<complex< double> >  work;
+  int setA;
+  int setB;
+};
 
 
 template<class walker_t,class wave_t>
@@ -1540,6 +1682,7 @@ public:
   
 };
 
+
 // center_of_mass_w<double>* build_center_of_mass_w(xml_input* xml_m);
 
 // template <class md_t>
@@ -1562,12 +1705,22 @@ public:
 //     }
 // }
 
+template<class walker_t,class wave_t>
+class magnetizationMeasurement : public measurement_scalar<walker_t,wave_t>
+{
+public:
+  magnetizationMeasurement(measure_scalar* mScal) :  measurement_scalar<walker_t,wave_t>::measurement_scalar(mScal){};
+  
+  void make_measurement(walker_t* w,wave_t* wave){this->ms->add(getMagnetization((*w->state)[0]),0); }
+};
+
 measure_scalar* build_measure_scalar(xml_input* xml_m,string label);
 
 measure_vector_mult_index* build_measure_vector_mult_index(xml_input* xml_m,string label);
 
 
 measure_vector* build_measure_vector(xml_input* xml_m,string label);
+
 
 #include "measures.hpp"
 #include "observables/optimizationObservablesLinearMethod.h"

@@ -33,7 +33,7 @@ public :
   double t_init;
   double max_steps;
   double t_end;
-  potential_t* potential_obj;
+  
   xml_input* xml_save;
   xml_input* main_input;
   xml_input* xml_load;
@@ -71,12 +71,6 @@ private:
   string inputFileName;
   
 };
-
-empty_t* build_potential(xml_input* input,const empty_t*   pot);
-rabiCoupling* build_potential(xml_input* input,const rabiCoupling* pot);
-
-void print(rabiCoupling* om);
-void print(empty_t* p);
 
 
 #include "qmc.hpp"

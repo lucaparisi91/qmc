@@ -2,23 +2,19 @@ template<class comp>
 template<class qmc_type>
 
 #include "observables/optimize.h"
-#include "observables/correlatedEnergyDifference.h"
 
 void vmc_walker<comp>::update(qmc_type* vmc_obj)
 {  
-  double old_wavefunction_value;
-  // make a copy of the old configuration
-  (*this->state_tmp)=(*this->state);
+   double old_wavefunction_value;
+// make a copy of the old configuration
+   *(this->state_tmp)=*(this->state);
+   
   
-  //state->print();
-  //state_tmp->print();
-  //cout << dmc_obj->geo->l_box<<endl;
+   old_wavefunction_value=this->wavefunction_value;
   
-  old_wavefunction_value=this->wavefunction_value;
+   vmc_obj->moveEngine->moveGaussian(*(this->state));
   
-  vmc_obj->moveEngine.moveGaussian(*(this->state));
-  
-  vmc_obj->geo->all_particles_pbc(*this->state);
+   vmc_obj->geo->all_particles_pbc(*(this->state));
   
   // update the wavefunction
   
@@ -27,7 +23,7 @@ void vmc_walker<comp>::update(qmc_type* vmc_obj)
   ++(vmc_obj->n_metropolis);
   
   this->accept=metropolis(2*(this->wavefunction_value - old_wavefunction_value),vmc_obj->rand);
-  
+
   if ( this->accept )
     {
       ++(vmc_obj->success_metropolis); 
@@ -35,7 +31,7 @@ void vmc_walker<comp>::update(qmc_type* vmc_obj)
   else
     {
       this->wavefunction_value=old_wavefunction_value;
-      (*this->state)=(*this->state_tmp);
+      *(this->state)=*(this->state_tmp);
       
     };
 }
@@ -56,7 +52,7 @@ void vmc<comp>::step()
   
   w->update(this);
   // actually compute the kinetic energy
-  this->wave->laplacianGradient((*w->state),w->e,w->e_f,w->getParticlesGradient());
+  this->wave->laplacianGradient(*w->state,w->e,w->e_f,w->getParticlesGradient());
   
   w->ev=this->potential_obj->evaluate(w->state);
   w->e+=w->ev;
@@ -109,8 +105,9 @@ void vmc<comp>::warmup_step()
 }
 
 template<class comp>
-vmc<comp>::vmc() : qmc<comp>(), moveEngine(*this->rand,this->delta_tau)
+vmc<comp>::vmc() : qmc<comp>()
 {
+  
   e_t=0;
   xmlNodePtr cur;
   load_wavefunctions<vmc<comp> >(this->main_input,waves,this);
@@ -118,6 +115,9 @@ vmc<comp>::vmc() : qmc<comp>(), moveEngine(*this->rand,this->delta_tau)
   wave->link_wavefunctions(this->main_input,waves,"main");
   
   wave->print_jastrows();
+  
+  potential_obj=build_potential("input.xml",this);
+  moveEngine=buildQMCMover(this);
   
   // generate the new measurment
   m=new measures_t("input.xml",this);
@@ -218,8 +218,9 @@ void vmc<comp>::save()
 {
   qmc<comp>::saveGeneralQmc();
   ofstream f;
-  f.open("walkers.dat");
-  f<<w;
+  f.open("walkers.in");
+  f<<"NWalkers: "<<1<<endl;
+  f<<(*w);
   f.close();
   
 }
@@ -230,7 +231,7 @@ void vmc<comp>::saveAddWalker()
 {
   qmc<comp>::saveGeneralQmc();
   ofstream f;
-  f.open("walkers.dat",fstream::app);
+  f.open("walkers.in",fstream::app);
   f<<w;
   f.close();
 }
@@ -239,34 +240,70 @@ template<class comp>
 // load the last walker from the file
 void vmc<comp>::load()
 {
+  int nWalkersInputFile;
+  string dummy;
   qmc<comp>::loadGeneralQmc();
   
   xml_input* load_xml;
   load_xml=new xml_input;
-  if (check_file_exists("walkers.dat"))
+  if (check_file_exists("walkers.in"))
     {
       ifstream walkersFile;
-      walkersFile.open("walkers.dat");
+      walkersFile.open("walkers.in");
       delete w;
       w=new walker_t(this);
-      
+      walkersFile>>dummy;
+      walkersFile>>nWalkersInputFile;
       walkersFile>>*w;
     }
   else
     {
+      cout<<"No file to load. Generating a random initial positions."<<endl;
+      this->main_input->reset()->get_child("system")->get_child("initialCondition");
+
+      double length;
+      string kind;
+      if (this->main_input->get_attribute("length")==NULL)
+	{
+	  length=this->geo->l_box;
+	}
+      else
+	{
+	  length=this->main_input->get_real();
+	}
+      
+      if ( this->main_input->cur == NULL)
+	{
 	  
-      cout << "Generating a starting a position..."<<endl;
-      // set a uniform distribution for the particles
-      
-      generateUniform(*w->state,-this->geo->getBoxDimensions()/2.,this->geo->getBoxDimensions()/2.);
-      
-      
+	  // generate an uniform distribution around the system
+	  generateUniform(*w->state,-length/2.,length/2.);
+	}
+      else
+	{
+	  
+	  kind=this->main_input->get_attribute("kind")->get_string();
+	  
+	  
+	  
+	  if(kind=="uniform")
+	    {
+	      generateUniform(*w->state,-length/2.,length/2.);
+	      
+	    }
+	  
+	  else if (kind=="random")
+	    {
+	      generateRandom(*w->state,-length/2.,length/2.,this->rand);
+	    }
+	  
+	}
     }
-      
+  
+  this->geo->all_particles_pbc(*(w->state));
   // initialize properties of the walker
   w->set(this);
-  // reserbe memory for the move engine
-  moveEngine.reserve(w->state->nParticles());
+  // reserve memory for the move engine
+  moveEngine->reserve(w->state->nParticles());
   w->make_measurements(m,this->wave,this->current_step);
   
 }
@@ -584,8 +621,6 @@ void vmc_walker<comp>::print()
 // template class vmc_walker<spinor1D>;
 // template class vmc<D1_t>;
 // template class vmc<spinor1D>;
-
-
 
 template<class comp>
 void vmc<comp>::stabilizationStep()

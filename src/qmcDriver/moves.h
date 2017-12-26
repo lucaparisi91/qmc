@@ -1,7 +1,6 @@
 #ifndef MOVES_H
 #define MOVES_H
 
-
 #include <cassert>
 #include <vector>
 using namespace std;
@@ -10,7 +9,9 @@ template<class comp>
 class qmcMover
 {
 public:
+  
   typedef typename comp::all_particles_t all_particles_t;
+  typedef typename all_particles_t::particles_t particles_t;
   typedef typename comp::rand_t rand_t;
   typedef typename comp::grad_t grad_t;
   
@@ -19,11 +20,11 @@ public:
     setTimeStep(delta_tau);
   }
   
+  double getTimeStep() const {return delta_tau;};
   void setTimeStep(double delta_tau_)
   {
     delta_tau=delta_tau_;
   }
-
   qmcMover(rand_t & rand_,double delta_tau_) : rand_o(rand_)
   {
     setTimeStep(delta_tau_);
@@ -32,13 +33,18 @@ public:
   virtual void reserve(size_t n)=0;
   virtual void move( all_particles_t & p, const grad_t & grad)=0;
   virtual void computeEffectiveDriftForce(all_particles_t &p,const grad_t & grad){cout << "No effective drift force to compute"<<endl;exit(2);};
+
+  virtual void moveSpinRabi(particles_t & p,vector<double> &spinFlipsRatios){cout << "No spin rabi."<<endl;exit(2);};
   
   virtual grad_t & getEffectiveDriftForce(){cout << "No effective drift force"<<endl;exit(2);};
   
   virtual int getOrder()=0;
+  
+  virtual void moveGaussian(all_particles_t & p){};
 protected:
- double delta_tau;
- rand_t rand_o;
+  rand_t& getRandomEngine(){return rand_o;}
+  double delta_tau;
+  rand_t rand_o;
   
 };
 
@@ -118,16 +124,20 @@ private:
   
 };
 
-
 #include "moveSecondOrder.h"
+
+#include "movesSpin.h"
 
 template<class comp>
 qmcMover<comp>* buildQMCMover(comp* qmcObj)
 {
-  typedef typename comp::wave_t wave_t;
   // load the type of mover from the input file
   string moverType;
-  qmcObj->main_input->reset()->get_child("method")->get_child("propagator");
+  string qmcType;
+  
+  qmcType=qmcObj->main_input->reset()->get_child("method")->get_attribute("kind")->get_string();
+  
+  qmcObj->main_input->get_child("propagator");
   
   if ( qmcObj->main_input->check())
     {
@@ -135,23 +145,59 @@ qmcMover<comp>* buildQMCMover(comp* qmcObj)
     }
   else
     {
-      moverType="1order";
+      moverType="default";
     }
   
   cout << "moverType: "<<moverType<<endl;
-  
-  // build the mover
-  if (moverType=="1order")
+  if (qmcType=="dmc" or qmcType=="svmc")
     {
-      return new qmcMover1Order<comp>(*qmcObj->rand,qmcObj->delta_tau);
+      // build the mover
+      if (moverType=="1order" or moverType=="default")
+	{
+	  return new qmcMover1Order<comp>(*qmcObj->rand,qmcObj->delta_tau);
+	  
+	}
+      
+      if (moverType=="2order")
+	{
+	  qmcMover2Order<comp>* ret;
+	  ret=new qmcMover2Order<comp>(*qmcObj->rand,qmcObj->delta_tau,qmcObj->wave,qmcObj->geo);
+	  ret->init(qmcObj->getInputFileName());
+	  return ret;
+	}
+      
+      if (moverType=="spin")
+	{
+	  qmcMover1OrderSpin<comp>* ret;
+	  double omegaRabi=qmcObj->main_input->reset()->get_child("system")->get_child("oneBodyPotential")->get_child("oneBodyPotential")->get_attribute("omega")->get_real();
+	  
+	  double pFlip=sinh(omegaRabi*qmcObj->delta_tau)/( sinh(omegaRabi*qmcObj->delta_tau) + cosh(omegaRabi*qmcObj->delta_tau) );
+	  
+	  ret=new qmcMover1OrderSpin<comp>(*qmcObj->rand,qmcObj->delta_tau);
+	  ret->setSpinTimeStep(pFlip);
+	  return ret;
+	}
+
+      cout << "Unokmn propagator";
+      exit(1);
+      
     }
-  
-  if (moverType=="2order")
+  else if (qmcType=="vmc")
     {
-      qmcMover2Order<comp>* ret;
-      ret=new qmcMover2Order<comp>(*qmcObj->rand,qmcObj->delta_tau,qmcObj->wave,qmcObj->geo);
-      ret->init(qmcObj->getInputFileName());
-      return ret;
+      if (moverType=="default")
+	{
+	  return new qmcMover1Order<comp>(*qmcObj->rand,qmcObj->delta_tau);
+	}
+      
+      else if(moverType=="spin")
+	{
+	  return new qmcMover1OrderSpin<comp>(*qmcObj->rand,qmcObj->delta_tau);
+	}
+      else
+	{
+	  cout << "Unkown propagator"<<endl;
+	  exit(1);
+	}
     }
   
 }

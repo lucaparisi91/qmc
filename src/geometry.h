@@ -50,7 +50,7 @@ private:
 public:
   
   pbc1d(double l_box_){l_box=l_box_;};
-  pbc1d& operator= ( pbc1d &pbc2){l_box=pbc2.l_box;};
+  pbc1d& operator= ( pbc1d &pbc2){l_box=pbc2.l_box;return *this;};
   double bc(double x);
   
   inline double distance_bc(double x1,double x2)

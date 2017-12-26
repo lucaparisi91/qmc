@@ -17,6 +17,7 @@ using namespace std;
 
 template<class T> class walkers;
 template<class> class dmc_walker;
+template<class> class rabi_walker;
 class gatherer;
 class packed_data;
 class dock;
@@ -24,7 +25,6 @@ template <class comp > class measure_dynamic;
 
 bool metropolis(double log_ratio,random1* rand);
 // return
-
 
 template<class comp>
 class dmc : public qmc<comp>
@@ -39,9 +39,9 @@ class dmc : public qmc<comp>
   typedef total_wavefunction< dmc<comp> > wave_t;
   typedef qmcMover<dmc<comp> > qmcMover_t;
   typedef allParticlesGradient1D grad_t;
+  typedef comp qmcSystem_t;
   
-  
-  
+  typedef potential< dmc<comp> > potential_t;
   typedef dmc_t qmcKind;
   
   dmc();
@@ -87,9 +87,11 @@ class dmc : public qmc<comp>
   wave_t * wave;
   qmcMover_t* qmcMoverO; // perform updates of the position on the walkers
   
+  potential_t* potential_obj;
 private:
   vector<double> tmp;
   vector<double> tmp1;
+  
 };
 
 template<class comp>
@@ -114,8 +116,7 @@ public:
   bool accept;
   
   
-  void log();
-  
+  void log(); 
  public:
   // makes the diffusion step and mark for the branching step
   waveValue_t getWavefunctionValue(){return wavefunction_value;};
@@ -183,6 +184,65 @@ public:
   vector< measure_dynamic<dmc<comp> > * > md;
 };
 
+template<class comp>
+class rabi_walker : public dmc_walker<comp>
+{
+public:
+  typedef dmc<comp> qmc_t;
+  
+  rabi_walker(qmc_t* dmc_obj_) : dmc_walker<comp>(dmc_obj_)
+  {
+    
+  }
+  
+  
+  void pack(packed_data* walker_pack)
+  {
+    dmc_walker<comp>::pack(walker_pack);
+    walker_pack->pack(spinFlipRatios);  
+  };
+  
+  void unpack(packed_data* walker_pack)
+  {
+    dmc_walker<comp>::unpack(walker_pack);
+    walker_pack->unpack(spinFlipRatios);
+  }
+  
+  template<class measure_t,class wave_t>
+  void make_measurements(measure_t* m,wave_t* wave,double current_step)
+  {
+    m->make_measurements(this,wave);
+  }
+  
+  virtual void set(qmc_t * qmcO)
+  {
+    dmc_walker<comp>::set(qmcO);
+    spinFlipRatios.resize((*this->state)[0].size(),0);
+    qmcO->wave->spinFlip(*this->state,spinFlipRatios);
+  }
+  
+  virtual rabi_walker<comp> & operator=(rabi_walker<comp> & w)
+  {
+    dmc_walker<comp>::operator=(w);
+    spinFlipRatios=w.spinFlipRatios;
+  }
+  
+  void update(qmc_t* dmc_obj)
+  {
+    
+    dmc_obj->wave->spinFlip(*this->state,spinFlipRatios);
+    dmc_obj->qmcMoverO->moveSpinRabi((*this->state)[0],spinFlipRatios);
+    
+    dmc_walker<comp>::update(dmc_obj);
+    
+    
+  }
+  
+private:
+  
+  vector<double> spinFlipRatios;
+  
+};
 
 
 template<class comp>
@@ -230,8 +290,10 @@ template<class comp>
 class walkers
 {
 public:
+  typedef typename dmc<comp>::walker_t walker_t;
+  
   // rename the types of a certain class of measurements
-  typedef dmc_walker<comp> walker_t;
+  
   typedef measures<dmc<comp> > measures_t;
   
   vector<double> work;
@@ -251,6 +313,8 @@ public:
   void log();
   template<class qmc_t>
   void generate_all_to(int n_to_add,double pos,qmc_t* dmc_obj);
+  template<class qmc_t>
+  void generate_random(int n_to_add,double lBox,qmc_t* dmc_obj);
   template<class qmc_t>
   void generate_uniform(int n_to_add,double lBox,qmc_t* dmc_obj);
   template<class qmc_t>

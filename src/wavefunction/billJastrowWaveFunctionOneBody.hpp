@@ -40,12 +40,10 @@ void bill_jastrow_wavefunction_one_body<X,comp>::gradient(const typename bill_ja
       d=abs(x);
       //returns the direction of the wavefunction
       sign=x/d;
-      
-      
       tmp1=this->jastrowc.d1d0(d);
-      
       grad1[i]+=sign*tmp1;
-      
     }
   
 };
+
+

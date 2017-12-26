@@ -8,7 +8,7 @@ walker<comp>::walker(qmc_type* qmc_obj)
   state=new all_particles_t();
   state_tmp=new all_particles_t();
   buildAllOrbitals(qmc_obj->getInputFileName(),*state);
-  state_tmp=state;
+  (*(state_tmp))=(*(state));
   ev=0;
   e=0;
   state->sizes(ns);
@@ -52,7 +52,10 @@ void walker_load_dynamic_measures(vector<measure_dynamic<qt> *> & md ,xml_input*
   bool futureWalkers;
   int bins;
   double l_box;
-  
+  int spin;
+  int set_a;
+  int set_b;
+  int nFutureWalkers;
   l_box=xml_md->reset()->get_child("system")->get_child("lBox")->get_value()->get_real();
   
   xml_md->reset()->get_child("measures")->get_first_child();
@@ -92,10 +95,61 @@ void walker_load_dynamic_measures(vector<measure_dynamic<qt> *> & md ,xml_input*
       
       if(xml_md->get_name()=="static_structure_factor" and futureWalkers==true )
 	{
+	  if (xml_md->get_attribute("nFutureWalkers") != NULL)
+	    {
+	      nFutureWalkers=xml_md->get_int();
+	      
+	    }
+	  else
+	    {
+	      cout << "No future walkers specified";
+	      exit(1);
+	    }
+
+	  if (xml_md->get_attribute("set_a") != NULL)
+	    {
+	      set_a=xml_md->get_int();
+	      
+	    }
+	  else
+	    {
+	      set_a=0;
+	    }
 	  
-	  md.push_back(buildStructureFactorWalker<qt>(xml_md,l_box)); 
+	  if (xml_md->get_attribute("set_b") != NULL)
+	    {
+	      set_b=xml_md->get_int();
+	      
+	    }
+	  else
+	    {
+	      set_b=0;
+	    }
+	  
+
+	  if (xml_md->get_attribute("spin") != NULL)
+	    {
+	      spin=xml_md->get_bool();
+	      
+	    }
+	  else
+	    {
+	      spin=false;
+	    }
+	  
+	  
+	  if ( set_a==set_b )
+	    {
+	      md.push_back(new vectorForwardWalking<qt>(nFutureWalkers,bins));              
+	    }
+	  else
+	    {
+ 	      cout << "Forward walking not supported"<<endl;
+	      exit(1);
+	    }
 	}
 
+      
        if(xml_md->get_name()=="pair_correlation" and futureWalkers==true )
 	{
 	  
@@ -216,21 +270,24 @@ void dmc_walker<comp>::update(qmc_type* dmc_obj)
   double barrier;
   double e_new;
   double old_wavefunction_value;
-
   
+  dmc_obj->timers[13]->start();
   (*this->state_tmp)=(*this->state);
+  
   
   
   //state->print();
   //state_tmp->print();
   //cout << dmc_obj->geo->l_box<<endl;
+
+  
   old_wavefunction_value=this->wavefunction_value;
   
   //state->move(dmc_obj->rand,dmc_obj->delta_tau);
   //dmc_obj->move2order(state,state_tmp);
   //move1order(this->state,dmc_obj);
 
-  dmc_obj->timers[2]->start();
+  
   
   if (dmc_obj->qmcMoverO->getOrder()==2)
     {
@@ -244,22 +301,22 @@ void dmc_walker<comp>::update(qmc_type* dmc_obj)
       this->particlesGradientBackup.clone(this->particlesGradient);
     }
   
-  dmc_obj->timers[2]->stop();
+  dmc_obj->timers[13]->stop();
   
   dmc_obj->timers[3]->start();
   dmc_obj->qmcMoverO->move( (*(this->state)),this->particlesGradient);
-  dmc_obj->timers[3]->stop();
+  
   
   //state->particle_sets[1]->position_no_pbc[0]=0;
   dmc_obj->geo->all_particles_pbc(*this->state);
-  
+  dmc_obj->timers[3]->stop();
   // update the wavefunction
   dmc_obj->timers[5]->start();
   this->wavefunction_value=dmc_obj->wave->log_evaluate(this->state);
   dmc_obj->timers[5]->stop();
+  // update the kinetic energy
 
   dmc_obj->timers[4]->start();
-  // update the kinetic energy
   dmc_obj->wave->laplacianGradient(*(this->state),e_new,this->e_f,this->particlesGradient);
   dmc_obj->timers[4]->stop();
   // set the quantum drift force for the particles
@@ -267,7 +324,7 @@ void dmc_walker<comp>::update(qmc_type* dmc_obj)
   
   // compute the non-symmetric correction to metropolis
  
-   dmc_obj->timers[2]->start();
+  dmc_obj->timers[2]->start();
   ++(dmc_obj->n_metropolis);
   
   //cout << 2*(wavefunction_value - old_wavefunction_value) + Q_probability(state,state_tmp,dmc_obj->delta_tau) <<endl;
@@ -291,7 +348,7 @@ void dmc_walker<comp>::update(qmc_type* dmc_obj)
     }
 
   
-  dmc_obj->timers[2]->stop();
+  
   if ( this->accept )
     {
       this->e_old=this->e;
@@ -311,6 +368,7 @@ void dmc_walker<comp>::update(qmc_type* dmc_obj)
       this->particlesGradient.clone(this->particlesGradientBackup);
       this->e_old=this->e;
     }
+  dmc_obj->timers[2]->stop();
   
 }
 //sets the number of descendants
@@ -474,11 +532,13 @@ template<class comp>
 ostream& operator<<(ostream& out, const walker<comp> & walker)
 {
   out << *(walker.state);
+  return out;
 }
 
 template<class comp>
 istream& operator>>(istream& in, walker<comp> & walker)
 {
   in>>(*walker.state);
+  return in;
 }
 

@@ -40,47 +40,6 @@ bill_jastrow_wavefunction<jastrow_t,comp>::bill_jastrow_wavefunction(bill_jastro
   xml_wave->cur=cur;
   
 }
-// returns the potential energy of the roubi copling
-template<typename  jastrow_t,class comp>
-double bill_jastrow_wavefunction_spinor_two_body_symmetric<jastrow_t,comp>::potential(rabiCoupling *ps,all_particles_t* state)
-{
-  double swap;
-  int i,j;
-  double x;
-  complex<double> value;
-  complex<double> tmp;
-  particles_t* p;
-  vector< complex<double> > tmpSpin(2);
-  i=0;
-  value=0;
-  
-  p=state->particle_sets[this->src_particle_set];
-  for(i=0;i<p->n;i++)
-    {
-      tmp=1;
-      // exchange spin up and spin down on site i
-      tmpSpin[0]=p->spinComp[i][1];
-      tmpSpin[1]=p->spinComp[i][0];
-      // echange spin down and spin up on site i
-      for(j=0;j<i;j++)
-	{
-	  x=abs(this->qmc_obj->geo->distance_pbc(p->position[j],p->position[i]));
-	  
-	  tmp=tmp*jastrowc.d0(x,tmpSpin,p->spinComp[j])/jastrowc.d0(x,p->spinComp[i],p->spinComp[j]);
-	  
-	}
-      
-      for(j=i+1;j<p->n;j++)
-	{
-	  x=abs(this->qmc_obj->geo->distance_pbc(p->position[j],p->position[i]));
-	  tmp=tmp*jastrowc.d0(x,p->spinComp[j],tmpSpin)/jastrowc.d0(x,p->spinComp[j],p->spinComp[i]);
-	  
-	}
-      value=value + tmp;
-    }
-  
-  return real(value);
-}
 
 template<class jastrow_t,class comp>
 double bill_jastrow_wavefunction_two_body_asymmetric<jastrow_t,comp>::one_particle_log_evaluate(bill_jastrow_wavefunction_two_body_asymmetric<jastrow_t,comp>::all_particles_t * p,double r,int iP, int set_a)
@@ -193,8 +152,6 @@ double bill_jastrow_wavefunction_two_body_symmetric<X,comp>::log_evaluate(bill_j
   
   particles_t& p1=(*p)[this->src_particle_set];
   value=0;
-  
-  
   
   // assert that the required jastrows are defined
   for (i=0;i<p1.size();i++)
@@ -481,7 +438,6 @@ void total_wavefunction<comp>::link_wavefunctions(xml_input* xml_wave,vector<wav
   while(xml_wave->check());
   xml_wave->cur=cur;
   
-  findWavesToOptimize();
 }
 
 template<class comp>
@@ -519,14 +475,9 @@ void bill_jastrow_wavefunction<jastrow_t,comp>::print(int i)
   jastrowc.print(string("jastrow")+ int_to_string(i)+ string(".dat"),string("jastrow_1d")+ int_to_string(i) + string(".dat"),string("jastrow_2d")+ int_to_string(i) + ".dat");
 }
 
-
-
-
-
 template<class comp>
 void load_wavefunctions(xml_input * xml_wave, vector< typename comp::swave_t* > &waves,comp* qmc_obj)
 {
-  typedef typename comp::swave_t swave_t;
   
   int setA,setB;
   string jastrow_type;
@@ -548,6 +499,19 @@ void load_wavefunctions(xml_input * xml_wave, vector< typename comp::swave_t* > 
   fac.registerType("bill_jastrowsymm2bdelta_bound_state",& ( createBillJastrowTwoBodySymmetric<jastrowOptimized<jastrow_delta_bound_state>,comp> ) );
   fac.registerType("bill_jastrowasymm2bdelta_bound_state",& ( createBillJastrowTwoBodyAsymmetric< jastrowOptimized<jastrow_delta_bound_state>,comp> ) );
   fac.registerType("bill_jastrowsymm2bdelta_in_trap",& ( createBillJastrowTwoBodySymmetric<jastrowOptimized<jastrow_delta_in_trap> ,comp> ) );
+
+  fac.registerType("bill_jastrow_spin_orbitalsymm2bdelta_in_trap",& ( buildBillJastrowSpinTwoBody<jastrowSpinOrbitalTwoBody<jastrow_delta_in_trap,jastrow_delta_in_trap> ,comp> ) );
+
+  fac.registerType("bill_jastrow_spin_orbitalsymm2bdelta_phonons",& ( buildBillJastrowSpinTwoBody<jastrowSpinOrbitalTwoBody<jastrow_delta_phonons,jastrow_delta_phonons> ,comp> ) );
+
+  
+
+  fac.registerType("bill_jastrow_spin_orbitalsymm2bdelta",& ( buildBillJastrowSpinTwoBody<jastrowSpinOrbitalTwoBody<jastrow_delta,jastrow_delta> ,comp> ) );
+  
+  fac.registerType("bill_jastrow_spin_orbital1bgauss",& ( buildBillJastrowSpinOneBody<jastrowSpinOrbitalOneBody<jastrow_gaussian,jastrow_gaussian> ,comp> ) );
+
+    fac.registerType("bill_jastrow_spin_orbital1bspinOrbital",& ( buildBillJastrowSpinOneBody<jastrowSpinOrbitalOneBody<jastrowSpinOrbital,jastrowSpinOrbital> ,comp> ) );
+  
   fac.registerType("bill_jastrowasymm2bdelta_in_trap",& ( createBillJastrowTwoBodyAsymmetric<jastrowOptimized<jastrow_delta_in_trap>,comp> ) );
   fac.registerType("bill_jastrow1bdelta_in_trap",& ( createBillJastrowOneBody<jastrowOptimized<jastrow_delta_in_trap>,comp> ) );
   fac.registerType("bill_jastrow1bdelta",& ( createBillJastrowOneBody<jastrowOptimized<jastrow_delta>,comp> ) );

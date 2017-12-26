@@ -8,40 +8,7 @@
 #include "../xml-input.h"
 
 using namespace std;
-class spinOrbital
-{
-public:
-  
-  spinOrbital(){spinValue=0;x=0;xBC=0;}
-
-  inline double& position(){return positionBC();};
-  inline double& positionNoBC(){return x;};
-  inline double& positionBC(){return x;};
-  
-  inline const double& position() const{return positionBC();};
-  inline const double& positionNoBC() const{return x;};
-  inline const double& positionBC() const{return x;};
-  
-  
-  int& spin(){return spinValue;};
-  const int& spin() const {return spinValue;};
-  int get_pack_size() const;
-  int size() const {return 1;}
-  void pack(packed_data* packedData);
-  void unpack(packed_data* packedData);
-  int nParticles() const {return 1;}
-  spinOrbital& operator=( const spinOrbital &s);
-  friend ostream& operator<<(ostream& output ,const spinOrbital &orbital2);
-  friend istream& operator>>(istream& input ,spinOrbital &orbital2);
-  
-private:
-  int spinValue;
-  double x;
-  double xBC;
-};
-
-using namespace std;
-class orbital1D
+class orbital1D 
 {
   typedef double pos_t;
   
@@ -57,13 +24,23 @@ public:
   
   int size() const {return 1;}
   
-  int get_pack_size() const;
-  void pack(packed_data* packedData);
-  void unpack(packed_data* packedData);
+  virtual int get_pack_size() const;
+  virtual void pack(packed_data* packedData);
+  virtual void unpack(packed_data* packedData);
   int nParticles() const {return 1;}
-  orbital1D & operator=( const orbital1D &s);
-  friend ostream& operator<<(ostream& output ,const orbital1D &orbital2);
-  friend istream& operator>>(istream& input ,orbital1D &orbital2);
+  
+  virtual ostream& output(ostream &out) const
+  {
+    out<< x <<" "<< xBC;
+    return out;
+  }
+  
+  virtual istream& input(istream &in)
+  {
+    in >> x;
+    in >> xBC;
+    return in;
+  }
   
 private:
   
@@ -71,6 +48,46 @@ private:
   double xBC;
 };
 
+ostream& operator<<(ostream& out    ,const orbital1D &orbital2);
+istream& operator>>(istream& input ,orbital1D &orbital2);
+
+using namespace std;
+class spinOrbital1D : public orbital1D
+{
+  typedef double pos_t;
+  
+public:
+  spinOrbital1D() : orbital1D(){spinValue=1;}
+  
+  inline int& spin(){return spinValue;}
+  inline const int& spin() const {return spinValue;}
+  
+  virtual int get_pack_size() const;
+  virtual void pack(packed_data* packedData);
+  virtual void unpack(packed_data* packedData);
+  
+  virtual ostream& output(ostream& out) const
+  {
+    orbital1D::output(out);
+    
+    out<<" "<<spinValue;
+    return out;
+  }
+  
+  virtual istream& input(istream& in)
+  {
+    orbital1D::input(in);
+    in>>spinValue;
+    return in;
+  }
+  
+private:
+  int spinValue;
+  
+};
+
+
+  
 
 
 template<class orbital_t>
@@ -84,7 +101,7 @@ public:
   orbital_t& operator[](int i){return orbitalsStorage[i];};
   const orbital_t& operator[](int i) const {return orbitalsStorage[i];};
   void resize(int n){orbitalsStorage.resize(n);};
-
+  
   int get_pack_size()
   {
     orbital_t dummy;
@@ -131,7 +148,7 @@ public:
     return n;
   }
   
-  int sizes(vector<int> &ns) const
+  void sizes(vector<int> &ns) const
   {
     ns.resize(size());
     for(int i=0;i<size();i++)
@@ -141,12 +158,11 @@ public:
     
   }
   
-  
-  
   void push_back(const orbital_t &orbitalToAdd)
   {
     orbitalsStorage.push_back(orbitalToAdd); 
   }
+
   
 private:
   vector<orbital_t> orbitalsStorage;
@@ -154,18 +170,86 @@ private:
   
 };
 
-void buildAllOrbitals(string filename,orbitals<orbitals<orbital1D> > & allOrbitals);
+int getMagnetization(orbitals<spinOrbital1D> &p);
+int getMagnetization(orbitals<orbital1D> &p);
 
 
 
+void setNDown(orbitals<spinOrbital1D> &orbitals,int n);
 
-void generateUniform(orbitals<orbitals<orbital1D> > & orbitals,double xMin,double xMax);
-
-void generateUniform(orbitals<orbital1D > & orbitals,double xMin,double xMax);
-
+void setNDown(orbitals<orbitals<spinOrbital1D> > &orbitals,int n);
 
 
-template<class randomGenerator_t>
-void generateRandom(orbitals<orbital1D> & orbitals,double xMin,double xMax,randomGenerator_t* randO);
+template<class orbital_t>
+void buildAllOrbitals(string filename,orbitals<orbitals<orbital_t> > & allOrbitals)
+{
+  xml_input xml_main_input;
+  orbitals<orbital_t > orbitals;
+  int n;
+  
+  xml_main_input.open(filename)->reset();
 
+  xml_main_input.reset()->get_child("system")->get_child("particles");
+  
+  do
+    {
+      xml_main_input.get_attribute("n");
+      n=xml_main_input.get_int();
+      orbitals.resize(n);
+      allOrbitals.push_back(orbitals);
+      
+      xml_main_input.get_next("particles");
+    }
+  
+  while(xml_main_input.check());
+  
+  xml_main_input.reset();
+  
+}
+
+template<class orbital_t>
+void generateUniform(orbitals<orbital_t > & orbitals,double xMin,double xMax)
+{
+  double step;
+  step=(xMax-xMin)/orbitals.size();
+  for(int i=0;i<orbitals.size();i++)
+    {
+      orbitals[i].positionNoBC()=xMin+i*step;
+      
+    }
+}
+
+template<class orbital_t>
+void generateUniform(orbitals<orbitals<orbital_t> > & orbitals,double xMin,double xMax)
+{
+  
+  for(int i=0;i<orbitals.size();i++)
+    {
+      generateUniform(orbitals[i],xMin,xMax);
+    }
+  
+}
+
+template<class randomGenerator_t,class orbital_t>
+void generateRandom(orbitals<orbital_t> & orbitals,double xMin,double xMax,randomGenerator_t* randO)
+{
+  
+  for(int i=0;i<orbitals.size();i++)
+    {
+      orbitals[i].positionNoBC()=randO->uniform()*(xMax-xMin) + xMin;
+    }
+}
+
+template<class randomGenerator_t,class orbital_t>
+void generateRandom(orbitals<orbitals<orbital_t> > & orbitals,double xMin,double xMax,randomGenerator_t* randO)
+{
+  
+  for(int i=0;i<orbitals.size();i++)
+    {
+      generateRandom(orbitals[i],xMin,xMax,randO);
+    }
+}
+
+template<>
+void buildAllOrbitals(string filename,orbitals<orbitals<spinOrbital1D> > & allOrbitals);
 #endif

@@ -26,13 +26,14 @@ int main(int argc,char** argv)
   //g=new gatherer();
   xml_input* main_input;
   string calculation;
-  bool isSpinor;
+  
   string bcInput;
 
   feenableexcept(FE_INVALID | FE_OVERFLOW);
   
   try
     {
+      bool isSpinor;
   main_input=new xml_input;
   
   main_input->open("input.xml");

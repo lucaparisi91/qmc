@@ -129,7 +129,7 @@ packed_data::packed_data()
 
 void dock::allocate_packs()
 {
-  int i;
+  unsigned int i;
   MPI_Request req;
   
   n_recv_packs=0;
@@ -170,9 +170,8 @@ void dock::allocate_packs()
 // send packs over to a certain system
 void dock::isend_packs()
 {
-  int i;
   
-  for(i=0;i<received_array.size();i++)
+  for(unsigned int i=0;i<received_array.size();i++)
     {
       received_packed_walkers[i]->isend(received_array[i],100,recv_requests[i]);
       
@@ -183,9 +182,8 @@ void dock::isend_packs()
 // receive packs
 void dock::irecv_packs()
 {
-  int i;
   
-  for(i=0;i<sent_array.size();i++)
+  for(unsigned int i=0;i<sent_array.size();i++)
     {
       sent_packed_walkers[i]->irecv(sent_array[i],100,send_requests[i]);
       
@@ -195,7 +193,7 @@ void dock::irecv_packs()
 // send and receive packs at the same time
 void dock::send_recv_packs()
 {
-  int i,j1,j2;
+  unsigned int i,j1,j2;
   MPI_Status stat;
   j1=0;
   j2=0;
@@ -232,7 +230,7 @@ void dock::send_recv_packs()
 
 void dock::wait_packs()
 {
-  int i;
+  unsigned int i;
   MPI_Status stat;
   
   for(i=0;i<send_requests.size();i++)
@@ -248,7 +246,7 @@ void dock::wait_packs()
 
 int dock::get_walkers()
 {
-  int i;
+  unsigned int i;
   int nw;
   nw=0;
   for(i=0;i<core_populations.size();i++)
@@ -506,7 +504,7 @@ int get_pack_size< vector<double> >(const vector<double> & x)
   MPI_Pack_size(x.size(),MPI_DOUBLE,MPI_COMM_WORLD,&size);
   return size;
 };
-
+  
 template<>
 int get_pack_size<vector<int> >(const vector<int> & x)
 {
@@ -525,20 +523,24 @@ int get_pack_size< vector<complex<double> > >(const vector<complex<double> > & x
 };
 
 template<>
-int get_pack_size< vector<vector<complex<double> > > >(const vector< vector<complex<double> > > & x)
+int get_pack_size<vector<vector<double> > >(const vector<vector<double> > & x)
 {
-  int size;
-  MPI_Pack_size(get_counts(x),MPI_DOUBLE_COMPLEX,MPI_COMM_WORLD,&size);
+  int size=0;
+  for(unsigned int i=0;i<x.size();i++)
+    {
+      size+=get_pack_size(x[0]);
+    }
   return size;
-}
+};
+
   
 }
 
 void dock::print_populations()
 {
-  int i;
+  
   cout << "Populations"<<endl;
-  for(i=0;i<core_populations.size();i++)
+  for(unsigned int i=0;i<core_populations.size();i++)
     {
       cout << i << " "<<core_populations[i] << endl;
     }
@@ -554,7 +556,7 @@ void pTools::transferSum(vector<double> &sum,int root)
   MPI_Reduce(&sum.front(),&sumMPIStore.front(), sum.size(), MPI_DOUBLE, MPI_SUM, root,MPI_COMM_WORLD);
   //copy back into input vector
   
-  for(int i=0;i<sum.size();i++)
+  for(unsigned int i=0;i<sum.size();i++)
     {
       sum[i]=sumMPIStore[i];
     } 

@@ -902,24 +902,24 @@ template<class tm>
 measures<tm>::measures(string filename,tm *qmc_obj)
 {
   xml_input* main_input;
-  double n_particles;
-  bool history;
-  unsigned int i,id;
-  int bins;
-  int slices;
-  bool futureWalkers;
-  int nFutureWalkers;
-  string label;
-  int set_a,set_b;
+  double n_particles=0;
+  bool history=false;
+  unsigned int i,id=0;
+  int bins=0;
+  int slices=0;
+  bool futureWalkers=false;
+  int nFutureWalkers=0;
+  string label="Unkown";
+  int set_a,set_b=0;
   double max=0;
-  string qmc_kind;
-  int nMCM;
+  string qmc_kind="";
+  int nMCM=0;
   center_of_mass_difference_future_walker_creator<typename tm::walker_t,typename tm::wave_t,typename tm::qmcKind> center_of_mass_dyn_creator;
   center_of_mass_differenceSquared_future_walker_creator<typename tm::walker_t,typename tm::wave_t,typename tm::qmcKind> center_of_mass_dynSquared_creator;
   
   typedef typename tm::walker_t walker_t;
-  typedef typename tm::wave_t wave;
-  typedef measurementInterface<walker_t,wave_t> measurementInterface_t;
+  typedef typename tm::wave_t wave_t;
+ 
   
   main_input=new xml_input;
   main_input->open("input.xml");
@@ -975,7 +975,21 @@ measures<tm>::measures(string filename,tm *qmc_obj)
 	  ms.push_back(new center_of_mass<walker_t,wave_t>(build_measure_scalar(main_input,label)));
 	  
 	}
-      
+      if (main_input->get_name() == "magnetization")
+	{
+	  if (main_input->get_attribute("label") != NULL)
+	    {
+	      label=main_input->get_string();
+	    }
+	  else
+	    {
+	      label="magnetization";
+	    }
+	  
+	  ms.push_back(new magnetizationMeasurement<walker_t,wave_t>(build_measure_scalar(main_input,label)));
+	  
+	}
+	    
       if (main_input->get_name() == "center_of_mass_difference")
 	{
 	  if (main_input->get_attribute("label") != NULL)
@@ -1105,7 +1119,6 @@ measures<tm>::measures(string filename,tm *qmc_obj)
 	    }
 	  else
 	    {
-	      
 	      center_of_mass_dynSquared_creator.append(ms,id,main_input,label,set_a,set_b,bins);
 	      id++;
 	    }
@@ -1145,7 +1158,8 @@ measures<tm>::measures(string filename,tm *qmc_obj)
       
       if (main_input->get_name() == "static_structure_factor")
 	{
-	  ms.push_back( build_structure_factor<tm>(main_input,n_particles,id) ); 
+	  ms.push_back( build_structure_factor<tm>(main_input,n_particles,id) );
+	  if (futureWalkers==true) {id++;}
 	}
       
       

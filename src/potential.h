@@ -17,6 +17,7 @@ class potential
 public:
   typedef typename comp::all_particles_t all_particles_t;
   typedef typename comp::geometry_t geometry_t;
+  typedef typename comp::wave_t wave_t;
   
   potential(geometry_t  * geo_)  {geo=geo_;};
   virtual double evaluate(all_particles_t* p){return 0;};
@@ -24,6 +25,7 @@ protected:
   geometry_t * geo;
   
 };
+
 
 template<class comp>
 class empty_potential : public potential<comp>
@@ -34,15 +36,36 @@ class empty_potential : public potential<comp>
 public:
   empty_potential(geometry_t* geo_) : potential<comp>(geo_){};
 };
-  
+
 //the class with a certain degree of Rabi Coupling
-class rabiCoupling
+template<class comp>
+class rabiCouplingPotential : public potential<comp>
 {
 public:
-  rabiCoupling(double omega_){omega=omega_;}
-  inline double get_omega(){return omega;};
+  typedef typename potential<comp>::geometry_t geometry_t;
+  typedef typename potential<comp>::all_particles_t all_particles_t;
+ typedef typename comp::wave_t wave_t;
+  
+  rabiCouplingPotential(double omega_,geometry_t &geo_,wave_t& wave_) : potential<comp>(&geo_){setOmega(omega_);wave=&wave_;}
+  
+  void setOmega(double omega_){omega=omega_;}
+  double getOmega() const{return omega;};
+  
+  double evaluate(all_particles_t *state)
+  {
+    double ev=0;
+    
+    for(int i=0;i<state[0].size();i++)
+      {
+	ev+=wave->spinFlip(i,*state);
+      }
+    
+    return ev*omega;
+  }
+  
 private:
   double omega;
+  wave_t* wave;
   
 };
 

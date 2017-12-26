@@ -1,9 +1,10 @@
 #include "orbital.h"
 #include "../ptools.h"
 
-int spinOrbital::get_pack_size() const
+int spinOrbital1D::get_pack_size() const
 {
-  return pTools::get_pack_size(spinValue) + pTools::get_pack_size(x) + pTools::get_pack_size(xBC);
+  return pTools::get_pack_size(spinValue) + orbital1D::get_pack_size();
+  
 }
 
 int orbital1D::get_pack_size() const
@@ -11,11 +12,10 @@ int orbital1D::get_pack_size() const
   return pTools::get_pack_size(x) + pTools::get_pack_size(xBC);
 }
 
-void spinOrbital::pack(packed_data* packO)
+void spinOrbital1D::pack(packed_data* packO)
 {
+  orbital1D::pack(packO);
   packO->pack(spinValue);
-  packO->pack(x);
-  packO->pack(xBC);
 }
 
 void orbital1D::pack(packed_data* packO)
@@ -25,11 +25,10 @@ void orbital1D::pack(packed_data* packO)
   packO->pack(xBC);
 }
 
-void spinOrbital::unpack(packed_data* packO)
+void spinOrbital1D::unpack(packed_data* packO)
 {
+  orbital1D::unpack(packO);
   packO->unpack(spinValue);
-  packO->unpack(x);
-  packO->unpack(xBC);
 }
 
 void orbital1D::unpack(packed_data* packO)
@@ -37,52 +36,27 @@ void orbital1D::unpack(packed_data* packO)
   packO->unpack(x);
   packO->unpack(xBC);
 }
-
-spinOrbital& spinOrbital::operator=( const spinOrbital &s)
-{
-  spinValue=s.spinValue;
-  x=s.x;
-  xBC=s.xBC;
+ostream& operator<<(ostream& out    ,const orbital1D &orbital2)
+{ 
+  return orbital2.output(out);
 }
 
-orbital1D& orbital1D::operator=( const orbital1D &s)
-{
-  x=s.x;
-  xBC=s.xBC;
+ostream& operator<<(ostream& out    ,const spinOrbital1D &orbital2)
+{ 
+  return orbital2.output(out);
 }
 
-ostream& operator<<(ostream& output ,const spinOrbital &orbital2)
+istream& operator>>(istream& in ,orbital1D &orbital2)
 {
-  
-  output << orbital2.spinValue<< " ";
-  output << orbital2.x << " ";
-  output << orbital2.xBC;
-  return output;
+  return orbital2.input(in);
 }
 
-ostream& operator<<(ostream& output ,const orbital1D &orbital2)
+istream& operator<<(istream& in ,spinOrbital1D &orbital2)
 {
-  output << orbital2.x << " ";
-  output << orbital2.xBC;
-  return output;
-}
-
-istream& operator>>(istream& input ,spinOrbital &orbital2)
-{
-  
-  input >> orbital2.spinValue;
-  input >> orbital2.x;
-  input >> orbital2.xBC;
-  return input;
+  return orbital2.input(in);
 }
 
 
-istream& operator>>(istream& input ,orbital1D &orbital2)
-{
-  input >> orbital2.x;
-  input >> orbital2.xBC;
-  return input;
-}
 
 template<class T>
 ostream& operator<<(ostream& output,const orbitals<T> & orbitals2)
@@ -122,13 +96,49 @@ template<class T>
     return input;
   }
 
+template class orbitals<orbital1D>;
+template class orbitals<orbitals<orbital1D> >;
+template istream& operator>>(istream& input,orbitals<orbital1D> & orbitals2);
+template istream& operator>>(istream& input,orbitals<orbitals<orbital1D> > & orbitals2);
+template ostream& operator<<(ostream& output,const orbitals<orbital1D> & orbitals2);
+template ostream& operator<<(ostream& output,const orbitals<orbitals<orbital1D> > & orbitals2);
 
-void buildAllOrbitals(string filename,orbitals<orbitals<orbital1D> > & allOrbitals)
+template class orbitals<spinOrbital1D>;
+template class orbitals<orbitals<spinOrbital1D> >;
+template istream& operator>>(istream& input,orbitals<spinOrbital1D> & orbitals2);
+template istream& operator>>(istream& input,orbitals<orbitals<spinOrbital1D> > & orbitals2);
+template ostream& operator<<(ostream& output,const orbitals<spinOrbital1D> & orbitals2);
+template ostream& operator<<(ostream& output,const orbitals<orbitals<spinOrbital1D> > & orbitals2);
+
+
+void setNDown(orbitals<spinOrbital1D> &orbitals,int n)
+{
+  assert(n<=orbitals.size());
+  
+  for(int i=0;i<n;i++)
+    {
+      orbitals[i].spin()=-1;
+    } 
+}
+
+void setNDown(orbitals<orbitals<spinOrbital1D> > &orbitals,int n)
+{
+  
+  for(int i=0;i<orbitals.size();i++)
+    {
+      setNDown(orbitals[i],n);
+    }
+}
+
+
+
+template<>
+void buildAllOrbitals(string filename,orbitals<orbitals<spinOrbital1D> > & allOrbitals)
 {
   xml_input xml_main_input;
-  orbitals<orbital1D > orbitals;
+  orbitals<spinOrbital1D > orbitals;
   int n;
-  
+  int nDown;
   xml_main_input.open(filename)->reset();
 
   xml_main_input.reset()->get_child("system")->get_child("particles");
@@ -137,7 +147,10 @@ void buildAllOrbitals(string filename,orbitals<orbitals<orbital1D> > & allOrbita
     {
       xml_main_input.get_attribute("n");
       n=xml_main_input.get_int();
+      xml_main_input.get_attribute("nUp");
+      nDown=n-xml_main_input.get_int();
       orbitals.resize(n);
+      setNDown(orbitals,nDown);
       allOrbitals.push_back(orbitals);
       
       xml_main_input.get_next("particles");
@@ -149,42 +162,21 @@ void buildAllOrbitals(string filename,orbitals<orbitals<orbital1D> > & allOrbita
   
 }
 
-template class orbitals<orbital1D>;
-template class orbitals<orbitals<orbital1D> >;
-template istream& operator>>(istream& input,orbitals<orbital1D> & orbitals2);
-template istream& operator>>(istream& input,orbitals<orbitals<orbital1D> > & orbitals2);
-template ostream& operator<<(ostream& output,const orbitals<orbital1D> & orbitals2);
-template ostream& operator<<(ostream& output,const orbitals<orbitals<orbital1D> > & orbitals2);
-
-void generateUniform(orbitals<orbital1D > & orbitals,double xMin,double xMax)
+int getMagnetization(orbitals<spinOrbital1D> &p)
 {
-  double step;
-  step=(xMax-xMin)/orbitals.size();
-  for(int i=0;i<orbitals.size();i++)
+  int magnetization;
+  magnetization=0;
+  for(int i=0;i<p.size();i++)
     {
-      orbitals[i].positionNoBC()=xMin+i*step;
-      
+      magnetization+=p[i].spin();
     }
-}
-
-void generateUniform(orbitals<orbitals<orbital1D> > & orbitals,double xMin,double xMax)
-{
-  
-  for(int i=0;i<orbitals.size();i++)
-    {
-      generateUniform(orbitals[i],xMin,xMax);
-    }
+  return magnetization;
   
 }
 
-
-
-template<class randomGenerator_t>
-void generateRandom(orbitals<orbital1D> & orbitals,double xMin,double xMax,randomGenerator_t* randO)
+int getMagnetization(orbitals<orbital1D> &p)
 {
+  cout << "Magnetization of a non spin orbit. Makes no sense."<<endl;
+  exit(0);
   
-  for(int i=0;i<orbitals.size();i++)
-    {
-      orbitals[i].positionNoBC()=randO->rand()*(xMax-xMin) + xMin;
-    }
 }

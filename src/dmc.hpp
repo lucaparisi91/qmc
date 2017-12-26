@@ -7,6 +7,7 @@ dmc<comp>::dmc() : qmc<comp>()
   wave=new total_wavefunction<dmc<comp> >(this);
   wave->link_wavefunctions(this->main_input,waves,"main");
   wave->print_jastrows();
+  potential_obj=build_potential("input.xml",this);
   
   xml_walkers=new xml_input;
   detailed_balance=0;
@@ -115,9 +116,10 @@ walkers<comp>::walkers(qmc_type* dmc_obj)
   n=0;
   m=new measures_t("input.xml",dmc_obj);
 }
+
 template<class comp>
 template<class qmc_t>
-void walkers<comp>::generate_random(int n_to_add,qmc_t* dmc_obj)
+void walkers<comp>::generate_random(int n_to_add,double lBox,qmc_t* dmc_obj)
 {
   // add n walkers to the system
   int i;
@@ -130,9 +132,9 @@ void walkers<comp>::generate_random(int n_to_add,qmc_t* dmc_obj)
       n=n+1;
       ws.push_back(new walker_t(dmc_obj));
       // generate a gaussian initial dsitribution
-      ws[n-1]->state->gaussian(dmc_obj->rand);
+      generateRandom(*ws[n-1]->state,-lBox/2.,lBox/2.,dmc_obj->rand);
       // apply periodic boundary condition
-      dmc_obj->geo->all_particles_pbc(ws[n-1]->state);
+      dmc_obj->geo->all_particles_pbc(*ws[n-1]->state);
       ws[n-1]->descendants=1;
     }
   assert((n) > 0);
@@ -201,7 +203,7 @@ void dmc<comp>::save()
   string filename;
   
   qmc<comp>::saveGeneralQmc();
-  filename="walkers.dat";
+  filename="walkers.in";
   ws->save(filename);  
 }
 
@@ -283,7 +285,7 @@ void dmc<comp>::load()
   if (this->mpi_task==0)
     {
   
-      if ( !check_file_exists("walkers.dat") )
+      if ( !check_file_exists("walkers.in") )
     {
       cout<<"No file to load. Generating a random initial positions."<<endl;
       this->main_input->reset()->get_child("system")->get_child("initialCondition");
@@ -297,25 +299,32 @@ void dmc<comp>::load()
 	{
 	  
 	  kind=this->main_input->get_attribute("kind")->get_string();
+	   
+	  double length;
+	  if (this->main_input->get_attribute("length")==NULL)
+	    {
+	      length=this->geo->l_box;
+	    }
+	  else
+	    {
+	      length=this->main_input->get_real();
+	    }
+	  
 	  if(kind=="uniform")
 	    {
-	      
-	      double length;
-	      if (this->main_input->get_attribute("length")==NULL)
-		{
-		  length=this->geo->l_box;
-		}
-	      else
-		{
-		  length=this->main_input->get_real();
-		}
-	      
 	      ws->generate_uniform(mean_walkers,length,this);
-	      for(int i=0;i<ws->n;i++)
-		{
-		  this->geo->all_particles_pbc(*(ws->ws[i]->state));
-		}
 	    }
+	  
+	  else if (kind=="random")
+	    {
+	      ws->generate_random(mean_walkers,length,this);
+	    }
+	       
+	  for(int i=0;i<ws->n;i++)
+	    {
+	      this->geo->all_particles_pbc(*(ws->ws[i]->state));
+	    }
+	    
 	 
 	  
 	 
@@ -326,7 +335,7 @@ void dmc<comp>::load()
     {
       ifstream walkersSavedFile;
       
-      walkersSavedFile.open("walkers.dat");
+      walkersSavedFile.open("walkers.in");
       
       ws->ws.resize(0);
       ws->n=0;
@@ -407,6 +416,7 @@ void dmc_walker<comp>::print()
 template<class comp>
 void dmc<comp>::step()
 {
+  this->timers[12]->start();
   int i;
   double e_t_tmp;
   int n_walkers2,n_walkers1;
@@ -415,7 +425,7 @@ void dmc<comp>::step()
   MPI_Request populations_send_requests[this->mpi_tasks];
   MPI_Request populations_rec_requests[this->mpi_tasks];
   MPI_Status populations_stat_requests[this->mpi_tasks];
-
+  
   double start,stop;
   
   this->current_step++;
@@ -431,25 +441,36 @@ void dmc<comp>::step()
       this->delta_tau=this->delta_tau_or*this->success_metropolis/(1.*this->n_metropolis);
     }
   
+  this->timers[12]->stop();
   for (i_walker=0;i_walker< ws->n;i_walker++)
     {
+      this->timers[0]->start();
       ws->ws[i_walker]->update(this);
+      this->timers[0]->stop();
+      this->timers[1]->start();
       ws->ws[i_walker]->make_measurements(ws->m,this->wave,this->current_step);
+      this->timers[1]->stop();
     }
   
-  this->timers[0]->start();
+  this->timers[8]->start();
   dmc_dock->receive_walkers_async(ws,this);
-  this->timers[0]->stop();
+  this->timers[8]->stop();
   
   for (;i_walker< ws->n;i_walker++)
     {
+      this->timers[0]->start();
       ws->ws[i_walker]->update(this);
+      this->timers[0]->stop();
+
+      this->timers[1]->start();
       ws->ws[i_walker]->make_measurements(ws->m,this->wave,this->current_step);
+      this->timers[1]->stop();
     }
-  
+
+
+  this->timers[6]->start();
   e_t_tmp=0;
   total_walkers=0;
-  
   for(i_walker=0;i_walker<ws->n;i_walker++)
     {
       ws->ws[i_walker]->set_descendants(e_t,this);
@@ -474,13 +495,16 @@ void dmc<comp>::step()
       }
    
    e_t_tmp=e_t_tmp/ws->n;
-   
+   this->timers[6]->stop();
   //timers[3]->start();
   //MPI_Barrier(MPI_COMM_WORLD);
   //timers[3]->stop();
   //cout<<"pop "<< (stop -start)<<endl;
    // commits to a record the value measured over this time step
+   this->timers[1]->start();
    ws->m->record(this->current_step);
+   this->timers[1]->stop();
+   
    // decide how many walkers are present
    //start=MPI_Wtime();
    //timers[4]->start();
@@ -497,24 +521,29 @@ void dmc<comp>::step()
    //start=MPI_Wtime();
    //timers[6]->start();
    
-   this->timers[2]->start();
+   this->timers[9]->start();
    
    MPI_Allreduce( &e_t_tmp,&e_t,1,MPI_DOUBLE,MPI_SUM,MPI_COMM_WORLD);
-   this->timers[2]->stop();
    e_t=e_t/this->mpi_tasks;
+   this->timers[9]->stop();
+   
 
-   this->timers[1]->start();
+   this->timers[7]->start();
    dmc_dock->send_walkers_async(ws);
-   this->timers[1]->stop();
+   this->timers[7]->stop();
    //timers[6]->stop();
    //dmc_dock->energies[mpi_task]=e_t_tmp;
    //dmc_dock->send_energy(e_t_tmp);
    //dmc_dock->recv_energy();
    //stop=MPI_Wtime();
    //cout<<"reduction: "<< stop -start<<endl;
+   
+   this->timers[6]->start();
    total_walkers=dmc_dock->total_walkers();
    
    population_control();
+   
+   this->timers[6]->stop();
    
    //if (mpi_task==0)
    //  {
@@ -568,6 +597,7 @@ void dmc<comp>::warmup_step()
   
   for (i_walker=0;i_walker< ws->n;i_walker++)
     {
+      
       ws->ws[i_walker]->update(this);
       //ws->ws[i_walker]-make_measurements();
     }
@@ -704,17 +734,19 @@ void dmc<comp>::run()
 	}
     }
   
-  // assues termalized
+  // assuemes termalized
   for(i=0;i<this->nBlocks;i++)
     {
       for (j=0;j<this->stepsPerBlock;j++)
 	{
-	  
+	  this->timers[10]->start();
 	  step(); // performs a MC step
+	  this->timers[10]->stop();
 	}
       // make outputs and reductions
-      
-      out();
+       this->timers[11]->start();
+       out();
+       this->timers[11]->stop();
     }
   
   this->stopTimers();
@@ -744,7 +776,7 @@ void dmc<comp>::out()
       save();
     }
   
-  saveParallel("walkers.dat");
+  saveParallel("walkers.in");
   ws->m->clear();
 }
 
@@ -920,6 +952,8 @@ ostream& operator<<(ostream& out,const walkers<comp> & walkers)
       //cout <<xml_save->reset()->get_name();
       out << (*walkers.ws[i]);
     }
+  
+  return out;
 }
 
 template<class comp>
@@ -936,6 +970,7 @@ template<class comp>
       //cout <<xml_save->reset()->get_name();
       in>> *(walkers->ws[i]);
     }
+  return in;
 }
 
 template<class comp>

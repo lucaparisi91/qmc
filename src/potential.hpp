@@ -29,6 +29,7 @@ speciesHarmonicPotential<comp>* buildSpeciesHarmonicPotential(xml_input* main_in
 }
 
 
+
 template<class comp>
 speciesHarmonicPotential<comp>::speciesHarmonicPotential(speciesHarmonicPotential<comp>::geometry_t* geo_,vector<double> &omegas,vector<double> &x0,vector<int> &sets) : potential<comp>(geo_)
   {
@@ -60,3 +61,31 @@ double speciesHarmonicPotential<comp>::evaluate(speciesHarmonicPotential<comp>::
     return ev;
   }
 
+template<class comp>
+rabiCouplingPotential<comp>* buildRabiPotential(xml_input* main_input,typename comp::geometry_t * geo,typename comp::wave_t * wave)
+{
+  xmlNodePtr cur;
+  double omega;
+  int setA;
+  cur=main_input->cur;
+  
+  if (main_input->get_child("oneBodyPotential"))
+    { 
+	  omega=main_input->get_attribute("omega")->get_real();
+	  
+	  setA=main_input->get_attribute("setA")->get_int();
+	    
+	  main_input->get_next("oneBodyPotential");
+	
+      
+    }
+  else
+    {
+      cout << "No one body potential"<<endl;
+      exit(1);
+    }
+  
+  main_input->cur=cur;
+  
+  return new rabiCouplingPotential<comp>(-omega,*geo,*wave);
+}

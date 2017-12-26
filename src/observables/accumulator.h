@@ -56,16 +56,14 @@ public:
   {
     packO->pack(nMeasurements);
     packO->pack(weights);
-    packO->pack(vectorAccumulatorMean);
-    
+    packO->pack(vectorAccumulatorMean);    
   }
 
   void unpack(packed_data* packO)
   {
     packO->unpack(nMeasurements);
     packO->unpack(weights);
-    packO->unpack(vectorAccumulatorMean);
-    
+    packO->unpack(vectorAccumulatorMean);    
   }
   
 private:

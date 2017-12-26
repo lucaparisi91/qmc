@@ -156,6 +156,10 @@ namespace tools
   void print(vector<double> &vector);
   
   void add(const vector<double> & vec1,const vector<double> & vec2,vector<double> &res);
+  
+  void reset(double & m);
+  
+  void reset(vector<double> & m);
 }
 
 #endif

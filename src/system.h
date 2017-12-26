@@ -77,7 +77,7 @@ public:
   {
     particles<double>::operator=(s);
     spinComp=s.spinComp;
-    
+    return *this;
   };
   
 public:
@@ -105,6 +105,7 @@ public:
   {
     particles<complex<double> >::operator=(s);
     spinComp=s.spinComp;
+    return *this;
   };
   
   vector<complex<double> > spinDrift; // vector of the drift force

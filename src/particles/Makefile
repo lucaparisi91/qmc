@@ -1,6 +1,6 @@
 # compilation flags for the system
 LAPACKDIR=~/software/lapack-3.6.1
-CFLAGS=  -g -pg    -I $(LAPACKDIR)/LAPACKE/include 
+CFLAGS=    -g -pg    -I $(LAPACKDIR)/LAPACKE/include
 BUILD_DIR=../build
 
 # compiler
