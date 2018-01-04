@@ -67,3 +67,27 @@ void structureFactorDensity(orbitals<spinOrbital1D> & p1, vector<double> &res,co
      }
   
 }
+
+double centerOfMassNoBC(orbitals<spinOrbital1D> & p1)
+{
+  double centerOfMass=0;
+  
+  for(int i=0;i<p1.size();i++)
+    {
+      centerOfMass+=p1[i].positionNoBC();
+    }
+  
+  return centerOfMass/p1.size();
+}
+
+double centerOfMassSpinNoBC(orbitals<spinOrbital1D> & p1)
+{
+  double centerOfMass=0;
+  
+  for(int i=0;i<p1.size();i++)
+    {
+      centerOfMass+=p1[i].positionNoBC()*p1[i].spin();
+    }
+  
+  return centerOfMass/p1.size();
+}

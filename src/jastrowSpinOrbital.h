@@ -10,21 +10,22 @@ public:
   jastrowSpinOrbitalTwoBody(string filenameSame,string filenameDiff) : jastrowSame(filenameSame),jastrowDifferent(filenameDiff){};
   
   jastrowSpinOrbitalTwoBody(string file) :jastrowSame(file),jastrowDifferent(file){};
-  double d0(const double x,int i,int j)
+  
+  inline double d0(const double x,int i,int j)
   {
-    return (1+i*j)/2 * jastrowSame.d0(x) + (1-i*j)/2 * jastrowDifferent.d0(x);
+    return i==j ? jastrowSame.d0(x) : jastrowDifferent.d0(x);
   }
   
-  double d1(const double x,int i,int j)
+  inline double d1(const double x,int i,int j)
   {
-    return (1+i*j)/2 * jastrowSame.d1(x) + (1-i*j)/2 * jastrowDifferent.d1(x);
+    return i==j ? jastrowSame.d1(x) : jastrowDifferent.d1(x);
   }
 
-  double d2(const double x,int i,int j)
+  inline double d2(const double x,int i,int j)
   {
-    return (1+i*j)/2 * jastrowSame.d2(x) + (1-i*j)/2 * jastrowDifferent.d2(x);
+    return i==j ? jastrowSame.d2(x) : jastrowDifferent.d2(x);
   }
-
+  
   void print(string name_0d,string name_1d,string name_2d)
   {
     jastrowSame.print(name_0d + "Same.dat",name_1d + "Same.dat",name_2d+"Same.dat");

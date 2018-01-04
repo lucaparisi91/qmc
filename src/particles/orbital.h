@@ -104,8 +104,14 @@ public:
   
   int get_pack_size()
   {
-    orbital_t dummy;
-    return( dummy.get_pack_size()*size() );
+    int size=0;
+    
+    for(int i=0;i<orbitalsStorage.size();i++)
+      {
+	size+=orbitalsStorage[i].get_pack_size();
+      }
+    
+    return size;
   }
   
   void pack(packed_data* packO)

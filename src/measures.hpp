@@ -1241,13 +1241,28 @@ measures<tm>::measures(string filename,tm *qmc_obj)
 	      label="winding_number";
 	    }
 	  
-	  if (winding_number_creator_obj.isSupported())
-	    {
-	      winding_number_creator_obj.append(ms,id,main_input,label);		     
-	      id++;
-	    }
+	  ms.push_back(buildWindingNumber<walker_t,wave_t>(main_input,id));
+	  id++;
 	  
 	}
+
+      if (main_input->get_name() == "winding_number_spin" and (qmc_kind=="dmc" or qmc_kind=="svmc"))
+	{
+	  if (main_input->get_attribute("label")!=NULL)
+	    {
+	      label=main_input->get_string();
+	    }
+	  else
+	    {
+	      label="winding_number_spin";
+	    }
+	  
+	  ms.push_back(buildWindingNumberSpin<walker_t,wave_t>(main_input,id));
+	  id++;
+	}
+
+      
+      
       main_input->get_next();
       
     }

@@ -156,15 +156,18 @@ void walker_load_dynamic_measures(vector<measure_dynamic<qt> *> & md ,xml_input*
 	  md.push_back(buildPairCorrelationFuture<qt>(xml_md,l_box)); 
 	}
       
-      
-      if (xml_md->get_name()=="winding_number")
-	{
-	  md.push_back(build_center_of_mass_w<qt>(xml_md));
- 	}
-      
-      
-     
-      xml_md->get_next();
+       
+       if (xml_md->get_name()=="winding_number")
+	 {
+	   md.push_back(new scalarForwardWalking<qt>(bins) );
+	 }
+
+       if (xml_md->get_name()=="winding_number_spin")
+	 {
+	   md.push_back(new scalarForwardWalking<qt>(bins) );
+	 }
+       
+       xml_md->get_next();
     }
 }
 
@@ -312,12 +315,12 @@ void dmc_walker<comp>::update(qmc_type* dmc_obj)
   dmc_obj->timers[3]->stop();
   // update the wavefunction
   dmc_obj->timers[5]->start();
-  this->wavefunction_value=dmc_obj->wave->log_evaluate(this->state);
+  //this->wavefunction_value=dmc_obj->wave->log_evaluate(this->state);
   dmc_obj->timers[5]->stop();
   // update the kinetic energy
 
   dmc_obj->timers[4]->start();
-  dmc_obj->wave->laplacianGradient(*(this->state),e_new,this->e_f,this->particlesGradient);
+  dmc_obj->wave->laplacianGradientLogWave(*(this->state),e_new,this->e_f,this->particlesGradient,this->wavefunction_value);
   dmc_obj->timers[4]->stop();
   // set the quantum drift force for the particles
   //dmc_obj->wave->set_drift_force(state);

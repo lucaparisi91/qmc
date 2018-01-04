@@ -56,8 +56,6 @@ istream& operator<<(istream& in ,spinOrbital1D &orbital2)
   return orbital2.input(in);
 }
 
-
-
 template<class T>
 ostream& operator<<(ostream& output,const orbitals<T> & orbitals2)
 {
@@ -66,13 +64,15 @@ ostream& operator<<(ostream& output,const orbitals<T> & orbitals2)
   output<<"Orbitals: "<<"'"<<orbitals2.getLabel()<<"'"<<endl;
   output<<"N orbitals: "<<orbitals2.size()<<endl;
   
+  output.precision(7);
+  
   for(int i=0;i<orbitals2.size();i++)
     {
       output << orbitals2.orbitalsStorage[i];
       output << endl;
     }
   return output;
-  }
+}
 
   
 template<class T>

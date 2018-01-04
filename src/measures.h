@@ -328,7 +328,7 @@ class measure_dynamic
   measure_dynamic(const int &set){set_a=set;}
   virtual void print()=0;
   virtual void reset()=0;
-  virtual bool isFilled() {throw notYetSsupported("isFilled");};
+  virtual int isFilled() {throw notYetSsupported("isFilled");};
   virtual void pack(packed_data* packed_data)=0;
   virtual void unpack(packed_data* packed_data)=0;
   virtual int get_pack_size()=0;
@@ -343,8 +343,7 @@ class measure_dynamic
   
   virtual void average(vector<double> &){throw notYetSsupported("distance_center_of_mass_d::time_difference_average");};
   
-
-  virtual void add(double){throw notYetSsupported("Adding a scalar is not supported");};
+  virtual void add(const double &){throw notYetSsupported("Adding a scalar is not supported");};
 
   virtual void add(vector<double>&){throw notYetSsupported("Adding a vector is not supported");};
 
@@ -480,7 +479,7 @@ public:
     storage.reset();
   }
   
-  bool isFilled()
+  int isFilled()
   {
     return storage.isFilled();
   }

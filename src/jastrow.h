@@ -171,10 +171,15 @@ class jastrow_delta : public jastrow<jastrow_delta>
   
   jastrow_delta(string filename);
   void load_parameters(string filename);
-  double d0(const double &x);
+  inline double d0(const double &x){return (x < parameters[3]) ? sin(parameters[0]*x + parameters[1]): c;};
+  
   double d1d0(const double &x);
-  double d1(const double &x);
-  double d2(const double &x);
+
+  inline double d1(const double &x){return (x<parameters[3]) ? cos(parameters[0]*x + parameters[1])*parameters[0]: 0;};
+
+  inline double d2(const double &x){return (x < parameters[3]) ? -sin(parameters[0]*x + parameters[1])*parameters[0]*parameters[0]: 0;};
+  
+  
   double d2d0(const double &x);
   double dP1(const double &x){return 0;};
   double dP2(const double &x){return 0;};
@@ -243,41 +248,19 @@ public:
       }
   };
   
-  double d0(const double &x)
+  __attribute__((always_inline)) double d0(const double &x)
   {
-    
-    if (x < parameters[3])
-      {
-	return sin(parameters[0]*x + parameters[1]);
-      }
-    else
-      {
-	return pow(sin(k2*x),parameters[2]);
-      }
+    return (x < parameters[3]) ? sin(parameters[0]*x + parameters[1]) :  pow(sin(k2*x),parameters[2]);
   }
   
-  double d1(const double &x)
+  __attribute__((always_inline)) double d1(const double &x)
   {
-    if (x < parameters[3])
-      {
-	return parameters[0]*cos(parameters[0]*x + parameters[1]);
-      }
-    else
-      {
-	return pow(sin(k2*x),parameters[2]-1)*parameters[2]*cos(k2*x)*k2;
-      }
+    return (x < parameters[3]) ? parameters[0]*cos(parameters[0]*x + parameters[1]) : pow(sin(k2*x),parameters[2]-1)*parameters[2]*cos(k2*x)*k2;
   }
   
-  double d2(const double &x)
+  __attribute__((always_inline)) double d2(const double &x)
   {
-    if (x < parameters[3])
-      {
-	return -parameters[0]*parameters[0]*sin(parameters[0]*x + parameters[1]);
-      }
-    else
-      {
-	return pow(sin(k2*x),parameters[2]-2)*parameters[2]*(parameters[2]-1)*pow(cos(k2*x)*k2,2) - pow(sin(k2*x),parameters[2])*parameters[2]*k2*k2;
-      }
+    return (x < parameters[3]) ? -parameters[0]*parameters[0]*sin(parameters[0]*x + parameters[1]) : pow(sin(k2*x),parameters[2]-2)*parameters[2]*(parameters[2]-1)*pow(cos(k2*x)*k2,2) - pow(sin(k2*x),parameters[2])*parameters[2]*k2*k2;
   }
   
   void process()
@@ -336,21 +319,27 @@ public:
   jastrow_delta_bound_state(string filename);
   void load_parameters(string filename);
   void process(double);
-  double d0(const double &x);
-  double d2d0(const double &x);
-  double d1d0(const double &x);
-  double d1(const double &xo);
-  double d2(const double &x);
+  inline double d0(const double x){double y=x-parameters[3]; return (y<0) ? (exp(-parameters[0]*y) + exp(parameters[0]*y))/2 : 1;}
+  
+  inline double d1(const double x)  { double y=x-parameters[3]; return (y<0) ? parameters[0]*(exp(parameters[0]*y) - exp(-parameters[0]*y)   )/2 : 0;
+  }
+  
+  inline double d2(const double x)
+  { double y=x-parameters[3]; return (y<0) ? parameters[0]*parameters[0]*(exp(parameters[0]*y) + exp(-parameters[0]*y))/2 : 0;}
+  
   // set the the parameter
   void setParameter(double x,int i)
   {
     parameters[3]=x;
     process(x);
   }
+  
   double getParameter(int i) const {return parameters[3];};
   double dP1(const double &x);
   double dP2(const double &x);
   
+  double d2d0(const double &x);
+  double d1d0(const double &x);
 private:
   
   class fRoot
@@ -476,7 +465,6 @@ void jastrow<jastrowT>::print(string name_0d,string name_1d,string name_2d)
   file_2d.open(name_2d.c_str());
   
   step=(b-a)*1./bins;
- 
   
   for (i=0;i<=bins;i++)
     {

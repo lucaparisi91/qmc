@@ -388,3 +388,81 @@ measurementInterface<typename comp::walker_t,typename comp::wave_t>* build_pair_
 	    }
 	  
 }
+
+#include "observables/imaginaryTimeCorrelation.h"
+
+template<class walker_t,class wave_t>
+measurementInterface<walker_t,wave_t>*  buildWindingNumber(xml_input* main_input, unsigned int id)
+{
+  int bins;
+  int set_a;
+  string label;
+  
+  if (main_input->get_attribute("label")!=NULL)
+    {
+      label=main_input->get_string();
+    }
+  else
+    {
+      label="windingNumber";
+    }
+  
+  if (main_input->get_attribute("setA") != NULL)
+    {
+      set_a=main_input->get_int();
+    }
+  else
+    {
+      set_a=0;
+    }
+
+    if (main_input->get_attribute("bins") != NULL)
+    {
+      bins=main_input->get_int();
+    }
+  else
+    {
+      bins=100;
+    }
+    
+  return new windingNumber<walker_t,wave_t>(build_measure_vector(main_input,label),bins,set_a,id);
+      
+}
+
+template<class walker_t,class wave_t>
+measurementInterface<walker_t,wave_t>*  buildWindingNumberSpin(xml_input* main_input, unsigned int id)
+{
+  int bins;
+  int set_a;
+  string label;
+  
+  if (main_input->get_attribute("label")!=NULL)
+    {
+      label=main_input->get_string();
+    }
+  else
+    {
+      label="windingNumberSpin";
+    }
+  
+  if (main_input->get_attribute("setA") != NULL)
+    {
+      set_a=main_input->get_int();
+    }
+  else
+    {
+      set_a=0;
+    }
+
+    if (main_input->get_attribute("bins") != NULL)
+    {
+      bins=main_input->get_int();
+    }
+  else
+    {
+      bins=100;
+    }
+    
+  return new windingNumberSpin<walker_t,wave_t>(build_measure_vector(main_input,label),bins,set_a,id);
+      
+}

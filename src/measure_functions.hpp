@@ -580,6 +580,10 @@ double total_wavefunction<comp>::center_of_mass_no_pbc(total_wavefunction<comp>:
   return r/p1.size();
 }
 
+
+double centerOfMassNoBC(orbitals<spinOrbital1D> & p1);
+double centerOfMassSpinNoBC(orbitals<spinOrbital1D> & p1);
+
 // template class total_wavefunction<dmc<D1_t> >;
 // template class total_wavefunction<dmc<spinor1D> >;
 // template class bill_jastrow_wavefunction<jastrow_delta,dmc<D1_t> >;

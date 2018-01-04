@@ -48,6 +48,11 @@ public:
   void linkQmc(qmc_t* qmc_obj_){qmc_obj=qmc_obj_;}
   
   wavefunction(qmc_t * qmc_obj);
+
+  virtual void laplacianMinusGradientSquaredLogWave(const all_particles_t & p,grad_t & grad,value_t & e,value_t & waveValue)
+  {throw notYetSsupported("laplacianMinusGradientSquaredLogWave" + label);};
+
+  
   void getLabel(){return label;};
   void setLabel(string label_){label=label_;};
   virtual double evaluate_derivative(all_particles_t *p){throw notYetSsupported("evaluate_derivative");};
@@ -88,7 +93,7 @@ public:
   
   // compute the gradient of the wavefunction
   // Just adds to the gradient. Does not reset the initial value
-  virtual void gradient(const all_particles_t & p,grad_t & grad){throw notYetSsupported("gradient");};
+  virtual void gradient(const all_particles_t & p,grad_t & grad){throw notYetSsupported("Wavefunction gradient");};
   // compute the laplacian of the wavefunction
   virtual value_t laplacian(all_particles_t & p,grad_t & grad){throw notYetSsupported("laplacian");};
   // evaluates the laplacian, the gradient and the logarithm of the value of the wavefunction
@@ -131,6 +136,7 @@ public:
   typedef typename wavefunction<tm>::potential_t potential_t;
   typedef typename wavefunction<tm>::all_particles_t all_particles_t;
   typedef typename wavefunction<tm>::value_t value_t;
+  typedef typename wavefunction<tm>::grad_t grad_t;
   
   //--------------------------- parameters
   
@@ -147,6 +153,7 @@ public:
   virtual double log_evaluate(all_particles_t *p)=0;
   
   virtual double potential(empty_t *p,all_particles_t* state) {return 0;};
+  virtual void gradient(all_particles_t & p,grad_t & grad){throw notYetSsupported("Wavefunction gradient");};
   
 protected:
   
@@ -325,11 +332,12 @@ public:
   typedef typename qmc_t::all_particles_t all_particles_t;
   typedef typename qmc_t::value_t value_t;
   typedef typename qmc_t::particles_t particles_t;
+  typedef wavefunction<qmc_t> wave_t ;
   typedef allParticlesGradient1D grad_t;
   
   string label;
   qmc_t* qmc_obj;
-  vector<wavefunction<qmc_t>*> waves;
+  vector<wave_t*> waves;
   
   total_wavefunction(const total_wavefunction<tm> *waveTot2)
   {
@@ -356,6 +364,8 @@ public:
    */
   
   void laplacianGradient(const all_particles_t &p,value_t &e,value_t & eF,grad_t & grad);
+
+  void laplacianGradientLogWave(const all_particles_t & p,value_t & e,value_t & eF, grad_t & grad,double & waveValue);
 
   /* 
      - Computes just the gradient

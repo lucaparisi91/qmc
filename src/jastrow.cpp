@@ -81,30 +81,6 @@ void jastrow_delta::load_parameters(string filename)
     d=-pow(parameters[0],2);
   }
 
-double jastrow_delta::d0(const double &x)
-  { 
-    if (x < parameters[3])
-      {
-      return sin(parameters[0]*x + parameters[1]);
-      }
-    else
-      {
-      return c;
-      }
-  }
-  
-double jastrow_delta::d1(const double &x)
-  {
-    
-    if (x < parameters[3])
-      {
-      return parameters[0]*cos(parameters[0]*x + parameters[1]);
-      }
-    else
-      {
-	return 0;
-	}
-  }
 
 double jastrow_delta::d1d0(const double &x)
   {
@@ -132,17 +108,6 @@ double jastrow_delta::d2d0(const double &x)
 	}
   }
 
-double jastrow_delta::d2(const double &x)
-  {
-    if (x < parameters[3])
-      {
-	return -pow(parameters[0],2)*sin(parameters[0]*x + parameters[1]);
-      }
-    else
-      {
-      return 0;
-      }
-  }
 
 //----- delta bound state jastrow
 jastrow_delta_bound_state::jastrow_delta_bound_state(string filename)
@@ -202,36 +167,6 @@ void jastrow_delta_bound_state::process(double xI)
   
 }
 
-double jastrow_delta_bound_state::d0(const double &x)
-  {
-    double y;
-    y=x-parameters[3];
-    // e^-k*x + beta*(e^k*x)
-    if (y<0)
-      {
-	return (exp(-parameters[0]*y) + exp(parameters[0]*y))/2;
-	
-      }
-    else
-      {
-	return 1;
-      }
-  }
-
-double jastrow_delta_bound_state::d1(const double &x)
-  {
-    double y;
-    y=x-parameters[3];
-    if (y<0)
-      {
-	return parameters[0]*(exp(parameters[0]*y) - exp(-parameters[0]*y)   )/2;
-	
-      }
-    else
-      {
-	return 0; 
-      }
-  }
 
 
 double jastrow_delta_bound_state::d1d0(const double &x)
@@ -241,21 +176,6 @@ double jastrow_delta_bound_state::d1d0(const double &x)
     if (y<0)
       {
 	return parameters[0]*tanh(parameters[0]*y);
-      }
-    else
-      {
-	return 0; 
-      }
-  }
-
-
-double jastrow_delta_bound_state::d2(const double &x)
-  {
-    double y;
-    y=x-parameters[3];
-    if (y<0)
-      {
-	return parameters[0]*parameters[0]*(exp(parameters[0]*y) + exp(-parameters[0]*y))/2;
       }
     else
       {

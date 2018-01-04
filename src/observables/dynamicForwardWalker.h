@@ -37,7 +37,6 @@ public:
   {
     currentIndex=(currentIndex+1)%data.size();
     if (currentIndex==0){filled=1;}
-    
   }
   
   storage_t & current()
@@ -49,14 +48,20 @@ public:
   {
     return data[currentIndex];
   }
-    
-  virtual bool isFilled()
+  
+  virtual int isFilled()
   {
     return filled;
   }
   
   virtual void print(){};
-  virtual void reset(){};
+  
+  virtual void reset()
+  {
+    currentIndex=0;
+    filled=0;
+  };
+  
   
   virtual void pack(packed_data* packedO){packedO->pack(currentIndex);packedO->pack(data);packedO->pack(filled);}
 
@@ -73,8 +78,13 @@ public:
     filled=m2->filled;
     data=m2->data;
   }
-  
+
+  vector<storage_t> & getData(){return data;}
+  const vector<storage_t> & getData() const {return data;} ;
 private:
+  
+  
+  
   int filled;
   int currentIndex;
   vector<storage_t> data;
@@ -91,6 +101,7 @@ public:
   
   double average(){return this->current();}
   
+  virtual vector<double> & currentVector(){return this->getData();}
   
 private:
   

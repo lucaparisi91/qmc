@@ -1,4 +1,3 @@
-
 template<class jastrow_t,class tm>
 class bill_jastrow_wavefunction_two_body_symmetricSpinOrbital : public bill_jastrow_wavefunction<jastrow_t,tm>
 {

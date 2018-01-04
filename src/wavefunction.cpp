@@ -73,8 +73,14 @@ string createWavefunctionId(xml_input* xml_wave)
 string createJastrowId(xml_input* xml_wave)
 {
   string jastrow_kind;
+  string kind1="";
   jastrow_kind=xml_wave->get_attribute("kind")->get_string();
   
+  if ( xml_wave->get_attribute("kind1") != NULL )
+    {
+      kind1=xml_wave->get_string();
+    }
+  jastrow_kind+=kind1;
   
   return jastrow_kind;
   

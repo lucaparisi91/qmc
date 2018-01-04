@@ -54,9 +54,9 @@ public:
   void drift(all_particles_t & p,const grad_t & grad,double delta)
   {
     
-    for(int i=0;i<p.size();i++)
+    for(int i=0;i<p.size();++i)
       {
-	for(int j=0;j<p[i].size();j++)
+	for(int j=0;j<p[i].size();++j)
 	  {
 	    p[i][j].positionNoBC()+=delta*grad[i][j];
 	  }
