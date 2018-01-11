@@ -23,15 +23,20 @@ class traits
 {
 };
 
+
 class dmc_t{};
 class vmc_t{};
 
 class orbital1D;
 class spinOrbital1D;
 template<class > class orbitals;
+template <class> class dmc_walker;
+template <class> class rabi_walker;
+class noSpinSampling_t {} ;
+class yesSpinSampling_t {};
 
 // Definees the dimensionality of the system
-template<class bc>
+template<class bc,class S=noSpinSampling_t>
 class D1_t
 {
 public:
@@ -40,7 +45,25 @@ public:
   typedef orbitals<spinOrbital1D> particles_t;
   typedef orbitals<particles_t> all_particles_t;
   typedef geometry<bc> geometry_t;
+  typedef S spinSampling_t;
+  
 };
+
+template<class comp,class spinSampling_t>
+class walkerTraits
+{
+public:
+  typedef dmc_walker<comp> dmc_walker_t;  
+};
+
+template<class comp>
+class walkerTraits<comp,yesSpinSampling_t>
+{
+public:
+  typedef rabi_walker<comp> dmc_walker_t;
+};
+
+
 
 // the spinor templated class
 template<class bc>
@@ -61,6 +84,7 @@ public:
   typedef geometry<bc> geometry_t;
   typedef spinorsRealDmc particles_t;
   typedef all_particles<particles_t> all_particles_t;
+  typedef noSpinSampling_t spinSampling_t;
 };
 
 typedef spinorReal<pbc1d> spinor1D;

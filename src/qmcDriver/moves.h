@@ -14,6 +14,7 @@ public:
   typedef typename all_particles_t::particles_t particles_t;
   typedef typename comp::rand_t rand_t;
   typedef typename comp::grad_t grad_t;
+  typedef typename particles_t::particles_t orbital_t;
   
   qmcMover(int seed,double delta_tau_)  : rand_o(seed)
   {
@@ -35,6 +36,8 @@ public:
   virtual void computeEffectiveDriftForce(all_particles_t &p,const grad_t & grad){cout << "No effective drift force to compute"<<endl;exit(2);};
 
   virtual void moveSpinRabi(particles_t & p,vector<double> &spinFlipsRatios){cout << "No spin rabi."<<endl;exit(2);};
+
+  virtual void moveSpinRabi(orbital_t & p,double spinFlipsRatio){cout << "No individual spin rabi."<<endl;exit(2);};
   
   virtual grad_t & getEffectiveDriftForce(){cout << "No effective drift force"<<endl;exit(2);};
   

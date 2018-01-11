@@ -41,7 +41,37 @@ public:
  
   
 }
+
+
+  virtual void laplacianMinusGradientSquaredLogWave(const all_particles_t & p,grad_t & grad,value_t & e,value_t & waveValue)
+{
+  typedef typename grad_t::gradParticles_t gradParticles_t;
   
+  typedef typename grad_t::gradParticles_t gradParticles_t;
+  value_t tmp,tmp1,tmp2;
+  const particles_t &p1=p[this->src_particle_set];
+  gradParticles_t & grad1=grad[this->src_particle_set];
+  double x,sign,d;
+  e=0;
+  waveValue=0;
+  for(int i=0;i<p1.size();i++)
+    {
+      x=this->qmc_obj->geo->distance_pbc(p1[i].position(),this->jastrowc.getCenter(p1[i].spin()));
+      d=abs(x);
+      //returns the direction of the wavefunction
+      sign=x/d;
+      
+      tmp=this->jastrowc.d0(d,p1[i].spin());
+      tmp1=this->jastrowc.d1(d,p1[i].spin())/tmp;
+      tmp2=this->jastrowc.d2(d,p1[i].spin())/tmp;
+      
+      e+=(tmp2 - tmp1*tmp1);
+      grad1[i]+=sign*tmp1;
+      waveValue+=log(tmp);
+    }
+ 
+  
+}
   void gradient(all_particles_t & p,grad_t & grad)
   {
     

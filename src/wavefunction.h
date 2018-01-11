@@ -50,7 +50,7 @@ public:
   wavefunction(qmc_t * qmc_obj);
 
   virtual void laplacianMinusGradientSquaredLogWave(const all_particles_t & p,grad_t & grad,value_t & e,value_t & waveValue)
-  {throw notYetSsupported("laplacianMinusGradientSquaredLogWave" + label);};
+  {throw notYetSsupported("laplacianMinusGradientSquaredLogWave " + label);};
 
   
   void getLabel(){return label;};
@@ -592,7 +592,6 @@ public:
       {
 	spinFlipRatios[j]=spinFlip(j,p);
       }
-     
     
   }
   int get_sign();
@@ -648,7 +647,6 @@ void load_wavefunctions(xml_input * xml_wave, vector< typename comp::swave_t* > 
 #include "wavefunction/billJastrowWaveFunctionTwoBodySymm.hpp"
 #include "wavefunction/billJastrowWaveFunctionTwoBodyASymm.hpp"
 #include "wavefunction/totalWavefunction.hpp"
-
 
 
 #endif

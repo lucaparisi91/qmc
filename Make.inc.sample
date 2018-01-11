@@ -1,0 +1,4 @@
+CC=mpic++
+XMLDIR=/home/luca/software/libxml
+LAPACKDIR=~/software/lapack-3.8.0
+OPTIMIZATION_LEVEL=3

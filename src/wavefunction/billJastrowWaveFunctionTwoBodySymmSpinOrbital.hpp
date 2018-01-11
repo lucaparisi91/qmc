@@ -13,7 +13,7 @@ public:
   bill_jastrow_wavefunction_two_body_symmetricSpinOrbital(qmc_t* qmc_obj_,jastrow_t& jastrowO) : bill_jastrow_wavefunction< jastrow_t,comp>(qmc_obj_,jastrowO) {};
   
   virtual void laplacianMinusGradientSquared(const all_particles_t & p,grad_t & grad,value_t & e)
-{
+  {
   typedef typename grad_t::gradParticles_t gradParticles_t;
   
   value_t tmp,tmp1,tmp2;

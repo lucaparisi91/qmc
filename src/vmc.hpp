@@ -15,7 +15,7 @@ void vmc_walker<comp>::update(qmc_type* vmc_obj)
    vmc_obj->moveEngine->moveGaussian(*(this->state));
   
    vmc_obj->geo->all_particles_pbc(*(this->state));
-  
+   
   // update the wavefunction
   
   this->wavefunction_value=vmc_obj->wave->log_evaluate(this->state);

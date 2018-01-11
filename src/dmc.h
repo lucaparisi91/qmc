@@ -31,7 +31,8 @@ class dmc : public qmc<comp>
 {
  public:
   typedef random1 rand_t;
-  typedef dmc_walker<comp> walker_t;
+  typedef typename comp::spinSampling_t spinSampling_t;
+  typedef typename walkerTraits<comp,spinSampling_t>::dmc_walker_t walker_t;
   typedef typename comp::value_t value_t;
   typedef typename comp::all_particles_t all_particles_t;
   typedef typename comp::particles_t particles_t;
@@ -189,7 +190,8 @@ class rabi_walker : public dmc_walker<comp>
 {
 public:
   typedef dmc<comp> qmc_t;
-  
+  typedef typename dmc_walker<comp>::all_particles_t all_particles_t;
+  typedef typename qmc_t::particles_t particles_t;
   rabi_walker(qmc_t* dmc_obj_) : dmc_walker<comp>(dmc_obj_)
   {
     
@@ -227,15 +229,32 @@ public:
     spinFlipRatios=w.spinFlipRatios;
   }
   
-  void update(qmc_t* dmc_obj)
-  {
-    
+  void updateAllatOnce(qmc_t* dmc_obj)
+  { 
     dmc_obj->wave->spinFlip(*this->state,spinFlipRatios);
     dmc_obj->qmcMoverO->moveSpinRabi((*this->state)[0],spinFlipRatios);
-    
     dmc_walker<comp>::update(dmc_obj);
+  }
+
+  void update(qmc_t* dmc_obj)
+  {
+    updateOneByOne(dmc_obj);
+  }
+  
+  void updateOneByOne(qmc_t* dmc_obj)
+  {
+    double spinFlipRatio;
+    particles_t & p1=(*this->state)[0];
+    
+    for(int i=0;i<p1.size();i++)
+      {
+	spinFlipRatio=dmc_obj->wave->spinFlip(i,*this->state);
+	dmc_obj->qmcMoverO->moveSpinRabi(p1[i],spinFlipRatio);
+      }
     
     
+    
+    dmc_walker<comp>::update(dmc_obj); 
   }
   
 private:

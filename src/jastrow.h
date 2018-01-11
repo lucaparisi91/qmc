@@ -139,11 +139,11 @@ public:
       b=parameters[1]/2.;
   }
   
-  double d0(const double &x){return parameters[0];};
+  inline double d0(const double &x){return parameters[0];};
   double d1d0(const double &x){return 0.;};
   double d2d0(const double &x){return 0.;};
-  double d1(const double &x){return 0.;};
-  double d2(const double &x){return 0;};
+  inline double d1(const double &x){return 0.;};
+  inline double d2(const double &x){return 0;};
   double dP1(const double &x){return 0;};
   double dP2(const double &x){return 0;};
   

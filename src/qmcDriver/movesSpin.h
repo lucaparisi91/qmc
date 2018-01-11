@@ -5,7 +5,7 @@ public:
   typedef typename qmcMover<comp>::all_particles_t all_particles_t;
   typedef typename qmcMover<comp>::grad_t grad_t;
   typedef typename all_particles_t::particles_t particles_t;
-  
+  typedef typename particles_t::particles_t orbital_t;
   
   
   qmcMover1OrderSpin(int seed,double delta_tau_)  : qmcMover<comp>(seed,delta_tau_), particleMover(seed,delta_tau_){tauSpin=0.005;omega=1;};
@@ -38,8 +38,7 @@ public:
     for(int i=0;i<p.size();i++)
       {
 	for(int j=0;j<p[i].size();j++)
-	  {
-	    
+	  { 
 	    assert(work[k]>=0 and work[k]<=1);
 	    if (work[k]<tauSpin)
 	      {
@@ -47,19 +46,32 @@ public:
 	      }
 	    k++;
 	  }
-      }
-    
+      } 
   }
   
+  void moveSpinRabi(orbital_t & p,double spinFlipRatio)
+  {
+    double r,tmp,pSpinFlip;
+    r=this->getRandomEngine().uniform();
+    tmp=omega*particleMover.getTimeStep();
+    pSpinFlip=sinh(tmp)*spinFlipRatio;
+    pSpinFlip/=(pSpinFlip + cosh(tmp));
+    
+    if (r<pSpinFlip)
+      {
+	p.spin()*=-1;
+      }
+  }
   void moveSpinRabi(particles_t & p,vector<double> &spinFlipsRatios)
   {
+    
     double pSpinFlip,tmp;
     this->getRandomEngine().uniform(work);
     
     for(int i=0;i<p.size();i++)
       {
-	tmp=omega*particleMover.getTimeStep()*spinFlipsRatios[i];
-	pSpinFlip=sinh(tmp);
+	tmp=omega*particleMover.getTimeStep();
+	pSpinFlip=sinh(tmp)*spinFlipsRatios[i];
 	pSpinFlip/=(pSpinFlip + cosh(tmp));
 	
 	if (work[i]<pSpinFlip)
@@ -75,7 +87,6 @@ public:
     particleMover.moveGaussian(p);
     
     moveUniformSpin(p);
-    
     
     //while(getMagnetization(p[0])<0);
     

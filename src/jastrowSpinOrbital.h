@@ -60,27 +60,29 @@ public:
   
   jastrowSpinOrbitalOneBody(string file) :jastrowUp(file),jastrowDown(file){center[0]=jastrowUp.center;center[1]=jastrowDown.center;};  
   
-  double d0(const double x,int i)
+  inline double d0(const double x,int i)
   {
-    return (1+i)/2 * jastrowUp.d0(x) + (1-i)/2 * jastrowDown.d0(x);
+     return i==1 ? jastrowUp.d0(x) : jastrowDown.d0(x);
   }
   
-  double d1(const double x,int i)
+  inline double d1(const double x,int i)
   {
-    return (1+i)/2 * jastrowUp.d1(x) + (1-i)/2 * jastrowDown.d1(x);
+    return i==1 ? jastrowUp.d1(x) : jastrowDown.d1(x);
   }
   
   double d1d0(const double x,int i)
   {
-    return (1+i)/2 * jastrowUp.d1d0(x) + (1-i)/2 * jastrowDown.d1d0(x);
+    return i==1 ? jastrowUp.d1d0(x) : jastrowDown.d1d0(x);
   }
+
   double d2d0(const double x,int i)
   {
-    return (1+i)/2 * jastrowUp.d2d0(x) + (1-i)/2 * jastrowDown.d2d0(x);
+    return i==1 ? jastrowUp.d2d0(x) : jastrowDown.d2d0(x);
   }
-  double d2(const double x,int i)
+  
+  inline double d2(const double x,int i)
   {
-    return (1+i)/2 * jastrowUp.d2(x) + (1-i)/2 * jastrowDown.d2(x);
+    return i==1 ? jastrowUp.d2(x) : jastrowDown.d2(x);
   }
   
   
