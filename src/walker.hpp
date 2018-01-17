@@ -80,6 +80,14 @@ void walker_load_dynamic_measures(vector<measure_dynamic<qt> *> & md ,xml_input*
 	{
 	  bins=0;
 	}
+      if (xml_md->get_attribute("nFutureWalkers") != NULL)
+	{
+	  nFutureWalkers=xml_md->get_int();
+	}
+      else
+	{
+	  nFutureWalkers=0;
+	}
       
       if(xml_md->get_name()=="center_of_mass_difference" and futureWalkers==true )
 	{
@@ -166,6 +174,11 @@ void walker_load_dynamic_measures(vector<measure_dynamic<qt> *> & md ,xml_input*
 	 {
 	   md.push_back(new scalarForwardWalking<qt>(bins) );
 	 }
+       
+       if(xml_md->get_name()=="centerOfMassSpinDifferenceSquared" and futureWalkers==true )
+	{
+	  md.push_back(new scalarForwardWalking<qt>(nFutureWalkers) );
+	}
        
        xml_md->get_next();
     }

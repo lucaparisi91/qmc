@@ -18,7 +18,6 @@ class xml_input;
 class mesh;
 class measure_scalar;
 class measure_vector;
-
 // build a certain kind of object from ground
 class factory
 {
@@ -88,7 +87,7 @@ public:
       add(m[i]/n,i);
     }
 }
-
+  
   void variances();
   void out(const string &filename);
   void save(const string &filename);
@@ -97,6 +96,7 @@ public:
   T get_error(int i){return errors[i];};
   bool is_converged(int i){return converged[i];}
 private:
+  
   vector<int> depth; // the depth of the binary tree
   T zero_el;
   vector<vector<T> > sums; // mean values
@@ -902,6 +902,46 @@ public:
   
 };
 
+template<class walker_t,class wave_t>
+class centerOfMassSpinDifferenceMeasurement : public measurement_scalar<walker_t,wave_t>
+{
+public:
+  
+  centerOfMassSpinDifferenceMeasurement(measure_scalar* mScal) :  measurement_scalar<walker_t,wave_t>::measurement_scalar(mScal){};
+  void make_measurement(walker_t* w,wave_t* wave){this->ms->add(centerOfMassSpinNoBC((*w->state)[this->ms->set_a]),0);}
+  
+};
+
+template<class walker_t,class wave_t>
+class centerOfMassSpinDifferenceSquaredMeasurement : public measurement_scalar<walker_t,wave_t>
+{
+public:
+  
+  centerOfMassSpinDifferenceSquaredMeasurement(measure_scalar* mScal) :  measurement_scalar<walker_t,wave_t>::measurement_scalar(mScal){};
+  void make_measurement(walker_t* w,wave_t* wave){this->ms->add(pow(centerOfMassSpinNoBC((*w->state)[this->ms->set_a]),2),0);}
+  
+};
+
+template<class walker_t,class wave_t>
+class centerOfMassSpinDifferenceSquaredMeasurementForwardWalking : public measurement_scalar<walker_t,wave_t>
+{
+public:
+  centerOfMassSpinDifferenceSquaredMeasurementForwardWalking(measure_scalar* mScal,int indexStorage_) :  measurement_scalar<walker_t,wave_t>::measurement_scalar(mScal){indexStorage=indexStorage_;};
+  
+  void make_measurement(walker_t* w,wave_t* wave){
+    
+    if (w->md[indexStorage]->isFilled())
+      {
+	this->ms->add(w->md[indexStorage]->average(),0);
+      }
+    
+    w->md[indexStorage]->add(pow(centerOfMassSpinNoBC((*w->state)[this->ms->set_a]),2));
+
+  }
+  
+private:
+  int indexStorage;
+};
 
 
 template<class walker_t,class wave_function_t>
@@ -1349,7 +1389,6 @@ public:
   
   structure_factor_spin_complexOrbitalsForwardWalking(measure_vector* ms_,int bins,double deltaQ,double l_box,int setA_,int setB_,int indexStorage_) : measurement<walker_t,wave_t,measure_vector >(ms_)
   {
-    
     int i;
     // change the number of bins
     qs.resize(bins);
@@ -1363,7 +1402,6 @@ public:
     setB=setB_;
     work.resize(bins);
     indexStorage=indexStorage_;
-    
   };
   
   virtual void make_measurement(walker_t* w,wave_t* wave)
@@ -1386,6 +1424,7 @@ private:
   vector<complex< double> >  work;
   int setA;
   int setB;
+  
 };
 
 

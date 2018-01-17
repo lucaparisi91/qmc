@@ -1,12 +1,10 @@
-<qmc>
-  
+<qmc>  
   <system>
     <dimensions>1</dimensions>
     <particles label="1" m="1" n="11" />
   </system>
 
   <algorithm>
-    
     
     <calculation detailed_balance="false" kind="vmc">
       

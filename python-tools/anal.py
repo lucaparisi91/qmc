@@ -10,6 +10,7 @@ from scipy.optimize import curve_fit
 import statsmodels.tsa.stattools as tsa
 import matplotlib.pylab as plt
 import pandas as pd
+import string
 # error classes
 class bound_error:
     pass
@@ -664,5 +665,45 @@ def getMinEnergyParameter(df,cutOff=0):
     error=np.sqrt(np.average(parameters**2,weights=weights) - mean**2)
 
     return [mean,error]
+
+        
+
+def readConfigurations(filename):
+    
+    with open(filename) as f:
+        content = f.readlines()
+    configurations=[]
+    i=0
+    positions=np.array([])
+    spins=np.array([])
+    
+    nWalkers=int(string.split(content[i]," ")[1])
+    print nWalkers
+    for iW in range(0,nWalkers):
+        i+=4
+        
+        nOrbitals=int(string.split(content[i]," ")[2])
+        print nOrbitals
+        positions=np.zeros(nOrbitals)
+        spins=np.zeros(nOrbitals)
+        
+        
+        orbitals=[]
+        for iOrbital in range(0,nOrbitals) :
+            i+=1
+            orbital=np.array((string.split(content[i])),dtype=float)
+            orbitals.append(orbital)
+            
+        configurations.append(np.array(orbitals))
+    return configurations
+
+    
+def plot1DSpinorConfig(config):
+    config2= config[config[:,2]==1]
+    
+    plt.plot(config2[:,0],config2[:,0]*0,"ob")
+    config2= config[config[:,2]==-1]
+    plt.plot(config2[:,0],config2[:,0]*0,"or")
+    
     
     

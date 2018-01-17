@@ -201,7 +201,6 @@ double jastrow_delta_bound_state::d2d0(const double &x)
 
 jastrow_gaussian::jastrow_gaussian(string filename)
 {
-  
   parameters.resize(2);
   load_parameters(filename);
 }
@@ -226,15 +225,6 @@ void jastrow_gaussian::load_parameters(string filename)
   
 }
 
-double jastrow_gaussian::d0(const double &x)
-{
-  
-  return exp(-x*x*parameters[0]);
-}
-double jastrow_gaussian::d1(const double &x)
-{
-  return -2*x*parameters[0]*exp(-x*x*parameters[0]);
-}
 double jastrow_gaussian::d1d0(const double &x)
 {
   return -2*x*parameters[0];
@@ -245,9 +235,6 @@ double jastrow_gaussian::d2d0(const double &x)
   return -2*parameters[0]*(1-2*parameters[0]*x*x);
 }
 
-double jastrow_gaussian::d2(const double &x)
-{
-  return -2*parameters[0]*(1-2*parameters[0]*x*x)*exp(-x*x*parameters[0]);
-}
+
 
 

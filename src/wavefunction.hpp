@@ -502,6 +502,8 @@ void load_wavefunctions(xml_input * xml_wave, vector< typename comp::swave_t* > 
 
   fac.registerType("bill_jastrow_spin_orbitalsymm2bdelta_in_trap",& ( buildBillJastrowSpinTwoBody<jastrowSpinOrbitalTwoBody<jastrow_delta_in_trap,jastrow_delta_in_trap> ,comp> ) );
 
+  fac.registerType("bill_jastrow_spin_orbitalsymm2bdelta_in_trapdelta_in_trap",& ( buildBillJastrowSpinTwoBody<jastrowSpinOrbitalTwoBody<jastrow_delta_in_trap,jastrow_delta_in_trap> ,comp> ) );
+
   fac.registerType("bill_jastrow_spin_orbitalsymm2bdelta_phonons",& ( buildBillJastrowSpinTwoBody<jastrowSpinOrbitalTwoBody<jastrow_delta_phonons,jastrow_delta_phonons> ,comp> ) );
   
 
@@ -510,6 +512,8 @@ void load_wavefunctions(xml_input * xml_wave, vector< typename comp::swave_t* > 
   fac.registerType("bill_jastrow_spin_orbitalsymm2bdeltadelta_bound_state",& ( buildBillJastrowSpinTwoBody<jastrowSpinOrbitalTwoBody<jastrow_delta,jastrow_delta_bound_state> ,comp> ) );
   
   fac.registerType("bill_jastrow_spin_orbital1bgauss",& ( buildBillJastrowSpinOneBody<jastrowSpinOrbitalOneBody<jastrow_gaussian,jastrow_gaussian> ,comp> ) );
+
+  fac.registerType("bill_jastrow_spin_orbital1bgaussgauss",& ( buildBillJastrowSpinOneBody<jastrowSpinOrbitalOneBody<jastrow_gaussian,jastrow_gaussian> ,comp> ) );
 
     fac.registerType("bill_jastrow_spin_orbital1bspinOrbital",& ( buildBillJastrowSpinOneBody<jastrowSpinOrbitalOneBody<jastrowSpinOrbital,jastrowSpinOrbital> ,comp> ) );
   

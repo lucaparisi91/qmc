@@ -1260,7 +1260,56 @@ measures<tm>::measures(string filename,tm *qmc_obj)
 	  ms.push_back(buildWindingNumberSpin<walker_t,wave_t>(main_input,id));
 	  id++;
 	}
-
+      
+      if (main_input->get_name() == "centerOfMassSpinDifference")
+	{
+	  if (main_input->get_attribute("label") != NULL)
+	    {
+	      label=main_input->get_string();
+	    }
+	  else
+	    {
+	      label="centerOfMassSpinDifference";
+	    }
+	  
+	  ms.push_back(new centerOfMassSpinDifferenceMeasurement<walker_t,wave_t>(build_measure_scalar(main_input,label)));
+	  
+	}
+      
+      if (main_input->get_name() == "centerOfMassSpinDifferenceSquared")
+	{
+	  if (main_input->get_attribute("label") != NULL)
+	    {
+	      label=main_input->get_string();
+	    }
+	  else
+	    {
+	      label="centerOfMassSpinDifferenceSquared";
+	    }
+	  
+	  
+	  
+	  if (main_input->get_attribute("futureWalkers") != NULL)
+	    {
+	      futureWalkers=main_input->get_bool();
+	    }
+	  else
+	    {
+	      futureWalkers=false;
+	    }
+	  
+	  
+	  
+	  if (futureWalkers==false)
+	    {
+	      ms.push_back(new centerOfMassSpinDifferenceSquaredMeasurement<walker_t,wave_t>(build_measure_scalar(main_input,label)));
+	    }
+	  else
+	    {
+	      ms.push_back(new centerOfMassSpinDifferenceSquaredMeasurementForwardWalking<walker_t,wave_t>(build_measure_scalar(main_input,label),id));
+	      id++;
+	    }
+	}
       
       
       main_input->get_next();

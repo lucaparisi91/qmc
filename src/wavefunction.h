@@ -202,6 +202,9 @@ class bill_jastrow_wavefunction_two_body_symmetric : public bill_jastrow_wavefun
   
   virtual void gradient(const all_particles_t & p,grad_t & grad);
   
+  virtual void laplacianMinusGradientSquaredLogWave(const all_particles_t & p,grad_t & grad, value_t & e,value_t & waveValue);
+
+  
 protected:
   
   bill_jastrow_wavefunction_two_body_symmetric(jastrow_t & jastrowo) : bill_jastrow_wavefunction< jastrow_t,comp>(jastrowo)
@@ -274,6 +277,8 @@ class bill_jastrow_wavefunction_two_body_asymmetric : public bill_jastrow_wavefu
   
   virtual double evaluate_derivative(all_particles_t* p);
   virtual double evaluate_derivative_second(all_particles_t* p,const double phi);
+  
+  virtual void laplacianMinusGradientSquaredLogWave(const all_particles_t & p,grad_t & grad, value_t & e,value_t & waveValue);
   
   virtual void laplacianMinusGradientSquared(const all_particles_t & p, grad_t & grad,value_t & e);
   

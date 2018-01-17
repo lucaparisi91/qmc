@@ -48,11 +48,11 @@ public:
   typedef double value_t;
   jastrow_gaussian(string filename);
   void load_parameters(string filename);
-  double d0(const double &x);
+  inline double d0(const double &x){return exp(-x*x*parameters[0]);};
   double d1d0(const double &x);
   double d2d0(const double &x);
-  double d1(const double &x);
-  double d2(const double &x);
+  inline double d1(const double &x){return -2*x*parameters[0]*exp(-x*x*parameters[0]);}
+  inline double d2(const double &x){return -2*parameters[0]*(1-2*parameters[0]*x*x)*exp(-x*x*parameters[0]);};
   double dP1(const double &x){return 0;};
   double dP2(const double &x){return 0;};
   void setParameter(double x,int i)
@@ -195,6 +195,7 @@ class jastrow_delta_in_trap : public jastrow<jastrow_delta_in_trap>
   typedef double position_t;
   typedef real_t value_t;
 public:
+  
   jastrow_delta_in_trap(string filename);
   void load_parameters(string filename);
  
