@@ -2,7 +2,6 @@
 #include "cassert"
 #include "../ptools.h"
 
-
 template<class T>
 void vectorAccumulator<T>::accumulateMean(const vector<T> & vectorName)
 {

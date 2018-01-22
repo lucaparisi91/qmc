@@ -1,0 +1,63 @@
+<qmc>
+  <seed>26785</seed>  
+  <nBlocks>10000</nBlocks>
+  <stepsPerBlock>8000</stepsPerBlock>
+  <warmupBlocks>0</warmupBlocks>
+  <warmupOptimize>100</warmupOptimize>
+  <unCorrelationSteps>100</unCorrelationSteps>
+  <correlatedEnergySteps>1000</correlatedEnergySteps>
+  <absErrOptimization>0.01</absErrOptimization>
+  
+  <system>    
+    <lBox>100</lBox>
+    <dimensions>1</dimensions>        
+    <particles index="0" kind="spinOrbital" m="1" n="30" nUp="15" />
+    <g>inf</g>
+    <g_tilde>1</g_tilde>
+    <oneBodyPotential kind="rabiCoupling">
+      <oneBodyPotential center="-0.0" omega="1" setA="0" />
+    </oneBodyPotential>
+    <initialCondition kind="random" length="30" />
+    
+  </system>
+  
+  <method kind="svmc" optimize="false">
+    <sigma_diff>1e-3</sigma_diff>
+    <mean_walkers>1</mean_walkers>
+    <delta_walkers>10</delta_walkers>
+    <delta_tau>0.001</delta_tau>
+    <propagator>spin</propagator>
+    
+  </method>
+  
+  <measures>
+    <density bins="100" history="false" setA="0" skip="9" />
+    <magnetization bins="100" history="false" setA="0" skip="9" />
+
+  </measures>
+  
+  <wavefunctions>
+    
+    <wavefunction jastrow_type="2b" kind="bill_jastrow_spin_orbital" label="B-B" setA="0" setB="0">
+      <jastrow file="jastrow.in" file1="jastrowi.in" kind="delta" />
+    </wavefunction>
+
+    <wavefunction jastrow_type="1b" kind="bill_jastrow_spin_orbital" label="rabiOrbital" setA="0" setB="0">
+      <jastrow file="jastrowOrbital.in" file1="jastrowOrbitali.in" kind="spinOrbital" />
+    </wavefunction>
+   
+  </wavefunctions>
+  
+  <total_wavefunction label="main">
+    <wavefunction label="B-B" />
+    <wavefunction label="rabiOrbital" />
+  </total_wavefunction>
+  
+    <optimizationPlan delta="0.001">
+    <parameter label="cutOff" minParameter="0.1" maxParameter="10." >
+      <p param="1" wavefunction="0"  />
+    </parameter>
+    
+  </optimizationPlan>
+
+</qmc>

@@ -507,14 +507,12 @@ public:
     parameters.resize(0);
     for(it = plan.begin(); it != plan.end(); it++)
     {
-      for(int i=0;i<it->second.size();i++)
-	{
-	  iWave=it->second[i].first;
-	  iParam=it->second[i].second;
-	  param= getParameter(iParam,iWave);
-	  parameters.push_back(param );
-	  
-	}
+     
+      iWave=it->second[0].first;
+      iParam=it->second[0].second;
+      param= getParameter(iParam,iWave);
+      
+      parameters.push_back(param);
     }
   
 }
@@ -534,8 +532,9 @@ public:
 	  iParam=it->second[i].second;
 	  assert(k<parameters.size());
 	  setParameter(parameters[k],iParam,iWave);
-	  k++;
+	  
 	}
+      k++;
     }
   
   }

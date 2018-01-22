@@ -12,15 +12,18 @@ void linearMethodOptimize<wave_t,walker_t>::setPlan(optimizePlan &planIn,const w
   k=0;
   for(it=plan.begin();it!=plan.end();++it)
     {
+      waves.push_back(new wave_t(wave_));
+      
       for(int i=0;i<it->second.size();i++)
 	{
 	  iWave=it->second[i].first;
 	  iParam=it->second[i].second;
 	  // creates new wavefunctions \psi(p_i + delta)
-	  waves.push_back(new wave_t(wave_));
+	  
 	  waves[k]->incrementParameter(iParam,iWave,plan.getDelta());
-	  k+=1;
+	  
 	}
+      k+=1;
     }
   
   k=waves.size();

@@ -62,9 +62,9 @@ public:
 	p.spin()*=-1;
       }
   }
+
   void moveSpinRabi(particles_t & p,vector<double> &spinFlipsRatios)
   {
-    
     double pSpinFlip,tmp;
     this->getRandomEngine().uniform(work);
     

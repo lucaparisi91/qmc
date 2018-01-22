@@ -34,14 +34,20 @@ public:
 
   void setParameter(double x,int i)
   {
-    if (i==0) jastrowSame.setParameter(x,0);
-    if (i==1) jastrowDifferent.setParameter(x,0);    
+    if (i==0)
+      {
+	jastrowSame.setParameter(x,0);
+      }
+    else if(i==1)
+      {
+	jastrowDifferent.setParameter(x,0);
+      }
   }
   
   double  getParameter(int i) const
   {
     if (i==0) return jastrowSame.getParameter(0);
-    if (i==1) return jastrowDifferent.getParameter(1);
+    if (i==1) return jastrowDifferent.getParameter(0);
     
   }
 private:
@@ -102,8 +108,7 @@ public:
   double  getParameter(int i) const
   {
     if (i==0) return jastrowUp.getParameter(0);
-    if (i==1) return jastrowDown.getParameter(1);
-    
+    if (i==1) return jastrowDown.getParameter(0);
   }
   
   double getCenter(int s) const

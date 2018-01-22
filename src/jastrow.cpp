@@ -16,6 +16,7 @@ jastrow_delta::jastrow_delta(string filename)
     parameters.resize(5);
     load_parameters(filename);
   }
+
 jastrow_delta_in_trap::jastrow_delta_in_trap(string filename)
   {
     parameters.resize(3);

@@ -670,6 +670,41 @@ private:
   vector<double> parameters;
 };
 
+/*
+
+class jastrowSpinOrbitCoupling : public jastrow<jastrowSpinOrbitCoupling>
+{
+public:
+  typedef double position_t;
+  typedef double value_t;
+  jastrowSpinOrbitCoupling(string filename);
+  
+  void load_parameters(string filename);
+
+  inline double f(const double &x){return sqrt(pow(sum*cos(k1*x),2) + pow(diff*cos(k1*x),2)   ) }
+  
+  
+  inline double d0(const double &x){return sqrt(f(x);};
+    
+  double d1d0(const double &x);
+  double d2d0(const double &x);
+  inline double d1(const double &x){return -2*x*parameters[0]*exp(-x*x*parameters[0]);}
+  inline double d2(const double &x){return -2*parameters[0]*(1-2*parameters[0]*x*x)*exp(-x*x*parameters[0]);};
+  double dP1(const double &x){return 0;};
+  double dP2(const double &x){return 0;};
+  void setParameter(double x,int i);
+  double getParameter(int i) const;
+  
+private:
+  
+  double c;
+  double d;
+  double k1;
+  double sum;
+  double diff;
+};
+
+  */
 #include "jastrow_spline.h"
 #include "jastrowSpinOrbital.h"
 #endif

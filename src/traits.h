@@ -1,5 +1,6 @@
 #ifndef TRAITS_H
 #define TRAITS_H
+
 #include "vector"
 #include <complex>
 using namespace std;

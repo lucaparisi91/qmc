@@ -235,7 +235,7 @@ public:
     dmc_obj->qmcMoverO->moveSpinRabi((*this->state)[0],spinFlipRatios);
     dmc_walker<comp>::update(dmc_obj);
   }
-
+  
   void update(qmc_t* dmc_obj)
   {
     updateOneByOne(dmc_obj);
@@ -243,6 +243,8 @@ public:
   
   void updateOneByOne(qmc_t* dmc_obj)
   {
+    dmc_walker<comp>::update(dmc_obj);
+    
     double spinFlipRatio;
     particles_t & p1=(*this->state)[0];
     
@@ -253,8 +255,6 @@ public:
       }
     
     
-    
-    dmc_walker<comp>::update(dmc_obj); 
   }
   
 private:
