@@ -14,8 +14,8 @@ public:
   const T& operator()(int i,int j) const;
   T& operator()(int i,int j);
   T* raw(){return &M[0];}
-  int getN(){return n;} const
-  int getM(){return m;} const
+  int getN() const {return n;} 
+  int getM() const {return m;}
   void print() const;
   
 private:

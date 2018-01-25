@@ -149,7 +149,7 @@ void measure_dynamic_scalar<qt>::clear()
 {
   int i;
   ofstream f;
-  filled=false;
+  filled=0;
   last=0;
   ms[0]=ms[bins-1];
   //f.open("walker.hist",ios::app);
@@ -174,7 +174,7 @@ void measure_dynamic_scalar<T>::add(double m1)
   
   if (last== (bins-1))
     {
-      filled=true;
+      filled=1;
       
     }
   
@@ -186,7 +186,7 @@ measure_dynamic_scalar<qt>::measure_dynamic_scalar(const int &bins_,const int &s
   bins=bins_;
   ms.resize(bins_);
   last=-1;
-  filled=false;
+  filled=0;
 }
 
 template <class qt>
@@ -220,7 +220,7 @@ template<class T>
 void measure_dynamic_scalar<T>::reset()
 {
   last=-1;
-  filled=false;
+  filled=0;
 }
 template<class T>
 void estimator_decorrelator_vector<T>::add(const vector<T> & m)
@@ -990,7 +990,7 @@ measures<tm>::measures(string filename,tm *qmc_obj)
 	  
 	}
 	    
-      if (main_input->get_name() == "center_of_mass_difference")
+      if (main_input->get_name() == "centerOfMassDifference")
 	{
 	  if (main_input->get_attribute("label") != NULL)
 	    {
@@ -998,7 +998,7 @@ measures<tm>::measures(string filename,tm *qmc_obj)
 	    }
 	  else
 	    {
-	      label="center_of_mass_difference";
+	      label="centerOfMassDifference";
 	    }
 	  
 	  if (main_input->get_attribute("setA") != NULL)
@@ -1038,28 +1038,21 @@ measures<tm>::measures(string filename,tm *qmc_obj)
 	      futureWalkers=false;
 	    }
 	  
-	  // disable future walkers if not dmc
-	  if (center_of_mass_dyn_creator.isSupported() == false)
-	    {
-	      futureWalkers=false;
-	    }
-	  
-	  
 	  if (futureWalkers==false)
 	    {
-	      ms.push_back(new center_of_mass_difference<walker_t,wave_t>(build_measure_scalar(main_input,label)));
+	      ms.push_back(new centerOfMassDifference<walker_t,wave_t>(build_measure_scalar(main_input,label)));
 	    }
 	  else
 	    {
 	      
-	      center_of_mass_dyn_creator.append(ms,id,main_input,label,set_a,set_b,bins);
+	      ms.push_back(new centerOfMassDifference<walker_t,wave_t>(build_measure_scalar(main_input,label)));
 	      id++;
 	    }
 	  
        
 	}
 
-      if (main_input->get_name() == "center_of_mass_differenceSquared")
+      if (main_input->get_name() == "centerOfMassDifferenceSquared")
 	{
 	  if (main_input->get_attribute("label") != NULL)
 	    {
@@ -1067,7 +1060,7 @@ measures<tm>::measures(string filename,tm *qmc_obj)
 	    }
 	  else
 	    {
-	      label="center_of_mass_differenceSquared";
+	      label="centerOfMassDifferenceSquared";
 	    }
 	  
 	  if (main_input->get_attribute("setA") != NULL)
@@ -1107,20 +1100,15 @@ measures<tm>::measures(string filename,tm *qmc_obj)
 	      futureWalkers=false;
 	    }
 	  
-	  // disable future walkers if not dmc
-	  if (center_of_mass_dynSquared_creator.isSupported() == false)
-	    {
-	      futureWalkers=false;
-	    }
-	  
 	  if (futureWalkers==false)
 	    {
-	      ms.push_back(new center_of_mass_difference2<walker_t,wave_t>(build_measure_scalar(main_input,label)));
+	      ms.push_back(new centerOfMassDifferenceSquared<walker_t,wave_t>(build_measure_scalar(main_input,label)));
 	    }
 	  else
-	    {
-	      center_of_mass_dynSquared_creator.append(ms,id,main_input,label,set_a,set_b,bins);
+	    { 
+	      ms.push_back(new centerOfMassDifferenceSquaredForwardWalking<walker_t,wave_t>(build_measure_scalar(main_input,label),id));
 	      id++;
+	      
 	    }
 	  
        

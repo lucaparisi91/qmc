@@ -14,7 +14,9 @@ walker<comp>::walker(qmc_type* qmc_obj)
   state->sizes(ns);
   particlesGradient.resize(ns);
   particlesGradientBackup.resize(ns);
+  
 }
+
 
 template<class comp>
 template<class qmc_type>
@@ -89,16 +91,36 @@ void walker_load_dynamic_measures(vector<measure_dynamic<qt> *> & md ,xml_input*
 	  nFutureWalkers=0;
 	}
       
-      if(xml_md->get_name()=="center_of_mass_difference" and futureWalkers==true )
+      if(xml_md->get_name()=="centerOfMassDifference" and futureWalkers==true )
 	{
-	  md.push_back(new futureWalkerScalar<qt,scalarStorage<double> >() ); 
+	  if (xml_md->get_attribute("nFutureWalkers") != NULL)
+	    {
+	      nFutureWalkers=xml_md->get_int();
+	      
+	    }
+	  else
+	    {
+	      cout << "No future walkers specified";
+	      exit(1);
+	    }
+	  
+	  md.push_back(new scalarForwardWalking<qt>(nFutureWalkers));
 	}
       
-      if(xml_md->get_name()=="center_of_mass_differenceSquared" and futureWalkers==true )
+      if(xml_md->get_name()=="centerOfMassDifferenceSquared" and futureWalkers==true )
 	{
-	  md.push_back(new scalarForwardWalking<qt>(bins) );
+	  if (xml_md->get_attribute("nFutureWalkers") != NULL)
+	    {
+	      nFutureWalkers=xml_md->get_int();
+	      
+	    }
+	  else
+	    {
+	      cout << "No future walkers specified";
+	      exit(1);
+	    }
 	  
-	  
+	  md.push_back(new scalarForwardWalking<qt>(nFutureWalkers));
 	}
       
       if(xml_md->get_name()=="static_structure_factor" and futureWalkers==true )

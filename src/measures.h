@@ -413,7 +413,7 @@ class measure_dynamic_scalar : public measure_dynamic<comp>
   
   int last;
   int bins;
-  bool filled; // whatever all the bins have been filled
+  int filled; // whatever all the bins have been filled
   vector<double> ms;//measurements
   //void make_measurement(all_particles* state,total_wavefunction* wave);//
   //measure_dynamic_scalar<T>& operator=(measure_dynamic_scalar<T>&);
@@ -880,26 +880,31 @@ private:
 };
 
 template<class walker_t,class wave_t>
-class center_of_mass_difference : public measurement_scalar<walker_t,wave_t>
+class centerOfMassDifference : public measurement_scalar<walker_t,wave_t>
 {
 public:
-  center_of_mass_difference(measure_scalar* mScal) :  measurement_scalar<walker_t,wave_t>::measurement_scalar(mScal){};
-  void make_measurement(walker_t* w,wave_t* wave){this->ms->add(wave->center_of_mass_no_pbc(w->state,this->ms->set_a) - wave->center_of_mass_no_pbc(w->state,this->ms->set_b) ,0);};
   
+  centerOfMassDifference(measure_scalar* mScal) :  measurement_scalar<walker_t,wave_t>::measurement_scalar(mScal){};
+  void make_measurement(walker_t* w,wave_t* wave){
+    this->ms->add(centerOfMassNoBC((*w->state)[this->ms->set_b])- centerOfMassNoBC((*w->state)[this->ms->set_a]) ,0);
+      };
 };
 
 template<class walker_t,class wave_t>
-class center_of_mass_difference2 : public measurement_scalar<walker_t,wave_t>
+class centerOfMassDifferenceSquared : public measurement_scalar<walker_t,wave_t>
 {
 public:
-  center_of_mass_difference2(measure_scalar* mScal) :  measurement_scalar<walker_t,wave_t>::measurement_scalar(mScal){};
+  centerOfMassDifferenceSquared(measure_scalar* mScal) :  measurement_scalar<walker_t,wave_t>::measurement_scalar(mScal){};
   void make_measurement(walker_t* w,wave_t* wave)
   {
+    
     this->ms->add(
-		  pow(   wave->center_of_mass_no_pbc(w->state,this->ms->set_a) - wave->center_of_mass_no_pbc(w->state,this->ms->set_b)
-			 ,2),0);
+			     pow(
+				 centerOfMassNoBC((*w->state)[this->ms->set_a]) - centerOfMassNoBC((*w->state)[this->ms->set_b])
+				 ,2)
+			     ,0);
+    
   }
-  
 };
 
 template<class walker_t,class wave_t>
@@ -921,6 +926,62 @@ public:
   void make_measurement(walker_t* w,wave_t* wave){this->ms->add(pow(centerOfMassSpinNoBC((*w->state)[this->ms->set_a]),2),0);}
   
 };
+
+template<class walker_t,class wave_t>
+class centerOfMassDifferenceSquaredForwardWalking : public measurement_scalar<walker_t,wave_t>
+{
+public:
+  centerOfMassDifferenceSquaredForwardWalking(measure_scalar* mScal,int indexStorage_) :  measurement_scalar<walker_t,wave_t>::measurement_scalar(mScal){indexStorage=indexStorage_;};
+  
+  void make_measurement(walker_t* w,wave_t* wave){
+    
+    if (w->md[indexStorage]->isFilled())
+      {
+	this->ms->add(w->md[indexStorage]->average(),0);
+      }
+    
+    w->md[indexStorage]->add(
+			     pow(
+				 centerOfMassNoBC((*w->state)[this->ms->set_a]) - centerOfMassNoBC((*w->state)[this->ms->set_b])
+				 ,2)
+			     );
+
+    
+    
+  }
+  
+private:
+  int indexStorage;
+};
+
+template<class walker_t,class wave_t>
+class centerOfMassDifferenceForwardWalking : public measurement_scalar<walker_t,wave_t>
+{
+public:
+  centerOfMassDifferenceForwardWalking(measure_scalar* mScal,int indexStorage_) :  measurement_scalar<walker_t,wave_t>::measurement_scalar(mScal){indexStorage=indexStorage_;};
+  
+  void make_measurement(walker_t* w,wave_t* wave){
+    
+    if (w->md[indexStorage]->isFilled())
+      {
+	this->ms->add(w->md[indexStorage]->average(),0);
+      }
+    
+    w->md[indexStorage]->add(
+			     
+				 centerOfMassNoBC((*w->state)[this->ms->set_a]) - centerOfMassNoBC((*w->state)[this->ms->set_b])
+				 
+			     );
+
+    
+    
+  }
+  
+private:
+  int indexStorage;
+};
+
+
 
 template<class walker_t,class wave_t>
 class centerOfMassSpinDifferenceSquaredMeasurementForwardWalking : public measurement_scalar<walker_t,wave_t>

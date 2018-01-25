@@ -28,10 +28,7 @@ void packed_data::pack(int& in,int count)
   MPI_Pack(&in,count,MPI_INT,buf,size,&position,MPI_COMM_WORLD);
 }
 
-void packed_data::pack(bool& in,int count)
-{
-  MPI_Pack(&in,count,MPI::BOOL,buf,size,&position,MPI_COMM_WORLD);
-}
+
 
 
 
@@ -45,10 +42,6 @@ void packed_data::unpack(complex<double> &in,int count)
   MPI_Unpack(buf,size,&position,&in,count,MPI_DOUBLE,MPI_COMM_WORLD);
 }
 
-void packed_data::unpack(bool& in,int count)
-{
-  MPI_Unpack(buf,size,&position,&in,count,MPI::BOOL,MPI_COMM_WORLD);
-}
 
 //packs some information in the system count times
 void packed_data::unpack(double& in,int count)
@@ -470,6 +463,7 @@ int dock::total_walkers()
   return total_walkers;
 }
 
+
 namespace pTools
 {
 template<>
@@ -488,13 +482,6 @@ int get_pack_size<int>(const int & x)
   return size;
 };
   //returns the size of the system
-template<>
-int get_pack_size<bool>(const bool & x)
-{
-  int size;
-  MPI_Pack_size(1,MPI::BOOL,MPI_COMM_WORLD,&size);
-  return size;
-}
 
 template<>
 // returns the size of the algorithm

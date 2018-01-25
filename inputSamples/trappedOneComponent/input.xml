@@ -51,9 +51,9 @@
     <wavefunction label="B-G1" />
   </total_wavefunction>
   
-  <optimizationPlan delta="0.001">
-    <parameter>
-      <p param="0" wavefunction="1" label="cutoffBoundState" />
+  <optimizationPlan delta="0.001" >
+    <parameter label="alpha">
+      <p param="0" wavefunction="1"  />
     </parameter>
     
   </optimizationPlan>

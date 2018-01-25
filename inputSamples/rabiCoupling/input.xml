@@ -14,11 +14,19 @@
     <particles index="0" kind="spinOrbital" m="1" n="30" nUp="15" />
     <g>inf</g>
     <g_tilde>1</g_tilde>
+    
     <oneBodyPotential kind="rabiCoupling">
       <oneBodyPotential center="-0.0" omega="1" setA="0" />
     </oneBodyPotential>
-    <initialCondition kind="random" length="30" />
     
+    <!--
+    <oneBodyPotential>
+      <oneBodyPotential omega="1" setA="0" kind="sigmax" />
+      <oneBodyPotential k="1" setA="0" kind="psigmaz" />
+    </oneBodyPotential>
+    -->
+    
+    <initialCondition kind="random" length="30" />
   </system>
   
   <method kind="svmc" optimize="false">
@@ -41,12 +49,19 @@
     <wavefunction jastrow_type="2b" kind="bill_jastrow_spin_orbital" label="B-B" setA="0" setB="0">
       <jastrow file="jastrow.in" file1="jastrowi.in" kind="delta" />
     </wavefunction>
-
+    
     <wavefunction jastrow_type="1b" kind="bill_jastrow_spin_orbital" label="rabiOrbital" setA="0" setB="0">
       <jastrow file="jastrowOrbital.in" file1="jastrowOrbitali.in" kind="spinOrbital" />
     </wavefunction>
-   
+    
   </wavefunctions>
+  
+  <phases>
+    <phase kind="SOCfree" setA="0" file="phaseSpinUp.dat" file1="phaseSpinDown.dat" />
+  </phases>
+
+  
+  
   
   <total_wavefunction label="main">
     <wavefunction label="B-B" />

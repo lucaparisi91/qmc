@@ -4,7 +4,7 @@
 
 #include "../tools.h"
 #include "optimizationMatrixLinearMethod.h"
-#include "lapacke.h"
+#include <lapacke.h>
 
 
 optimizationMethodLinear::optimizationMethodLinear()

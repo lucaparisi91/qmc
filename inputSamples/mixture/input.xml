@@ -1,8 +1,8 @@
 <qmc>
   <seed>26785</seed>  
-  <nBlocks>10000</nBlocks>
-  <stepsPerBlock>1000</stepsPerBlock>
-  <warmupBlocks>10</warmupBlocks>
+  <nBlocks>10</nBlocks>
+  <stepsPerBlock>100</stepsPerBlock>
+  <warmupBlocks>0</warmupBlocks>
   <warmupOptimize>1000</warmupOptimize>
   <correlatedEnergySteps>1000</correlatedEnergySteps>
   <unCorrelationSteps>200</unCorrelationSteps>
@@ -11,24 +11,23 @@
     <lBox>30</lBox>
     <dimensions>1</dimensions>
     
-    <particles index="0" m="1" n="30" />
-    <particles index="1" m="1" n="1" />
+    <particles index="0" m="1" n="15" />
+    <particles index="1" m="1" n="15" />
     <initialCondition kind="uniform" length="30" />
     <g>1</g>
     <g_tilde>0.599484250319</g_tilde>
   </system>
   
-  <method kind="vmc" optimize="false">
+  <method kind="svmc" optimize="false">
     <sigma_diff>1e-3</sigma_diff>
-    <mean_walkers>1</mean_walkers>
+    <mean_walkers>100</mean_walkers>
     <delta_walkers>10</delta_walkers>
     <delta_tau>0.001</delta_tau>
-    
   </method>
   
   <measures>
-    
-    <pair_correlation bins="1000" futureWalkers="false" history="false" label="pair_correlation_i_i" nFutureWalkers="100" setA="1" setB="1" skip="19" />
+    <pair_correlation bins="1000" futureWalkers="false" history="false" label="pair_correlationUpUp" nFutureWalkers="100" setA="0" setB="0" skip="29" />
+    <pair_correlation bins="1000" futureWalkers="false" history="false" label="pair_correlationUpDown" nFutureWalkers="100" setA="0" setB="1" skip="29" />
     
   </measures>
   
@@ -52,7 +51,7 @@
   <total_wavefunction label="main">
     <wavefunction label="B-B" />
     <wavefunction label="I-I" />
-   <wavefunction label="B-I" />
+    <wavefunction label="B-I" />
     
   </total_wavefunction>
   

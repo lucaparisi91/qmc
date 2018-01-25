@@ -1,5 +1,5 @@
 #include "optimizeTools.h"
-#include "lapacke.h"
+#include <lapacke.h>
 #include <cassert>
 #include <cstdlib>
 
@@ -10,7 +10,7 @@ rawMatrix<T>::rawMatrix()
 }
 
 template<class T>
-const void rawMatrix<T>::print() const
+void rawMatrix<T>::print() const
 {
   for(int i=0;i<n;i++)
     {

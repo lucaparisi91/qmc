@@ -236,8 +236,9 @@ class bill_jastrow_wavefunction_one_body : public bill_jastrow_wavefunction< jas
   virtual double evaluate_derivative(all_particles_t *p);
   virtual double evaluate_derivative_second(all_particles_t *p,double phi);
   
-  
   virtual void laplacianMinusGradientSquared(const all_particles_t & p, grad_t & grad,value_t & e);
+
+  virtual void laplacianMinusGradientSquaredLogWave(const all_particles_t & p, grad_t & grad,value_t & e,value_t & waveValue);
 
   void gradient(const all_particles_t & p, grad_t & grad);
   virtual  bill_jastrow_wavefunction_one_body<jastrow_t,comp> * clone()

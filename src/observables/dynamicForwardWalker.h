@@ -83,8 +83,6 @@ public:
   const vector<storage_t> & getData() const {return data;} ;
 private:
   
-  
-  
   int filled;
   int currentIndex;
   vector<storage_t> data;
@@ -116,8 +114,7 @@ public:
   vectorForwardWalking(int bins,int binsVector) : forwardWalking<qt,vector<double> >(bins,vector<double>(binsVector,0)) {};
   
   virtual vector<double> & currentVector(){return this->current();}
-private:
-  
+private:  
   
 };
 

@@ -1,5 +1,5 @@
 #include "optimize.h"
-#include "lapacke.h"
+#include <lapacke.h>
 #include "../tools.h"
 #include <cmath>
 

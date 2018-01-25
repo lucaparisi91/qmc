@@ -26,10 +26,7 @@ class packed_data
   void unpack(int& in){unpack(in,1);}
   void pack(double& in,int count);
   void pack(double& in){pack(in,1);}
-  void pack(bool& in,int count);
-  void pack(bool& in){pack(in,1);}
-  void unpack(bool& in,int count);
-  void unpack(bool& in){unpack(in,1);}
+  
   void unpack(double& in,int count);
   void unpack(double& in){unpack(in,1);}
   void pack(complex<double> &in,int count);
