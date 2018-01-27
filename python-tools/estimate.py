@@ -5,6 +5,7 @@ from scipy import optimize
 from scipy import stats
 from math import *
 import tools
+import models
 
 ############ exceptions
 
