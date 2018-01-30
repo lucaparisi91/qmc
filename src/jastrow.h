@@ -211,6 +211,48 @@ public:
   
 };
 
+
+class jastrow_delta_in_trap_exponential : public jastrow<jastrow_delta_in_trap_exponential>
+{
+  typedef double position_t;
+  typedef real_t value_t;
+public:
+  
+  jastrow_delta_in_trap_exponential(string filename)
+  {
+    
+    xml_input *xml_jastrow=new xml_input;
+    xml_jastrow->open(filename);
+    b=xml_jastrow->reset()->get_child("l_box")->get_value()->get_real();
+    c=xml_jastrow->reset()->get_child("c")->get_value()->get_real();
+    center=xml_jastrow->reset()->get_child("position")->get_value()->get_real();
+    
+    alpha=xml_jastrow->reset()->get_child("alpha")->get_value()->get_real();
+   
+    a=0;
+    
+    delete xml_jastrow;
+  }
+ 
+  inline double d0(const double &x){return (x +c)*exp(-alpha*x*x);}
+  inline double d1(const double &x){return (1-2*alpha*x*(x+c))*exp(-alpha*x*x);};
+  inline double d2(const double &x){return (-c-3*x+2*alpha*x*x*(x+c))*exp(-alpha*x*x)*2*alpha;};
+  
+  void setParameter(double x,int i){alpha=x;}
+  double getParameter(int i) const {return alpha;};
+
+
+  inline double dP2(const double &x){return 0;};
+  inline double dP1(const double &x){return 0;};
+  inline double dP0(const double &x){return 0;};
+  inline double pD0(const double &x){return 0;};
+private:
+  double c;
+  double alpha;
+  
+};
+
+
 class jastrow_delta_phonons : public jastrow<jastrow_delta_phonons>
 {
   typedef double position_t;

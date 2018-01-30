@@ -498,7 +498,12 @@ void load_wavefunctions(xml_input * xml_wave, vector< typename comp::swave_t* > 
   fac.registerType("bill_jastrowsymm2bdelta_phonons",& ( createBillJastrowTwoBodySymmetric<jastrowOptimized<jastrow_delta_phonons>,comp> ) );
   fac.registerType("bill_jastrowsymm2bdelta_bound_state",& ( createBillJastrowTwoBodySymmetric<jastrowOptimized<jastrow_delta_bound_state>,comp> ) );
   fac.registerType("bill_jastrowasymm2bdelta_bound_state",& ( createBillJastrowTwoBodyAsymmetric< jastrowOptimized<jastrow_delta_bound_state>,comp> ) );
+
+  fac.registerType("bill_jastrowasymm2bdelta_in_trap_exponential",& ( createBillJastrowTwoBodyAsymmetric< jastrow_delta_in_trap_exponential,comp> ) );
+  
   fac.registerType("bill_jastrowsymm2bdelta_in_trap",& ( createBillJastrowTwoBodySymmetric<jastrowOptimized<jastrow_delta_in_trap> ,comp> ) );
+
+  fac.registerType("bill_jastrowsymm2bdelta_in_trap_exponential",& ( createBillJastrowTwoBodySymmetric<jastrow_delta_in_trap_exponential,comp> ) );
 
   fac.registerType("bill_jastrow_spin_orbitalsymm2bdelta_in_trap",& ( buildBillJastrowSpinTwoBody<jastrowSpinOrbitalTwoBody<jastrow_delta_in_trap,jastrow_delta_in_trap> ,comp> ) );
 

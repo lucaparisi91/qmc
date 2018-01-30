@@ -4,6 +4,7 @@ class jastrow_delta_phonons;
 class jastrow_gaussian;
 class jastrow_delta_bound_state;
 class jastrow_delta_in_trap;
+class jastrow_delta_in_trap_exponential;
 class jastrow_spline;
 class jastrowSpinOrbital;
 template<class,class,class> class jastrow_spinor;
@@ -64,6 +65,14 @@ struct traits<jastrow_delta_in_trap>
   typedef real_t value_t;
   typedef real_t position_t;
 };
+
+template<>
+struct traits<jastrow_delta_in_trap_exponential>
+{
+  typedef real_t value_t;
+  typedef real_t position_t;
+};
+
 
 template<>
 struct traits<jastrow_spline>
