@@ -17,15 +17,14 @@
     <g_tilde>1</g_tilde>
     <initialCondition kind="random" length="10." />
     <oneBodyPotential kind="harmonic">
-      <oneBodyPotential center="-0.0" omega="1" setA="0" />
-      <oneBodyPotential center="-0.0" omega="1" setA="1" />
-    </oneBodyPotential>
-    
+      <oneBodyPotential center="0" omega="1" setA="0" />
+      <oneBodyPotential center="0" omega="1" setA="1" />
+    </oneBodyPotential>    
   </system>
   
-  <method kind="dmc" optimize="false">
+  <method kind="vmc" optimize="false">
     <sigma_diff>1e-3</sigma_diff>
-    <mean_walkers>100</mean_walkers>
+    <mean_walkers>1</mean_walkers>
     <delta_walkers>30</delta_walkers>
     <delta_tau>0.001</delta_tau>
     
@@ -36,9 +35,9 @@
     <density label="densityUp" bins="1000" history="false" setA="0" skip="9" />
     <density label="densityDown" bins="1000" history="false" setA="1" skip="9" />
     
-    <centerOfMassDifferenceSquared label="centerOfMassDifferenceSquared" futureWalkers="true" nFutureWalkers="10"  history="false" setA="0" setB="1" skip="9" />
+    <centerOfMassDifferenceSquared label="centerOfMassDifferenceSquared" futureWalkers="false" nFutureWalkers="10"  history="false" setA="0" setB="1" skip="9" />
 
-    <centerOfMassDifference label="centerOfMassDifference" futureWalkers="true" nFutureWalkers="10"  history="false" setA="0" setB="1" skip="9" />
+    <centerOfMassDifference label="centerOfMassDifference" futureWalkers="false" nFutureWalkers="10"  history="false" setA="0" setB="1" skip="9" />
   </measures>
   
   <wavefunctions>
@@ -52,15 +51,15 @@
     </wavefunction>
     
     <wavefunction jastrow_type="2b" kind="bill_jastrow" label="B-I" setA="0" setB="1">
-      <jastrow file="jastrowi.in" kind="delta_in_trap" />
+      <jastrow file="jastrowi.in" kind="delta_in_trap_exponential" />
     </wavefunction>
 
     <wavefunction jastrow_type="1b" kind="bill_jastrow" label="B-G2" optParameter="0" setA="1" setB="1">
-      <jastrow file="jastrowGauss.in" kind="gauss" />
-    </wavefunction>
-
-    <wavefunction jastrow_type="1b" kind="bill_jastrow" label="B-G1" optParameter="0" setA="0" setB="0">
       <jastrow file="jastrowGaussi.in" kind="gauss" />
+    </wavefunction>
+    
+    <wavefunction jastrow_type="1b" kind="bill_jastrow" label="B-G1" optParameter="0" setA="0" setB="0">
+      <jastrow file="jastrowGauss.in" kind="gauss" />
     </wavefunction>
   
   </wavefunctions>
@@ -74,10 +73,12 @@
   </total_wavefunction>
   
   <optimizationPlan delta="0.001">
-    <parameter label="alpha" >
-      <p param="0" wavefunction="3" />
-      <p param="0" wavefunction="4" />
+    <parameter label="beta" >
+      <p param="1" wavefunction="2" />
+      <p param="2" wavefunction="3" />
     </parameter>
+    
+    
     
   </optimizationPlan>
   

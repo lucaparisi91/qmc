@@ -392,7 +392,23 @@ class jastrow_delta_in_trap(jastrow):
         
     def jastrow(self,x):
         return abs(x) + parameters["g"]
+
+
+##################### jastrow delta in trap #########################################
+
+class jastrow_delta_bound_state_no_pbc(jastrow):
+    
+    def __init__(self,lbox,g,m=1./2,position=0):
+        jastrow.__init__(self)
         
+        self.parameters["k"]=g*m
+        self.parameters["l_box"]=float(lbox)
+        self.parameters["position"]=float(position)
+        
+        
+    def jastrow(self,x):
+        return exp(-self.parameters["k"]*x)
+    
 ################### jastrow delta bound state  ###################
 
 class jastrow_delta_bound_state(jastrow):

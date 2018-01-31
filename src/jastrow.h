@@ -14,7 +14,6 @@
 template<class jastrowT>
 class jastrow
 {
-  
   typedef typename traits<jastrowT>::position_t position_t;
   typedef typename traits<jastrowT>::value_t value_t;
   
@@ -251,6 +250,45 @@ private:
   double alpha;
   
 };
+
+
+class jastrow_delta_bound_state_no_pbc : public jastrow<jastrow_delta_bound_state_no_pbc>
+{
+  typedef double position_t;
+  typedef real_t value_t;
+public:
+  
+  jastrow_delta_bound_state_no_pbc(string filename)
+  {
+    xml_input *xml_jastrow=new xml_input;
+    xml_jastrow->open(filename);
+    b=xml_jastrow->reset()->get_child("l_box")->get_value()->get_real();
+    k=xml_jastrow->reset()->get_child("k")->get_value()->get_real();
+    center=0;
+    a=0;
+    
+    delete xml_jastrow;
+  }
+  
+  inline double d0(const double &x){return exp(-k*x);}
+  inline double d1(const double &x){return  -k*exp(-k*x);}
+  inline double d2(const double &x){return k*k*exp(-k*x); };
+
+  inline double d1d0(const double & x){return -k;}
+  inline double d2d0(const double & x){return k*k;}
+  
+  void setParameter(double x,int i){}
+  double getParameter(int i) const {return 0;};
+
+
+  inline double dP2(const double &x){return 0;};
+  inline double dP1(const double &x){return 0;};
+  inline double dP0(const double &x){return 0;};
+  inline double pD0(const double &x){return 0;};
+private:
+  double k;
+};
+
 
 
 class jastrow_delta_phonons : public jastrow<jastrow_delta_phonons>
