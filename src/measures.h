@@ -1013,6 +1013,47 @@ public:
   virtual void make_measurement(walker_t* w,wave_function_t* wave){wave->density(w->state,this->ms);};
 };
 
+template<class walker_t,class wave_function_t>
+class densityTotalCentered : public measurement<walker_t,wave_function_t,space_measure<measure_vector> >
+{
+public:
+  typedef typename walker_t::all_particles_t all_particles_t;
+  typedef typename all_particles_t::particles_t particles_t;
+  densityTotalCentered(space_measure<measure_vector>* ms_) : measurement<walker_t,wave_function_t,space_measure<measure_vector> >(ms_) {};
+  
+  virtual void make_measurement(walker_t* w,wave_function_t* wave)
+  {  
+    double x=0,xCM=0;
+    all_particles_t& state=*(w->state);
+    int N=0;
+    // compute the center of mass
+    
+    for(int j=0;j<state.size();j++)
+      {
+	particles_t& p=state[j];
+	N+=p.size();
+	for(int i=0;i<p.size();i++)
+	  {
+	    xCM+=p[i].position();
+	  }
+      }
+    
+    xCM/=N;
+    
+    for(int j=0;j<state.size();j++)
+      {
+	particles_t& p=state[j];
+	for(int i=0;i<p.size();i++)
+	  {
+	    x=p[i].position()-xCM;
+	    this->ms->increment_value(1./(this->ms->grid->step),x,0);
+	  }
+	
+      };
+    this->ms->increment_index();
+  };
+  
+};
 /*
 template<class walker_t,class wave_function_t>
 class hessian : public measurement<walker_t,wave_function_t,measure_vector >

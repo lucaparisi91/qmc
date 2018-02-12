@@ -40,6 +40,8 @@ public:
 	particles_bc(p[i]);
       }
   }
+
+  
   
 };
 
@@ -62,6 +64,9 @@ public:
     return x>l_box/2. ? x-l_box : ((x<-l_box/2.) ? x+l_box : x) ;
   }
   
+  template<class all_particles_t>
+  bool checkAllBC(all_particles_t & p){return true;}
+  
 };
 
 string get_bc(xml_input* xml_input);
@@ -75,6 +80,37 @@ public:
   inline double distance_bc(double x1,double x2){return (x1-x2);};
   noPbcD1(double l_box){};
   
+  template<class all_particles_t >
+  bool checkAllBC(all_particles_t & p){return true;}
+  
+};
+
+class infBox : public noPbcD1
+{
+public:
+  infBox(double l_box_) : noPbcD1(l_box_){lBox=l_box_;};
+  template<class all_particles_t>
+  bool checkAllBC(all_particles_t & p)
+  {
+    
+    bool isInBox=true;
+    
+    for(int i=0;i<p.size();i++)
+      {
+	for(int j=0;j<p.size();j++)
+	  {
+	    if ( (p[i][j].position()<-lBox/2) or (p[i][j].position() > lBox/2) )
+	      {
+		isInBox=false;
+	      }
+	  }
+      }
+    
+    return isInBox;
+  }
+  
+private:
+  double lBox;
 };
 
 template<class bc_class>
@@ -102,6 +138,7 @@ class geometry
     
   //  return x;
   //}
+
   
   inline void pbc(vector<double> &vec)
   {
@@ -136,6 +173,7 @@ class geometry
 private:
   bc_t *bco;
 };
+
 template<class bc_class>
 geometry<bc_class>::geometry(string filename)
 {

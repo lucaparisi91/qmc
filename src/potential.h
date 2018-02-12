@@ -21,6 +21,7 @@ public:
   
   potential(geometry_t  * geo_)  {geo=geo_;};
   virtual double evaluate(all_particles_t* p){return 0;};
+  
 protected:
   geometry_t * geo;
   

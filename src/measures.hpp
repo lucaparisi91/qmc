@@ -1121,7 +1121,10 @@ measures<tm>::measures(string filename,tm *qmc_obj)
             
       if (main_input->get_name() == "density")
 	{
-	  if (main_input->get_attribute("label") != NULL)
+	  bool totalDensity;
+	  string centering;
+	  
+  	  if (main_input->get_attribute("label") != NULL)
 	    {
 	      label=main_input->get_string();
 	    }
@@ -1129,11 +1132,26 @@ measures<tm>::measures(string filename,tm *qmc_obj)
 	    {
 	      label="density";
 	    }
-	  
-	  // add a new density measurement
-	  ms.push_back(new density<walker_t,wave_t>(build_space_vector<measure_vector>(main_input,label,-n_particles/2,n_particles/2)));
+
+	  if (main_input->get_attribute("centering") != NULL)
+	    {
+	      centering=main_input->get_string();
+	    }
+	  else
+	    {
+	      centering="none";
+	    }
+
+	  if (centering=="none")
+	    {
+	      // add a new density measurement
+	      ms.push_back(new density<walker_t,wave_t>(build_space_vector<measure_vector>(main_input,label,-n_particles/2,n_particles/2)));
+	    }
+	  else if (centering=="cm")
+	    {
+	      ms.push_back(new densityTotalCentered<walker_t,wave_t>(build_space_vector<measure_vector>(main_input,label,-n_particles/2,n_particles/2)));
+	    }
 	}
-      
       // pair correlation
       if (main_input->get_name() == "pair_correlation")
 	{

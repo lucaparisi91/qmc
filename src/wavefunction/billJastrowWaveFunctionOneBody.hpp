@@ -11,6 +11,7 @@ void bill_jastrow_wavefunction_one_body<X,comp>::laplacianMinusGradientSquared(c
   for(int i=0;i<p1.size();i++)
     {
       x=this->qmc_obj->geo->distance_pbc(p1[i].position(),this->jastrowc.center);
+      
       d=abs(x);
       //returns the direction of the wavefunction
       sign=x/d;

@@ -260,7 +260,7 @@ void vmc<comp>::load()
     {
       cout<<"No file to load. Generating a random initial positions."<<endl;
       this->main_input->reset()->get_child("system")->get_child("initialCondition");
-
+      
       double length;
       string kind;
       if (this->main_input->get_attribute("length")==NULL)
