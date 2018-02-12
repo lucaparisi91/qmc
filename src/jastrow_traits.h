@@ -4,6 +4,8 @@ class jastrow_delta_phonons;
 class jastrow_gaussian;
 class jastrow_delta_bound_state;
 class jastrow_delta_bound_state_no_pbc;
+class jastrow_delta_bound_state_no_pbc2;
+class jastrow_delta_bound_state_no_pbc3;
 class jastrow_delta_in_trap;
 class jastrow_delta_in_trap_exponential;
 class jastrow_spline;
@@ -62,6 +64,20 @@ struct traits<jastrow_delta_bound_state>
 
 template<>
 struct traits<jastrow_delta_bound_state_no_pbc>
+{
+  typedef real_t value_t;
+  typedef real_t position_t;
+};
+
+template<>
+struct traits<jastrow_delta_bound_state_no_pbc2>
+{
+  typedef real_t value_t;
+  typedef real_t position_t;
+};
+
+template<>
+struct traits<jastrow_delta_bound_state_no_pbc3>
 {
   typedef real_t value_t;
   typedef real_t position_t;

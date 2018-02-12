@@ -269,6 +269,9 @@ public:
     
     delete xml_jastrow;
   }
+
+  
+
   
   inline double d0(const double &x){return exp(-k*x);}
   inline double d1(const double &x){return  -k*exp(-k*x);}
@@ -287,6 +290,137 @@ public:
   inline double pD0(const double &x){return 0;};
 private:
   double k;
+};
+
+class jastrow_delta_bound_state_no_pbc3 : public jastrow<jastrow_delta_bound_state_no_pbc3>
+{
+  typedef double position_t;
+  typedef real_t value_t;
+public:
+  
+  jastrow_delta_bound_state_no_pbc3(string filename)
+  {
+    xml_input *xml_jastrow=new xml_input;
+    xml_jastrow->open(filename);
+    b=xml_jastrow->reset()->get_child("l_box")->get_value()->get_real();
+
+    r0=xml_jastrow->reset()->get_child("r0")->get_value()->get_real();
+    r1=xml_jastrow->reset()->get_child("r1")->get_value()->get_real();
+    p=xml_jastrow->reset()->get_child("p")->get_value()->get_real();
+    delta=xml_jastrow->reset()->get_child("delta")->get_value()->get_real();
+    
+    k=1/r0;
+    alpha=r0/r1;
+    
+    center=0;
+    a=0;
+    
+    delete xml_jastrow;
+  }
+  
+  inline double d0(const double &x){return exp(-k*x*(alpha*x+p)/(x+p));}
+  
+  inline double d1(const double &x){return (d0(x+delta)-d0(x-delta))/(2*delta);}
+
+  inline double d2(const double &x){return (d0(x+delta)-2*d0(x)+d0(x-delta))/(delta*delta) ;};
+  
+  void setParameter(double x,int i){}
+  double getParameter(int i) const {return 0;};
+
+
+  inline double dP2(const double &x){return 0;};
+  inline double dP1(const double &x){return 0;};
+  inline double dP0(const double &x){return 0;};
+  inline double pD0(const double &x){return 0;};
+private:
+  
+  double k;
+  double r0;
+  double r1;
+  double p;
+  double alpha;
+  double delta;
+};
+
+
+class jastrow_delta_bound_state_no_pbc2 : public jastrow<jastrow_delta_bound_state_no_pbc2>
+{
+  typedef double position_t;
+  typedef real_t value_t;
+public:
+  
+  jastrow_delta_bound_state_no_pbc2(string filename)
+  {
+    xml_input *xml_jastrow=new xml_input;
+    xml_jastrow->open(filename);
+    b=xml_jastrow->reset()->get_child("l_box")->get_value()->get_real();
+    k=xml_jastrow->reset()->get_child("k")->get_value()->get_real();
+    k2=xml_jastrow->reset()->get_child("k2")->get_value()->get_real();
+    A=xml_jastrow->reset()->get_child("a")->get_value()->get_real();
+    B=xml_jastrow->reset()->get_child("b")->get_value()->get_real();
+    center=0;
+    a=0;
+    xI=xml_jastrow->reset()->get_child("xI")->get_value()->get_real();
+    
+    delete xml_jastrow;
+  }
+  
+  inline double d0(const double &x){return x<xI ? exp(-k*x) : A*exp(-k2*x)/(1+B*x);}
+  
+  inline double d1(const double &x){return x<xI ?  -k*exp(-k*x) : -A*exp(-k2*x)*( k2/(1+B*x) + B/pow(1+B*x,2)  ) ;}
+  inline double d2(const double &x){return x<xI ? k*k*exp(-k*x) : A*exp(-k2*x)*(  k2*k2/(1+B*x) + 2*k2*B/pow(1+B*x,2) + 2*B*B/pow(1+B*x,3) ); };
+  
+  //inline double d1d0(const double & x){return -k;}
+  //inline double d2d0(const double & x){return k*k;}
+
+
+  void setParameter(double x,int i)
+  {
+    if (i==0)
+      {
+	k2=x;
+      }
+    else if(i==1)
+      {
+	xI=x;
+      }
+    
+    setParameters();
+  }
+
+  
+  double getParameter(int i) const
+  {
+    if(i==0)
+      {
+	return k2;
+      }
+    else if(i==1)
+      {
+	return xI;
+      }
+  };
+  
+  inline double dP2(const double &x){return 0;};
+  inline double dP1(const double &x){return 0;};
+  inline double dP0(const double &x){return 0;};
+  inline double pD0(const double &x){return 0;};
+private:
+
+  void setParameters()
+  {
+    B=1./( 1./(k-k2)-xI);
+    A=exp(-(k-k2)*xI)*(1+B*xI);
+    printf("A : %f",A);
+    printf("B: %f",B);
+    printf("k2: %f",k2);
+  }
+  
+  double k;
+  double k2;
+  double A;
+  double B;
+  double xI;
 };
 
 

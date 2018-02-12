@@ -69,7 +69,6 @@ void total_wavefunction<tm>::laplacianGradientLogWave(const all_particles_t & p,
   eF=eF/2;
 }
 
-
 template< class tm>
 void total_wavefunction<tm>::gradient(const all_particles_t & p,grad_t & grad)
 {

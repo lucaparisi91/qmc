@@ -20,7 +20,7 @@ LFLAGS= -L $(LAPACKDIR) -llapacke -llapack -lrefblas -lgfortran -lm
 
 all:	qmc
 
-SRCS= spline.cpp xml-input.cpp ranlxd.cpp timer.cpp tools.cpp ptools.cpp mesh.cpp random.cpp circular_vector.cpp input.cpp functions.cpp particles.cpp particles/orbital.cpp particles/gradientParticles.cpp qmcDriver/qProbability.cpp observables/accumulator.cpp   observables/correlatedEnergyDifference.cpp observables/optimizeTools.cpp observables/optimizePlan.cpp jastrow.cpp observables/imaginaryTimeCorrelation.cpp jastrow_collection.cpp geometry.cpp potential.cpp factory.cpp  wavefunction.cpp measures.cpp measure_functions.cpp dmc.cpp vmc.cpp buildQMCDriver.cpp main.cpp qmc.cpp
+SRCS= spline.cpp xml-input.cpp ranlxd.cpp timer.cpp tools.cpp ptools.cpp mesh.cpp random.cpp circular_vector.cpp input.cpp functions.cpp particles.cpp particles/orbital.cpp particles/gradientParticles.cpp qmcDriver/qProbability.cpp observables/accumulator.cpp   observables/correlatedEnergyDifference.cpp observables/optimizeTools.cpp observables/optimizePlan.cpp jastrow.cpp observables/imaginaryTimeCorrelation.cpp jastrow_collection.cpp geometry.cpp potential.cpp factory.cpp  wavefunction.cpp measures.cpp measure_functions.cpp dmc.cpp vmc.cpp buildQMCDriver.cpp PIGS/pigs.cpp main.cpp qmc.cpp
 
 OBJS=$(SRCS:%.cpp=$(BUILD_DIR)/%.o)
 

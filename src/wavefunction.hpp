@@ -500,6 +500,10 @@ void load_wavefunctions(xml_input * xml_wave, vector< typename comp::swave_t* > 
   fac.registerType("bill_jastrowasymm2bdelta_bound_state",& ( createBillJastrowTwoBodyAsymmetric< jastrowOptimized<jastrow_delta_bound_state>,comp> ) );
   
   fac.registerType("bill_jastrowasymm2bdelta_bound_state_no_pbc",& ( createBillJastrowTwoBodyAsymmetric<jastrow_delta_bound_state_no_pbc,comp> ) );
+
+  fac.registerType("bill_jastrowasymm2bdelta_bound_state_no_pbc2",& ( createBillJastrowTwoBodyAsymmetric<jastrow_delta_bound_state_no_pbc2,comp> ) );
+
+  fac.registerType("bill_jastrowasymm2bdelta_bound_state_no_pbc3",& ( createBillJastrowTwoBodyAsymmetric<jastrow_delta_bound_state_no_pbc3,comp> ) );
   
   fac.registerType("bill_jastrowsymm2bdelta_bound_state_no_pbc",& ( createBillJastrowTwoBodySymmetric<jastrow_delta_bound_state_no_pbc,comp> ) );
   

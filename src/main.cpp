@@ -12,6 +12,7 @@
 #include "mpi.h"
 #include <fenv.h>
 #include "vmc.h"
+#include "PIGS/pigsSpin1D.h"
 using namespace std;
 
 int main(int argc,char** argv)
@@ -54,7 +55,11 @@ int main(int argc,char** argv)
   log_file << "PID="<<getpid()<<endl;
   log_file.close();
   MPI_Init(&argc,&argv);
-  
+  if (calculation == "pigs")
+    {
+      pigsSpin1DDriver_t pigsDriver;
+      
+    }
   if (calculation == "dmc" or calculation=="svmc")
     {
       // if (isSpinor)

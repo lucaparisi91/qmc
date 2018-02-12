@@ -258,7 +258,8 @@ class jastrow_orbital(jastrow):
         self.parameters["c"]=str(c)
         self.parameters["position"]=str(position)
         self.parameters["l_box"]=str(l)
-        
+
+
 ############################ jastrow delta with phonons ########
 # a delta jastrow with phononic contributions
 class jastrow_delta_phonons(jastrow):
@@ -408,6 +409,88 @@ class jastrow_delta_bound_state_no_pbc(jastrow):
         
     def jastrow(self,x):
         return exp(-self.parameters["k"]*x)
+
+class jastrow_delta_bound_state_no_pbc2(jastrow):
+    
+    def __init__(self,lbox,g,k2,xI,m=1./2,position=0):
+        jastrow.__init__(self)
+        
+        k=g*m*1.
+        
+        if k2>k:
+            print "Invalid k2"
+            return None
+
+        if xI< 1./(k-k2):
+            b=1./(1/(k-k2)-xI)
+        else:
+            print "invalid xI"
+            return None
+        
+        a=exp(-(k-k2)*xI)*(1+b*xI)
+        
+        #b=k*exp(-(k-k2)*x)/(1/x**2+k2/x)
+        #b=1/(1/(k-k2) - x)
+        
+        self.parameters["k"]=g*m
+        self.parameters["b"]=b
+        self.parameters["a"]=a
+        
+        self.parameters["xI"]=xI
+        self.parameters["l_box"]=float(lbox)
+        self.parameters["position"]=float(position)
+        self.parameters["k2"]=k2
+        
+    def __call__(self,xTot):
+            sol=np.zeros(len(xTot))
+            x=xTot[xTot<=self.parameters["xI"] ]
+            
+            sol[xTot<=self.parameters["xI"] ]=np.exp(-self.parameters["k"]*x)
+            
+            x=xTot[xTot>self.parameters["xI"] ]
+            
+            #sol[xTot>self.parameters["xI"] ]=self.parameters["b"]*np.exp(-self.parameters["k2"]*x)/x
+
+            sol[xTot>self.parameters["xI"] ]=self.parameters["a"]*np.exp(-self.parameters["k2"]*x)/(1+self.parameters["b"]*x)
+
+            
+
+            return sol
+    def d1(self,xTot):
+        sol=np.zeros(len(xTot))
+        x=xTot[xTot<=self.parameters["xI"] ]
+            
+        sol[xTot<=self.parameters["xI"] ]= -self.parameters["k"]*np.exp(-self.parameters["k"]*x)
+            
+        x=xTot[xTot>self.parameters["xI"] ]
+
+        sol[xTot>self.parameters["xI"] ]=-self.parameters["a"]*np.exp(-self.parameters["k2"]*x)*(self.parameters["k2"]/(1+self.parameters["b"]*x) + self.parameters["b"]/(1+self.parameters["b"]*x)**2 )
+
+        return sol
+
+
+class jastrow_delta_bound_state_no_pbc3(jastrow):
+    
+    def __init__(self,lbox,g,r1,p=1,m=1./2,position=0):
+        jastrow.__init__(self)
+        
+        self.parameters["r0"]=1/(g*m)
+        self.parameters["k"]=g*m
+        self.parameters["r1"]=r1
+        self.parameters["p"]=p
+        self.parameters["delta"]=1e-5
+        
+        
+        self.parameters["l_box"]=float(lbox)
+        self.parameters["position"]=float(position)
+
+        
+        
+    def __call__(self,x):
+        alpha=self.parameters["r0"]/self.parameters["r1"]
+        p=self.parameters["p"]
+        return np.exp(-x/self.parameters["r0"] *(alpha*x+p)/(x+p))
+    
     
 ################### jastrow delta bound state  ###################
 
