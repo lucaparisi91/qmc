@@ -17,7 +17,6 @@ public:
   typedef orbitals<orbitals<spinOrbital1D> > all_particles_t;
   typedef allParticlesGradient1D grad_t;
   typedef geometry<pbc1d> geometry_t;
-  
 };
 
 typedef  pigsDriver<PIGSSpinSystem_t> pigsSpin1DDriver_t;

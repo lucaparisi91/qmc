@@ -1045,7 +1045,7 @@ measures<tm>::measures(string filename,tm *qmc_obj)
 	  else
 	    {
 	      
-	      ms.push_back(new centerOfMassDifference<walker_t,wave_t>(build_measure_scalar(main_input,label)));
+	      ms.push_back(new centerOfMassDifferenceForwardWalking<walker_t,wave_t>(build_measure_scalar(main_input,label),id));
 	      id++;
 	    }
 	  

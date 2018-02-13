@@ -10,6 +10,7 @@
 #include "tools.h"
 #include "xml-input.h"
 #include "exception_classes.h"
+#include <cassert>
 
 template<class jastrowT>
 class jastrow

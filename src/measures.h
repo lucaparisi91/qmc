@@ -886,7 +886,7 @@ public:
   
   centerOfMassDifference(measure_scalar* mScal) :  measurement_scalar<walker_t,wave_t>::measurement_scalar(mScal){};
   void make_measurement(walker_t* w,wave_t* wave){
-    this->ms->add(centerOfMassNoBC((*w->state)[this->ms->set_b])- centerOfMassNoBC((*w->state)[this->ms->set_a]) ,0);
+    this->ms->add(centerOfMassNoBC((*w->state)[this->ms->set_a])- centerOfMassNoBC((*w->state)[this->ms->set_b]) ,0);
       };
 };
 

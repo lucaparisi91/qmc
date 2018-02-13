@@ -58,7 +58,8 @@ int main(int argc,char** argv)
   if (calculation == "pigs")
     {
       pigsSpin1DDriver_t pigsDriver;
-      
+      pigsDriver.run();
+      exit(0);
     }
   if (calculation == "dmc" or calculation=="svmc")
     {
