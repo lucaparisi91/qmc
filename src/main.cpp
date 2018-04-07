@@ -61,6 +61,7 @@ int main(int argc,char** argv)
       pigsDriver.run();
       exit(0);
     }
+  
   if (calculation == "dmc" or calculation=="svmc")
     {
       // if (isSpinor)

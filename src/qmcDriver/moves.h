@@ -26,9 +26,11 @@ public:
   {
     delta_tau=delta_tau_;
   }
+  
   qmcMover(rand_t & rand_,double delta_tau_) : rand_o(rand_)
   {
     setTimeStep(delta_tau_);
+    metropolisStep=true;
   }
   
   virtual void reserve(size_t n)=0;
@@ -44,11 +46,16 @@ public:
   virtual int getOrder()=0;
   
   virtual void moveGaussian(all_particles_t & p){};
+
+  bool getMetropolisStepStatus(){return metropolisStep;} const
+
+  void setMetropolisStepStatus(bool metStep){metropolisStep=metStep;}
+  
 protected:
   rand_t& getRandomEngine(){return rand_o;}
   double delta_tau;
   rand_t rand_o;
-  
+  bool metropolisStep;
 };
 
 template<class comp>
@@ -137,6 +144,7 @@ qmcMover<comp>* buildQMCMover(comp* qmcObj)
   // load the type of mover from the input file
   string moverType;
   string qmcType;
+  bool metropolisStep;
   
   qmcType=qmcObj->main_input->reset()->get_child("method")->get_attribute("kind")->get_string();
   
@@ -150,21 +158,35 @@ qmcMover<comp>* buildQMCMover(comp* qmcObj)
     {
       moverType="default";
     }
+
+  if ( qmcObj->main_input->get_attribute("metropolis")!= NULL)
+    {
+      metropolisStep=qmcObj->main_input->get_bool();
+    }
+  
+  else
+    {
+      metropolisStep=true;
+    }
   
   cout << "moverType: "<<moverType<<endl;
   if (qmcType=="dmc" or qmcType=="svmc")
     {
-      // build the mover
+      
+      
       if (moverType=="1order" or moverType=="default")
 	{
-	  return new qmcMover1Order<comp>(*qmcObj->rand,qmcObj->delta_tau);
-	  
+	  qmcMover1Order<comp>* ret;
+	  ret=new qmcMover1Order<comp>(*qmcObj->rand,qmcObj->delta_tau);
+	  ret->setMetropolisStepStatus(metropolisStep);
+	  return ret;
 	}
       
       if (moverType=="2order")
 	{
 	  qmcMover2Order<comp>* ret;
 	  ret=new qmcMover2Order<comp>(*qmcObj->rand,qmcObj->delta_tau,qmcObj->wave,qmcObj->geo);
+	  ret->setMetropolisStepStatus(metropolisStep);
 	  ret->init(qmcObj->getInputFileName());
 	  return ret;
 	}
@@ -181,7 +203,7 @@ qmcMover<comp>* buildQMCMover(comp* qmcObj)
 	  return ret;
 	}
 
-      cout << "Unokmn propagator";
+      cout << "Unkomn propagator";
       exit(1);
       
     }

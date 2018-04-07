@@ -122,16 +122,17 @@ void jastrow_delta_bound_state::load_parameters(string filename)
 {
   xml_input *xml_jastrow=new xml_input;
   xml_jastrow->open(filename);
-  parameters[0]=0; // k
+  //parameters[0]=0; // k
   parameters[1]=0; // B
   parameters[4]=xml_jastrow->reset()->get_child("g")->get_value()->get_real();
   parameters[2]=xml_jastrow->reset()->get_child("l_box")->get_value()->get_real();
   parameters[3]=xml_jastrow->reset()->get_child("cut_off")->get_value()->get_real();
+  parameters[0]=xml_jastrow->reset()->get_child("k")->get_value()->get_real();
   
   a=0;
   b=parameters[2]/2;
   
-  process(parameters[3]);
+  //process(parameters[3]);
   
 }
 
@@ -153,7 +154,7 @@ void jastrow_delta_bound_state::process(double xI)
       bP=bP*2;
     }
   
-  parameters[0]=findRootBrente(f,aP,bP,0.001);
+  parameters[0]=findRootBrente(f,aP,bP,1e-4);
   parameters[1]=exp(-2*parameters[0]*parameters[3]);
   
   // set up paraemters for the derivative with respect to the parameter

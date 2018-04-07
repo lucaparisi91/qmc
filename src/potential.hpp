@@ -30,6 +30,7 @@ speciesHarmonicPotential<comp>* buildSpeciesHarmonicPotential(xml_input* main_in
 
 
 
+
 template<class comp>
 speciesHarmonicPotential<comp>::speciesHarmonicPotential(speciesHarmonicPotential<comp>::geometry_t* geo_,vector<double> &omegas,vector<double> &x0,vector<int> &sets) : potential<comp>(geo_)
   {

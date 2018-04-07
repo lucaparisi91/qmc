@@ -12,6 +12,7 @@
 #include "exception_classes.h"
 #include <cassert>
 
+
 template<class jastrowT>
 class jastrow
 {
@@ -114,6 +115,7 @@ public:
 
 };
 
+
 class jastrowSpinOrbital : public jastrow<jastrowSpinOrbital>
 {
 public:
@@ -212,6 +214,59 @@ public:
 };
 
 
+class jastrow_barrier : public jastrow<jastrow_barrier>
+{
+  typedef double position_t;
+  typedef real_t value_t;
+public:
+  
+  jastrow_barrier(string filename);
+  void load_parameters(string filename);
+  
+  inline double d0(const double &x){return x<l ? A*cosh(k1*x): sin(k*x+delta);}
+
+  inline double d1(const double &x){return x<l ? k1*A*sinh(k1*x): -k*cos(k*x+delta);}
+  
+  inline double d2(const double &x){return x<l ? k1*k1*A*cosh(k1*x): k*k*sin(k*x+delta);}
+  
+  void setParameter(double x,int i){}
+  double getParameter(int i) const {return 0;};
+private:
+  double k;
+  double k1;
+  double A;
+  double l;
+  double delta;
+};
+
+
+
+class jastrow_delta_in_trap2 : public jastrow<jastrow_delta_in_trap>
+{
+  typedef double position_t;
+  typedef real_t value_t;
+public:
+  
+  jastrow_delta_in_trap2(string filename)
+  {
+    
+  }
+  void load_parameters(string filename);
+ 
+  inline double d0(const double &x){return (x + c)*exp(-k*x);}
+  inline double d1(const double &x){return 1;};
+  inline double d1d0(const double &x){return 1/(x + this->parameters[0]);};
+  inline double d2d0(const double &x){return 0;};
+  inline double d2(const double &x){return 0;};
+  inline double dP1(const double &x){return 0;};
+  inline double dP2(const double &x){return 0;};
+  void setParameter(double x,int i){}
+  double getParameter(int i) const {return 0;};
+private:
+  double c;
+  double k;
+};
+
 class jastrow_delta_in_trap_exponential : public jastrow<jastrow_delta_in_trap_exponential>
 {
   typedef double position_t;
@@ -252,7 +307,6 @@ private:
   
 };
 
-
 class jastrow_delta_bound_state_no_pbc : public jastrow<jastrow_delta_bound_state_no_pbc>
 {
   typedef double position_t;
@@ -265,21 +319,29 @@ public:
     xml_jastrow->open(filename);
     b=xml_jastrow->reset()->get_child("l_box")->get_value()->get_real();
     k=xml_jastrow->reset()->get_child("k")->get_value()->get_real();
+    p=xml_jastrow->reset()->get_child("p")->get_value()->get_real();
+    delta=xml_jastrow->reset()->get_child("delta")->get_value()->get_real();
     center=0;
     a=0;
     
     delete xml_jastrow;
   }
-
   
+  inline double d0(const double &x){return exp( -k*0.5*( x/(1.+(x/p)) + log(1+x/p)*p));}
 
+  inline double d1(const double &x){return d0(x)*g1(x);}
+
+  inline double d2(const double &x){return d0(x)*(g2(x) + pow(g1(x),2));};
   
-  inline double d0(const double &x){return exp(-k*x);}
-  inline double d1(const double &x){return  -k*exp(-k*x);}
-  inline double d2(const double &x){return k*k*exp(-k*x); };
-
-  inline double d1d0(const double & x){return -k;}
-  inline double d2d0(const double & x){return k*k;}
+  inline double g1(double x)
+  {
+    return (-k*p*0.5)*(2/(x+p)-x/( (p+x)*(p+x) )   );
+  }
+  
+  inline double g2(double x)
+  {
+    return (-k*p*0.5)*(2*x/pow((x+p),3) -3./( (p+x)*(p+x) )   );
+  }
   
   void setParameter(double x,int i){}
   double getParameter(int i) const {return 0;};
@@ -291,6 +353,8 @@ public:
   inline double pD0(const double &x){return 0;};
 private:
   double k;
+  double p;
+  double delta;
 };
 
 class jastrow_delta_bound_state_no_pbc3 : public jastrow<jastrow_delta_bound_state_no_pbc3>
@@ -304,7 +368,7 @@ public:
     xml_input *xml_jastrow=new xml_input;
     xml_jastrow->open(filename);
     b=xml_jastrow->reset()->get_child("l_box")->get_value()->get_real();
-
+    
     r0=xml_jastrow->reset()->get_child("r0")->get_value()->get_real();
     r1=xml_jastrow->reset()->get_child("r1")->get_value()->get_real();
     p=xml_jastrow->reset()->get_child("p")->get_value()->get_real();
@@ -320,13 +384,49 @@ public:
   }
   
   inline double d0(const double &x){return exp(-k*x*(alpha*x+p)/(x+p));}
-  
-  inline double d1(const double &x){return (d0(x+delta)-d0(x-delta))/(2*delta);}
 
-  inline double d2(const double &x){return (d0(x+delta)-2*d0(x)+d0(x-delta))/(delta*delta) ;};
   
-  void setParameter(double x,int i){}
-  double getParameter(int i) const {return 0;};
+  
+  inline double d1(const double &x){return g1(x)*d0(x);}
+
+  
+  inline double d2(const double &x){return d0(x)*(pow(g1(x),2)+g2(x));};
+
+  inline double g1(double x)
+  {
+    return -k*((2*alpha*x+p)/(x+p) - (alpha*x*x+p*x)/((x+p)*(x+p)));
+  }
+
+  inline double g2(double x)
+  {
+    return -k*(2*alpha/(x+p) -2*(2*alpha*x+p)/((x+p)*(x+p)) +2* (alpha*x*x+p*x)/((x+p)*(x+p)*(x+p)));
+  }
+  
+  void setParameter(double x,int i)
+  {
+    if(i==0)
+      {
+	r1=x;
+	alpha=r0/r1;
+      }
+    else if(i==1)
+      {
+	p=x;
+      }
+  }
+  
+  double getParameter(int i) const
+  {
+    if (i==0)
+      {
+	return r1;
+      }
+    else if(i==1)
+      {
+	return p; 
+      }
+    return 0;
+  };
 
 
   inline double dP2(const double &x){return 0;};
@@ -343,6 +443,57 @@ private:
   double delta;
 };
 
+class jastrowSmoothStep : public jastrow<jastrowSmoothStep>
+{
+  typedef double position_t;
+  typedef real_t value_t;
+public:
+  
+  jastrowSmoothStep(string filename)
+  {
+    xml_input *xml_jastrow=new xml_input;
+    xml_jastrow->open(filename);
+    b=xml_jastrow->reset()->get_child("l_box")->get_value()->get_real();
+    
+    r0=xml_jastrow->reset()->get_child("r0")->get_value()->get_real();
+    p=xml_jastrow->reset()->get_child("p")->get_value()->get_real();
+    delta=xml_jastrow->reset()->get_child("delta")->get_value()->get_real();
+    
+    k=1/r0;
+    
+    center=0;
+    a=0;
+    
+    delete xml_jastrow;
+  }
+  
+  inline double d0(const double &x){return 1/(p+cosh(k*x));}
+  
+  inline double d1(const double &x){return (d0(x+delta)-d0(x-delta))/(2*delta);}
+
+  
+
+  inline double d2(const double &x){return (d0(x+delta)-2*d0(x)+d0(x-delta))/(delta*delta) ;};
+
+  inline double d1d0(const double &x){return d1(x)/d0(x);}
+
+  inline double d2d0(const double &x){return d2(x)/d0(x);}
+  void setParameter(double x,int i){}
+  double getParameter(int i) const {return 0;};
+  
+  inline double dP2(const double &x){return 0;};
+  inline double dP1(const double &x){return 0;};
+  inline double dP0(const double &x){return 0;};
+  inline double pD0(const double &x){return 0;};
+private:
+  
+  double k;
+  double r0;
+  double r1;
+  double p;
+  double alpha;
+  double delta;
+};
 
 class jastrow_delta_bound_state_no_pbc2 : public jastrow<jastrow_delta_bound_state_no_pbc2>
 {

@@ -1,5 +1,6 @@
 #include "timer.h"
 
+
 template<class comp>
 dmc<comp>::dmc() : qmc<comp>()
 {  

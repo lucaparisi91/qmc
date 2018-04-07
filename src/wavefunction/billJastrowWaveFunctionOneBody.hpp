@@ -10,7 +10,7 @@ void bill_jastrow_wavefunction_one_body<X,comp>::laplacianMinusGradientSquared(c
   
   for(int i=0;i<p1.size();i++)
     {
-      x=this->qmc_obj->geo->distance_pbc(p1[i].position(),this->jastrowc.center);
+      x=this->getGeometry()->distance_pbc(p1[i].position(),this->jastrowc.center);
       
       d=abs(x);
       //returns the direction of the wavefunction
@@ -39,7 +39,7 @@ void bill_jastrow_wavefunction_one_body<X,comp>::laplacianMinusGradientSquaredLo
   waveValue=0;
   for(int i=0;i<p1.size();i++)
     {
-      x=this->qmc_obj->geo->distance_pbc(p1[i].position(),this->jastrowc.center);
+      x=this->getGeometry()->distance_pbc(p1[i].position(),this->jastrowc.center);
       d=abs(x);
       //returns the direction of the wavefunction
       sign=x/d;
@@ -68,7 +68,7 @@ void bill_jastrow_wavefunction_one_body<X,comp>::gradient(const typename bill_ja
   
   for(int i=0;i<p1.size();i++)
     {
-      x=this->qmc_obj->geo->distance_pbc(p1[i].position(),this->jastrowc.center);
+      x=this->getGeometry()->distance_pbc(p1[i].position(),this->jastrowc.center);
       d=abs(x);
       //returns the direction of the wavefunction
       sign=x/d;

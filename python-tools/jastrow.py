@@ -217,8 +217,7 @@ class jastrow_delta(jastrow):
     def f_root(self,x) :
         return self.parameters["g"]*tan(x) - (pi/2 - x)*1./self.parameters["cut_off"]
     
-    def process(self):
-        
+    def process(self):        
         self.parameters["delta"]=self.find_root()
         
         self.parameters["k"]=self.parameters["g"]*tan(self.parameters["delta"])
@@ -251,7 +250,8 @@ class jastrow_gaussian(jastrow):
         self.parameters["alpha"]=str(alpha)
         self.parameters["position"]=str(position)
         self.parameters["l_box"]=str(l)
-        
+
+
 class jastrow_orbital(jastrow):
     def __init__(self,l,c=1,position=0):
         jastrow.__init__(self)
@@ -259,7 +259,17 @@ class jastrow_orbital(jastrow):
         self.parameters["position"]=str(position)
         self.parameters["l_box"]=str(l)
 
+#########################3 jastrow smooth step
 
+class jastrowSmoothStep(jastrow):
+    def __init__(self,r0,p,position=0,l=100.,delta=1e-5):
+        jastrow.__init__(self)
+        self.parameters["r0"]=str(r0)
+        self.parameters["p"]=str(p)
+        self.parameters["position"]=str(position)
+        self.parameters["l_box"]=str(l)
+        self.parameters["delta"]=delta
+        
 ############################ jastrow delta with phonons ########
 # a delta jastrow with phononic contributions
 class jastrow_delta_phonons(jastrow):
@@ -363,7 +373,6 @@ class jastrow_barrier(jastrow):
         self.parameters["k1"]=sqrt(self.parameters["v0"]*2 -self.parameters["k0"] )
         
         
-        
         self.parameters["A"]=sin(self.parameters["k0"]*self.parameters["l_barrier"] + self.parameters["delta"])/cosh(self.parameters["k1"]*self.parameters["l_barrier"])
         
         return self
@@ -399,13 +408,15 @@ class jastrow_delta_in_trap(jastrow):
 
 class jastrow_delta_bound_state_no_pbc(jastrow):
     
-    def __init__(self,lbox,g,m=1./2,position=0):
+    def __init__(self,lbox,g,beta,alpha,m=1./2,position=0,delta=1e-5):
         jastrow.__init__(self)
         
         self.parameters["k"]=g*m
         self.parameters["l_box"]=float(lbox)
         self.parameters["position"]=float(position)
-        
+        self.parameters["beta"]=float(beta)
+        self.parameters["alpha"]=float(alpha)
+        self.parameters["delta"]=float(delta)
         
     def jastrow(self,x):
         return exp(-self.parameters["k"]*x)
@@ -500,25 +511,28 @@ class jastrow_delta_bound_state(jastrow):
     def f_root(self,x):
         beta=exp(-x*self.parameters["cut_off"]*2)
         return x - self.parameters["m"]*self.parameters["g"]*(1+beta)/(1-beta)
-
     
-    def process(self):
-        self.parameters["k"]=self.find_root(step_root=1e-4,a_root=1e-4,b_root=20*pi)
+    def process(self,step=1e-5,a=None,b=20*pi,log=True):
+        if a is None:
+            a=step
+        self.parameters["k"]=self.find_root(step_root=step,a_root=a,b_root=b)
         self.parameters["beta"]=exp(-2*self.parameters["cut_off"]*self.parameters["k"])
-        print self.parameters["k"]
-        print self.parameters["beta"]
+        if log:
+            print self.parameters["k"]
+        
+        #print self.parameters["beta"]
     def jastrow(self,x):
         x=abs(x)
         if (x<=self.parameters["cut_off"]):
             return exp(-self.parameters["k"]*x) + self.parameters["beta"]*exp(self.parameters["k"]*x)
         
-def delta_bound_state(g,l_box,cut_off,m=1./2):
+def delta_bound_state(g,l_box,cut_off,m=1./2,step=1e-5):
     j=jastrow_delta_bound_state();
     j.parameters["g"]=abs(g)
     j.parameters["l_box"]=l_box
     j.parameters["cut_off"]=cut_off
     j.parameters["m"]=m
-    j.process()
+    j.process(step=step)
     return j
 
 def TG_jastrow(n_particles,cut_off=None,l_box=None,position=0):

@@ -11,6 +11,8 @@ public:
   typedef typename wavefunction<comp>::grad_t grad_t;
   
   bill_jastrow_wavefunction_two_body_symmetricSpinOrbital(qmc_t* qmc_obj_,jastrow_t& jastrowO) : bill_jastrow_wavefunction< jastrow_t,comp>(qmc_obj_,jastrowO) {};
+
+  bill_jastrow_wavefunction_two_body_symmetricSpinOrbital(jastrow_t& jastrowO) : bill_jastrow_wavefunction< jastrow_t,comp>(jastrowO) {};
   
   virtual void laplacianMinusGradientSquared(const all_particles_t & p,grad_t & grad,value_t & e)
   {
@@ -28,7 +30,7 @@ public:
     {
       for(int j=0;j<i;++j)
 	{
-	  x=this->qmc_obj->geo->distance_pbc(p1[i].position(),p1[j].position());
+	  x=this->getGeometry()->distance_pbc(p1[i].position(),p1[j].position());
 	  d=abs(x);
 	      
 	  sign=x/d;
@@ -60,7 +62,7 @@ public:
     {
       for(int j=0;j<i;++j)
 	{
-	  x=this->qmc_obj->geo->distance_pbc(p1[i].position(),p1[j].position());
+	  x=this->getGeometry()->distance_pbc(p1[i].position(),p1[j].position());
 	  d=abs(x);
 	      
 	  sign=x/d;
@@ -98,7 +100,7 @@ public:
     {
       for(int j=0;j<i;++j)
 	{
-	  x=this->qmc_obj->geo->distance_pbc(p1[i].position(),p1[j].position());
+	  x=this->getGeometry()->distance_pbc(p1[i].position(),p1[j].position());
 	  d=abs(x);
 	      
 	  sign=x/d;
@@ -134,7 +136,7 @@ public:
       {
 	for(int j=0;j<i;++j)
 	  {
-	    x=this->qmc_obj->geo->distance_pbc(p1[i].position(),p1[j].position());
+	    x=this->getGeometry()->distance_pbc(p1[i].position(),p1[j].position());
 	    d=abs(x);
 	    
 	    sign=x/d;
@@ -162,7 +164,7 @@ public:
 	
 	for (j=0;j<i;j++)
 	  {
-	    x=abs(this->qmc_obj->geo->distance_pbc(p1[i].position(),p1[j].position()));
+	    x=abs(this->getGeometry()->distance_pbc(p1[i].position(),p1[j].position()));
 	
 	    value=value+log(this->jastrowc.d0(x,p1[i].spin(),p1[j].spin()));
 	  }
@@ -183,7 +185,7 @@ public:
       {
 	if (i!=nFlip)
 	  {
-	    x=abs(this->qmc_obj->geo->distance_pbc(p1[i].position(),p1[nFlip].position()));
+	    x=abs(this->getGeometry()->distance_pbc(p1[i].position(),p1[nFlip].position()));
 	
 	    value=value+log(this->jastrowc.d0(x,p1[i].spin(),-p1[nFlip].spin()))-log(this->jastrowc.d0(x,p1[i].spin(),p1[nFlip].spin()));
 	  }
@@ -197,7 +199,7 @@ public:
   {
     bill_jastrow_wavefunction_two_body_symmetricSpinOrbital<jastrow_t,comp> * wave2;
     
-    wave2=new bill_jastrow_wavefunction_two_body_symmetricSpinOrbital(this->qmc_obj,this->jastrowc);
+    wave2=new bill_jastrow_wavefunction_two_body_symmetricSpinOrbital(this->jastrowc);
     this->copyTo(wave2);
     return wave2;
   }

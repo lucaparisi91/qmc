@@ -54,9 +54,10 @@ istream& operator>>(istream& input ,orbital1D &orbital2);
 using namespace std;
 class spinOrbital1D : public orbital1D
 {
-  typedef double pos_t;
-  
 public:
+  typedef double pos_t;
+
+  
   spinOrbital1D() : orbital1D(){spinValue=1;}
   
   inline int& spin(){return spinValue;}

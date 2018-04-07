@@ -4,7 +4,7 @@ ifeq ($(OPTIMIZATION_LEVEL),3)
 endif
 
 ifeq ($(OPTIMIZATION_LEVEL),2)
-	OPTIMIZATION_FLAG=-O2 -DNDEBUG 
+	OPTIMIZATION_FLAG=-O2 -DNDEBUG
 endif
 
 ifeq ($(OPTIMIZATION_LEVEL),g)
@@ -13,10 +13,10 @@ endif
 
 BUILD_DIR=../build
 # compilation flags for the system
-CFLAGS=  $(OPTIMIZATION_FLAG)    -I $(LAPACKDIR)/LAPACKE/include 
+CFLAGS=  $(OPTIMIZATION_FLAG)    -I $(LAPACKDIR)/LAPACKE/include
 
 # linking flags
-LFLAGS= -L $(LAPACKDIR) -llapacke -llapack -lrefblas -lgfortran -lm 
+LFLAGS= -L $(LAPACKDIR) -llapacke -llapack -lrefblas -lgfortran -lm
 
 all:	qmc
 

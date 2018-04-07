@@ -582,7 +582,12 @@ double total_wavefunction<comp>::center_of_mass_no_pbc(total_wavefunction<comp>:
 
 
 double centerOfMassNoBC(orbitals<spinOrbital1D> & p1);
+double centerOfMassNoBC(orbitals<spinOrbital1D> & p1);
+double meanSquaredAll(orbitals< orbitals<spinOrbital1D> > &allOlrbitals);
 double centerOfMassSpinNoBC(orbitals<spinOrbital1D> & p1);
+
+
+
 
 // template class total_wavefunction<dmc<D1_t> >;
 // template class total_wavefunction<dmc<spinor1D> >;

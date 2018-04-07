@@ -299,6 +299,8 @@ measure_dynamic<comp> * buildPairCorrelationFuture(xml_input* main_input,double 
     }
 }
 
+
+
 template<class comp>
 measurementInterface<typename comp::walker_t,typename comp::wave_t>* build_pair_correlation(xml_input* main_input,double lBox,unsigned int & id)
 {
@@ -464,5 +466,102 @@ measurementInterface<walker_t,wave_t>*  buildWindingNumberSpin(xml_input* main_i
     }
     
   return new windingNumberSpin<walker_t,wave_t>(build_measure_vector(main_input,label),bins,set_a,id);
+  
+      
+}
+
+template<class walker_t,class wave_t>
+measurementInterface<walker_t,wave_t>*  buildCenterOfMassDifferenceImaginaryTimeCorrelation(xml_input* main_input, unsigned int id)
+{
+  int bins;
+  int set_a;
+  int set_b;
+  string label;
+  
+  if (main_input->get_attribute("label")!=NULL)
+    {
+      label=main_input->get_string();
+    }
+  else
+    {
+      label="centerOfMassDifferenceImaginaryTimeCorrelation";
+    }
+  
+  if (main_input->get_attribute("setA") != NULL)
+    {
+      set_a=main_input->get_int();
+    }
+  else
+    {
+      set_a=0;
+    }
+  
+  if (main_input->get_attribute("setB") != NULL)
+    {
+      set_b=main_input->get_int();
+    }
+  else
+    {
+      set_b=0;
+    }
+
+    if (main_input->get_attribute("bins") != NULL)
+    {
+      bins=main_input->get_int();
+    }
+  else
+    {
+      bins=100;
+    }
+    
+    return new centerOfMassDifferenceImaginaryTimeCorrelation<walker_t,wave_t>(build_measure_vector(main_input,label),bins,set_a,set_b,id);
+      
+}
+
+template<class walker_t,class wave_t>
+measurementInterface<walker_t,wave_t>*  buildCenterOfMassSumSquaredImaginaryTimeCorrelation(xml_input* main_input, unsigned int id)
+{
+  int bins;
+  int set_a;
+  int set_b;
+  string label;
+  
+  if (main_input->get_attribute("label")!=NULL)
+    {
+      label=main_input->get_string();
+    }
+  else
+    {
+      label="centerOfMassSumSquaredImaginaryTimeCorrelation";
+    }
+  
+  if (main_input->get_attribute("setA") != NULL)
+    {
+      set_a=main_input->get_int();
+    }
+  else
+    {
+      set_a=0;
+    }
+  
+  if (main_input->get_attribute("setB") != NULL)
+    {
+      set_b=main_input->get_int();
+    }
+  else
+    {
+      set_b=0;
+    }
+  
+    if (main_input->get_attribute("bins") != NULL)
+    {
+      bins=main_input->get_int();
+    }
+  else
+    {
+      bins=100;
+    }
+    
+    return new centerOfMassSumSquaredImaginaryTimeCorrelation<walker_t,wave_t>(build_measure_vector(main_input,label),bins,set_a,set_b,id);
       
 }

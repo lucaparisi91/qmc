@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include "traits.h"
+#include "tools.h"
 #include "mesh.h"
 #include "circular_vector.h"
 #include <iostream>
@@ -779,8 +780,6 @@ public:
   
 };
 
-
-
 class rqmc_walker;
 template<class wave_t>
 class rqmcMeasurementInterface
@@ -891,6 +890,18 @@ public:
 };
 
 template<class walker_t,class wave_t>
+class meanSquaresEstimator : public measurement_scalar<walker_t,wave_t>
+{
+public:
+  
+  meanSquaresEstimator(measure_scalar* mScal) :  measurement_scalar<walker_t,wave_t>::measurement_scalar(mScal){};
+  void make_measurement(walker_t* w,wave_t* wave){
+    this->ms->add(meanSquaredAll(*(w->state)),0);
+    
+  };
+};
+
+template<class walker_t,class wave_t>
 class centerOfMassDifferenceSquared : public measurement_scalar<walker_t,wave_t>
 {
 public:
@@ -906,6 +917,7 @@ public:
     
   }
 };
+
 
 template<class walker_t,class wave_t>
 class centerOfMassSpinDifferenceMeasurement : public measurement_scalar<walker_t,wave_t>
@@ -982,6 +994,33 @@ private:
 };
 
 
+template<class walker_t,class wave_t>
+class meanSquaresEstimatorForwardWalking : public measurement_scalar<walker_t,wave_t>
+{
+public:
+  
+  meanSquaresEstimatorForwardWalking(measure_scalar* mScal,int indexStorage_) :  measurement_scalar<walker_t,wave_t>::measurement_scalar(mScal){indexStorage=indexStorage_;};
+  
+  void make_measurement(walker_t* w,wave_t* wave){
+    
+    if (w->md[indexStorage]->isFilled())
+      {
+	this->ms->add(w->md[indexStorage]->average(),0);
+      }
+    
+    w->md[indexStorage]->add(	     
+			     meanSquaredAll(*(w->state))
+			     
+			     );
+
+    
+    
+  }
+  
+private:
+  int indexStorage;
+};
+
 
 template<class walker_t,class wave_t>
 class centerOfMassSpinDifferenceSquaredMeasurementForwardWalking : public measurement_scalar<walker_t,wave_t>
@@ -1011,6 +1050,28 @@ class density : public measurement<walker_t,wave_function_t,space_measure<measur
 public:
   density(space_measure<measure_vector>* ms_) : measurement<walker_t,wave_function_t,space_measure<measure_vector> >(ms_) {}; 
   virtual void make_measurement(walker_t* w,wave_function_t* wave){wave->density(w->state,this->ms);};
+};
+
+template<class walker_t,class wave_function_t>
+class energyHistogramImpurity : public measurement<walker_t,wave_function_t,space_measure<measure_vector_mult_index> >
+{
+public:
+  
+  energyHistogramImpurity(space_measure<measure_vector_mult_index>* ms_,int indexImpuritySet_) : measurement<walker_t,wave_function_t,space_measure<measure_vector_mult_index> >(ms_) {indexImpuritySet=indexImpuritySet_;}
+  
+  virtual void make_measurement(walker_t *w,wave_function_t* wave)
+  {
+    r=abs(wave->qmc_obj->geo->distance_pbc((*w->state)[indexImpuritySet][1].position(),(*w->state)[indexImpuritySet][0].position()));
+
+    //r=abs((*w->state)[indexImpuritySet][1].position()-(*w->state)[indexImpuritySet][0].position());
+    this->ms->add(w->e,r,1,0);
+    
+    
+  }
+private:
+  double r;
+  int indexImpuritySet;
+  
 };
 
 template<class walker_t,class wave_function_t>
@@ -1054,6 +1115,13 @@ public:
   };
   
 };
+
+
+
+
+
+
+
 /*
 template<class walker_t,class wave_function_t>
 class hessian : public measurement<walker_t,wave_function_t,measure_vector >
@@ -1816,8 +1884,9 @@ public:
   void reduce();
   void record(double step_);
   void make_measurements(measure_obj_t* w,wave_t* wave);
+  void push_back(measurementInterface_t * m){ms.push_back(m);}
   measures(string filename,qmc_t* qmc_obj);
-  
+  measures(){};
   winding_number_creator<walker_t,wave_t,qmcKind> winding_number_creator_obj;
   
 };
@@ -1845,6 +1914,87 @@ public:
 //     }
 // }
 
+
+
+template<class mesh_t,class state_t,class measure_t>
+class densityCenteredCMEstimator
+{
+  
+public:  
+  densityCenteredCMEstimator(mesh_t * mesh_) {meshO=mesh_;}
+  
+  void operator()(const state_t & state,measure_t & vectorOut)
+  {
+    int N=0;
+    double xCM=0,x=0;
+    typedef typename state_t::particles_t particles_t;
+    tools::reset(vectorOut);
+    
+    for(int j=0;j<state.size();j++)
+      {
+	const particles_t& p=state[j];
+	N+=p.size();
+	for(int i=0;i<p.size();i++)
+	  {
+	    xCM+=p[i].position();
+	  }
+      }
+    
+    xCM/=N;
+    
+    for(int j=0;j<state.size();j++)
+      {
+	const particles_t& p=state[j];
+	for(int i=0;i<p.size();i++)
+	  {
+	    x=p[i].position()-xCM;
+	    vectorOut[meshO->index(x)]+=1./(meshO->step);
+	  }
+	
+      };
+    
+  }
+  
+private:
+  mesh_t *meshO;
+  
+};
+
+
+template<class walker_t,class wave_t>
+class densityTotalCenteredForwardWalking : public measurement<walker_t,wave_t,measure_vector >
+{
+public:
+  typedef typename walker_t::all_particles_t all_particles_t;
+  
+  densityTotalCenteredForwardWalking(measure_vector* ms_,int bins,double lBox,int indexStorage_) : densityCenteredCME( new mesh(-lBox/2.,lBox/2.,bins) ) ,measurement<walker_t,wave_t,measure_vector >(ms_) 
+  {
+    indexStorage=indexStorage_;
+  };
+  
+  virtual void make_measurement(walker_t* w,wave_t* wave)
+  {
+    if (w->md[indexStorage]->isFilled())
+      {
+	this->ms->add(w->md[indexStorage]->currentVector(),0);
+      }
+    
+    densityCenteredCME(*w->state,w->md[indexStorage]->currentVector() );
+    
+    w->md[indexStorage]->incrementIndex();
+    
+  }
+  
+private:
+  
+  int indexStorage;
+  densityCenteredCMEstimator<mesh,all_particles_t,vector<double> > densityCenteredCME;
+};
+
+
+
+
+
 template<class walker_t,class wave_t>
 class magnetizationMeasurement : public measurement_scalar<walker_t,wave_t>
 {
@@ -1857,7 +2007,6 @@ public:
 measure_scalar* build_measure_scalar(xml_input* xml_m,string label);
 
 measure_vector_mult_index* build_measure_vector_mult_index(xml_input* xml_m,string label);
-
 
 measure_vector* build_measure_vector(xml_input* xml_m,string label);
 

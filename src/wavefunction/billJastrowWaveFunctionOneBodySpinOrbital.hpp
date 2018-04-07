@@ -11,6 +11,8 @@ public:
 
   
   bill_jastrow_wavefunction_one_bodySpinOrbital(qmc_t* qmc_obj_,jastrow_t& jastrowO) : bill_jastrow_wavefunction< jastrow_t,comp>(qmc_obj_,jastrowO) {};
+
+  bill_jastrow_wavefunction_one_bodySpinOrbital(jastrow_t& jastrowO) : bill_jastrow_wavefunction< jastrow_t,comp>(jastrowO) {};
   
   virtual void laplacianMinusGradientSquared(const all_particles_t & p,grad_t & grad,value_t & e)
 {
@@ -25,7 +27,7 @@ public:
   
   for(int i=0;i<p1.size();i++)
     {
-      x=this->qmc_obj->geo->distance_pbc(p1[i].position(),this->jastrowc.getCenter(p1[i].spin()));
+      x=this->getGeometry()->distance_pbc(p1[i].position(),this->jastrowc.getCenter(p1[i].spin()));
       d=abs(x);
       //returns the direction of the wavefunction
       sign=x/d;
@@ -56,7 +58,7 @@ public:
   waveValue=0;
   for(int i=0;i<p1.size();i++)
     {
-      x=this->qmc_obj->geo->distance_pbc(p1[i].position(),this->jastrowc.getCenter(p1[i].spin()));
+      x=this->getGeometry()->distance_pbc(p1[i].position(),this->jastrowc.getCenter(p1[i].spin()));
       d=abs(x);
       //returns the direction of the wavefunction
       sign=x/d;
@@ -83,7 +85,7 @@ public:
   
     for(int i=0;i<p1.size();i++)
       {
-	x=this->qmc_obj->geo->distance_pbc(p1[i].position(),this->jastrowc.getCenter(p1[i].spin()));
+	x=this->getGeometry()->distance_pbc(p1[i].position(),this->jastrowc.getCenter(p1[i].spin()));
 	d=abs(x);
 	//returns the direction of the wavefunction
 	sign=x/d;
@@ -106,7 +108,7 @@ public:
     for (i=0;i<p1.size();i++)
       {  
 	//x=(qmc_obj->geo->pbc(p1->position[i]));
-	x=abs(this->qmc_obj->geo->distance_pbc(p1[i].position(),this->jastrowc.getCenter(p1[i].spin())));
+	x=abs(this->getGeometry()->distance_pbc(p1[i].position(),this->jastrowc.getCenter(p1[i].spin())));
 	value=value+log(this->jastrowc.d0(x,p1[i].spin()));
       }
   
@@ -122,9 +124,9 @@ public:
     
     assert(nFlip<p1.size());
     
-    x=abs(this->qmc_obj->geo->distance_pbc(p1[nFlip].position(),this->jastrowc.getCenter(p1[nFlip].spin())));
+    x=abs(this->getGeometry()->distance_pbc(p1[nFlip].position(),this->jastrowc.getCenter(p1[nFlip].spin())));
 
-    xFlip=abs(this->qmc_obj->geo->distance_pbc(p1[nFlip].position(),this->jastrowc.getCenter(-p1[nFlip].spin())));
+    xFlip=abs(this->getGeometry()->distance_pbc(p1[nFlip].position(),this->jastrowc.getCenter(-p1[nFlip].spin())));
     
     return this->jastrowc.d0(xFlip,-p1[nFlip].spin())/this->jastrowc.d0(x,p1[nFlip].spin());
 	
@@ -134,7 +136,8 @@ public:
   {
     bill_jastrow_wavefunction_one_bodySpinOrbital<jastrow_t,comp> * wave2;
     
-    wave2=new bill_jastrow_wavefunction_one_bodySpinOrbital(this->qmc_obj,this->jastrowc);
+    wave2=new bill_jastrow_wavefunction_one_bodySpinOrbital(this->jastrowc);
+    wave2->setGeometry(this->getGeometry());
     this->copyTo(wave2);
     return wave2;
   }

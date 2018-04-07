@@ -41,7 +41,6 @@ potential<qmc_t>* build_potential(string filename,qmc_t* qmcO)
 }
 
 
-
 template<class comp>
 qmc<comp>::qmc()
 {  
@@ -94,6 +93,12 @@ qmc<comp>::qmc()
   MPI_Comm_rank(MPI_COMM_WORLD,&mpi_task);
   
   geo=new geometry_t("input.xml");
+  int seed=123456;
+  
+  if (main_input->reset()->get_child("seed") != NULL)
+    {
+      seed=main_input->get_value()->get_int();
+    }
   
   rand=new random1(123456 + mpi_task);
   

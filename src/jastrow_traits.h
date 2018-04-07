@@ -7,9 +7,12 @@ class jastrow_delta_bound_state_no_pbc;
 class jastrow_delta_bound_state_no_pbc2;
 class jastrow_delta_bound_state_no_pbc3;
 class jastrow_delta_in_trap;
+class jastrow_barrier;
 class jastrow_delta_in_trap_exponential;
 class jastrow_spline;
 class jastrowSpinOrbital;
+class jastrowSmoothStep;
+
 template<class,class,class> class jastrow_spinor;
 template<class,class,class> class jastrow_spinor_free_sampling;
 template<>
@@ -27,7 +30,22 @@ struct traits<jastrow_delta_phonons>
 };
 
 template<>
+struct traits<jastrow_barrier>
+{
+  typedef double value_t;
+  typedef double position_t;
+};
+
+
+template<>
 struct traits<jastrowSpinOrbital>
+{
+  typedef double value_t;
+  typedef double position_t;
+};
+
+template<>
+struct traits<jastrowSmoothStep>
 {
   typedef double value_t;
   typedef double position_t;

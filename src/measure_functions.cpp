@@ -91,3 +91,23 @@ double centerOfMassSpinNoBC(orbitals<spinOrbital1D> & p1)
   
   return centerOfMass/p1.size();
 }
+
+double meanSquaredAll(orbitals< orbitals<spinOrbital1D> > &allOlrbitals)
+{
+  typedef orbitals<spinOrbital1D> orbital_t;
+  typedef orbitals<orbital_t> allOlrbitals_t;
+  
+  double x2=0;
+  
+  for(int i=0;i<allOlrbitals.size();i++)
+    {
+      orbital_t & p=allOlrbitals[i];
+      
+      for(int k=0;k<p.size();k++)
+	{
+	  x2+=pow(p[k].positionNoBC(),2);
+	} 
+    }
+  
+  return x2;
+}

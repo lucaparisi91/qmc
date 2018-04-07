@@ -914,18 +914,19 @@ measures<tm>::measures(string filename,tm *qmc_obj)
   double max=0;
   string qmc_kind="";
   int nMCM=0;
+  double lBox;
   center_of_mass_difference_future_walker_creator<typename tm::walker_t,typename tm::wave_t,typename tm::qmcKind> center_of_mass_dyn_creator;
   center_of_mass_differenceSquared_future_walker_creator<typename tm::walker_t,typename tm::wave_t,typename tm::qmcKind> center_of_mass_dynSquared_creator;
   
   typedef typename tm::walker_t walker_t;
   typedef typename tm::wave_t wave_t;
- 
   
   main_input=new xml_input;
   main_input->open("input.xml");
   bins=0;
   id=0;
   n_particles=qmc_obj->geo->l_box;
+  lBox=qmc_obj->geo->l_box;
   bool complex;
   
   ms.push_back(new get_energy_dmc<walker_t,wave_t>("energy"));
@@ -955,6 +956,7 @@ measures<tm>::measures(string filename,tm *qmc_obj)
   
   i=1;
   main_input->reset()->get_child("measures")->get_first_child();
+
   
   while( main_input->check() )
     {
@@ -1116,8 +1118,66 @@ measures<tm>::measures(string filename,tm *qmc_obj)
 
 
       
-      
-      
+
+      if (main_input->get_name() == "meanSquaresEstimator")
+	{
+	  if (main_input->get_attribute("label") != NULL)
+	    {
+	      label=main_input->get_string();
+	    }
+	  else
+	    {
+	      label="meanSquaresEstimator";
+	    }
+	  
+	  if (main_input->get_attribute("setA") != NULL)
+	    {
+	      set_a=main_input->get_int();
+	    }
+	  else
+	    {
+	      set_a=0;
+	    }
+	  
+	  if (main_input->get_attribute("setB") != NULL)
+	    {
+	      set_b=main_input->get_int();
+	    }
+	  else
+	    {
+	      set_b=0;
+	    }
+	  
+	  if (main_input->get_attribute("bins") != NULL)
+	    {
+	      bins=main_input->get_int();
+	    }
+	  else
+	    {
+	      bins=100;
+	    }
+	  
+	  // collect info on future walkers
+	  if (main_input->get_attribute("futureWalkers") != NULL)
+	    {
+	      futureWalkers=main_input->get_bool();
+	    }
+	  else
+	    {
+	      futureWalkers=false;
+	    }
+	  
+	  if (futureWalkers==false)
+	    {
+	      ms.push_back(new meanSquaresEstimator<walker_t,wave_t>(build_measure_scalar(main_input,label)));
+	    }
+	  else
+	    {
+	      ms.push_back(new meanSquaresEstimatorForwardWalking<walker_t,wave_t>(build_measure_scalar(main_input,label),id));
+	      id++;
+	    }
+	  
+	}
             
       if (main_input->get_name() == "density")
 	{
@@ -1133,6 +1193,25 @@ measures<tm>::measures(string filename,tm *qmc_obj)
 	      label="density";
 	    }
 
+	  if (main_input->get_attribute("bins") != NULL)
+	    {
+	      bins=main_input->get_int();
+	    }
+	  else
+	    {
+	      bins=1000;
+	    }
+
+	  if (main_input->get_attribute("futureWalkers") != NULL)
+	    {
+	      futureWalkers=main_input->get_bool();
+	    }
+	  else
+	    {
+	      futureWalkers=false;
+	    }
+
+	  
 	  if (main_input->get_attribute("centering") != NULL)
 	    {
 	      centering=main_input->get_string();
@@ -1149,8 +1228,42 @@ measures<tm>::measures(string filename,tm *qmc_obj)
 	    }
 	  else if (centering=="cm")
 	    {
-	      ms.push_back(new densityTotalCentered<walker_t,wave_t>(build_space_vector<measure_vector>(main_input,label,-n_particles/2,n_particles/2)));
+	      if(!futureWalkers)
+		{
+		  ms.push_back(new densityTotalCentered<walker_t,wave_t>(build_space_vector<measure_vector>(main_input,label,-n_particles/2,n_particles/2)));
+		}
+	      else
+		
+		{
+		  ms.push_back(new densityTotalCenteredForwardWalking<walker_t,wave_t>(build_measure_vector(main_input,label),bins,lBox,id));
+		  
+		  id++;
+		}
 	    }
+	}
+      
+      if (main_input->get_name()=="energyHistogram")
+	{
+	  if (main_input->get_attribute("label") != NULL)
+	    {
+	      label=main_input->get_string();
+	    }
+	  else
+	    {
+	      label="energyHistogram";
+	    }
+	  
+	  if (main_input->get_attribute("setA") != NULL)
+	    {
+	      set_a=main_input->get_int();
+	    }
+	  else
+	    {
+	      cout << "No impurity set specified"<<endl;
+	    }
+	  
+	  ms.push_back(new energyHistogramImpurity<walker_t,wave_t>(build_space_vector<measure_vector_mult_index>(main_input,label,0,n_particles),set_a));
+	  
 	}
       // pair correlation
       if (main_input->get_name() == "pair_correlation")
@@ -1158,7 +1271,6 @@ measures<tm>::measures(string filename,tm *qmc_obj)
 	  ms.push_back(build_pair_correlation<tm>(main_input,n_particles,id));
 	  
 	}
-      
 	  // add a new pair correlation to the system
       
       
@@ -1266,8 +1378,23 @@ measures<tm>::measures(string filename,tm *qmc_obj)
 	  ms.push_back(buildWindingNumberSpin<walker_t,wave_t>(main_input,id));
 	  id++;
 	}
+
+      if (main_input->get_name() == "centerOfMassDifferenceImaginaryTimeCorrelation" and (qmc_kind=="dmc" or qmc_kind=="svmc"))
+	{
+	  if (main_input->get_attribute("label")!=NULL)
+	    {
+	      label=main_input->get_string();
+	    }
+	  else
+	    {
+	      label="centerOfMassDifferenceImaginaryTimeCorrelation";
+	    }
+	  
+	  ms.push_back(buildCenterOfMassDifferenceImaginaryTimeCorrelation<walker_t,wave_t>(main_input,id));
+	  id++;
+	}
       
-      if (main_input->get_name() == "centerOfMassSpinDifference")
+      if (main_input->get_name() == "centerOfMassSumSquaredImaginaryTimeCorrelation")
 	{
 	  if (main_input->get_attribute("label") != NULL)
 	    {
@@ -1275,10 +1402,10 @@ measures<tm>::measures(string filename,tm *qmc_obj)
 	    }
 	  else
 	    {
-	      label="centerOfMassSpinDifference";
+	      label="centerOfMassSumSquaredImaginaryTimeCorrelation";
 	    }
-	  
-	  ms.push_back(new centerOfMassSpinDifferenceMeasurement<walker_t,wave_t>(build_measure_scalar(main_input,label)));
+	  ms.push_back(buildCenterOfMassSumSquaredImaginaryTimeCorrelation<walker_t,wave_t>(main_input,id));
+	  id++;
 	  
 	}
       
@@ -1370,8 +1497,8 @@ template<class tm>
 void measures<tm>::make_measurements(measures<tm>::measure_obj_t* w,measures<tm>::wave_t* wave)
 {
   
-  ms[0]->make_measurement(w,wave);
-  ms[1]->make_measurement(w,wave);
+  //ms[0]->make_measurement(w,wave);
+  //ms[1]->make_measurement(w,wave);
   unsigned int i;
   for(i=0;i<ms.size();i++)
     {

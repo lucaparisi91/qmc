@@ -101,6 +101,92 @@ private:
   int set;
 };
 
+
+class boxPotentialManyBodySymmetric
+{
+  
+public:
+  boxPotentialManyBodySymmetric(){set=0;};
+
+  void setParameter(string parameter,double value)
+  {
+    if (parameter=="V0")
+      {
+	V0=value;
+      }
+    else if (parameter=="L")
+      {
+	halfLength=value/2.;
+      }
+    else if (parameter=="set")
+      {
+	set=(int)value;
+      }
+    else
+      {
+	printf("Unkown parameter.");
+	exit(2);
+      }
+  }
+
+  double getParameter(string parameter)
+  {
+   
+    if (parameter=="V0")
+      {
+	return V0;
+      }
+    else if (parameter=="L")
+      {
+	return halfLength*2.;
+	
+      }
+    else if (parameter=="set")
+      {
+	return set;
+      }
+    else
+      {
+	printf("Unkown parameter.");
+	exit(2);
+      }
+  }
+  
+  template<class all_particles_t,class geometry_t>
+  double evaluate(geometry_t* geo,all_particles_t * p)
+  {
+    typedef typename all_particles_t::particles_t particles_t;
+    
+    int i;
+    double value,x,d;
+    value=0;
+
+    particles_t& p1=(*p)[set];
+
+     
+    for(int i=0;i<p1.size();i++)
+      {
+	for(int j=0;j<i;j++)
+	  {
+	    x=geo->distance_pbc(p1[i].position(),p1[j].position());
+	    d=abs(x);
+	    if (d<halfLength)
+	      {
+		value+=V0;
+	      }
+	  }
+      }
+  
+  return value;
+  }
+  
+private:
+  
+  double halfLength;
+  double V0;
+  int set;
+};
+
 template<class comp>
 class speciesHarmonicPotential : public potential<comp>
 {
@@ -112,6 +198,36 @@ public:
   
   vector<harmonicPotential *> traps;
 };
+
+
+template<class comp,class potential_t>
+class totalPotential : public potential<comp>
+{
+public:
+  typedef typename comp::all_particles_t all_particles_t;
+  typedef typename comp::geometry_t geometry_t;
+  
+  void setParameter(int i,string label,double value)
+  {
+    potentials[i].setParameter(label,value);
+  }
+  
+  double getParameter(int i,string label)
+  {
+    return potentials[i].getParameter(label);
+  }
+
+  void addPotential()
+  {
+    potential_t toAdd;
+    potentials.push_back(toAdd);
+  }
+  
+private:
+  
+ vector<potential_t> potentials;
+};
+
 
 
 #include "potential.hpp"

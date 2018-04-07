@@ -241,8 +241,10 @@ def print_table(table,filename):
             for j in range(0,table.shape[1]):
                 f.write(str(table[i,j]) + " ")
             f.write("\n")
+def linear(x,a,b):
+    return a*x+b
 
-def fit_table(table,func=anal.linear,cut_low=0,cut_heigh=None):
+def fit_table(table,func=linear,cut_low=0,cut_heigh=None):
     table=np.array(table)
     
     if cut_heigh==None:

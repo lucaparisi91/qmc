@@ -464,6 +464,7 @@ class folder:
             else:
                     # exception: the file is still running
                     raise process_running
+            
     # place on a que
     def que(self):
         self.qued=True
@@ -819,7 +820,6 @@ def walkers_study_set(walkers,time_step):
                 f.set_mean_walkers(w)
                 f.set_time_step(time_step)
 
-
 def start_all(max=None):
     i=0
     
@@ -839,7 +839,13 @@ def start_all(max=None):
             exc.warn()
         except:
             print "Error in " + f.dir_path
-
+            
+def startArray():
+    with open("jobArray.dat","w") as of:
+        for f in folders:
+            of.write(f.dir_path + "\n")
+    
+    
 def schedule_all(scheduler,maxN=None):
     i=0
     j=0

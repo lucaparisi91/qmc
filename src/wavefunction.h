@@ -27,13 +27,13 @@ class wavefunction
 {
 public:
   typedef tm qmc_t;
+  typedef typename tm::geometry_t geometry_t;
   typedef typename qmc_t::particles_t particles_t;
   typedef typename qmc_t::all_particles_t all_particles_t;
   typedef typename qmc_t::potential_t potential_t;
   typedef typename qmc_t::value_t value_t;
   typedef allParticlesGradient1D grad_t;
   
-  qmc_t* qmc_obj;
   int src_particle_set;
   int target_particle_set;
   
@@ -45,7 +45,7 @@ public:
   int sign; // used in fixed diffusion monte carlo
   double phase; // used in fixed phase diffusion monte carlo
   string label;
-  void linkQmc(qmc_t* qmc_obj_){qmc_obj=qmc_obj_;}
+  
   
   wavefunction(qmc_t * qmc_obj);
 
@@ -117,13 +117,17 @@ public:
   void setTargetSet(int targetSet ){target_particle_set=targetSet;}
   int getTargetSet() const {return target_particle_set;}
   
-protected:
+  void setGeometry(geometry_t * geo_){geo=geo_;}
+  inline geometry_t* getGeometry(){return geo;};
+
   wavefunction(){};
+  
+  
 private:
   
   bool toOptimize;
   int optParameter;
-  
+  geometry_t * geo;
 };
 
 // defines a bill jastrow form wavefunction
@@ -145,8 +149,9 @@ public:
   virtual void setParameter(double x,int i){jastrowc.setParameter(x,i);}
   
   bill_jastrow_wavefunction(qmc_t* qmc_obj_,xml_input* xml_wave,string filename);
-
+  
   bill_jastrow_wavefunction(qmc_t* qmc_obj_,jastrow_t& jastrowO) : wavefunction<tm>::wavefunction(qmc_obj_),jastrowc(jastrowO){}
+  
   
   void overlap(const double &w1,const double &w2,measure_scalar* m);
   virtual void print(int i); 
@@ -154,19 +159,21 @@ public:
   
   virtual double potential(empty_t *p,all_particles_t* state) {return 0;};
   virtual void gradient(all_particles_t & p,grad_t & grad){throw notYetSsupported("Wavefunction gradient");};
-  
-protected:
+
   
   jastrow_t jastrowc;
-  bill_jastrow_wavefunction(jastrow_t &jastrowo) : jastrowc(jastrowo) {} ;
+  bill_jastrow_wavefunction(jastrow_t &jastrowo) : wavefunction< tm >::wavefunction(), jastrowc(jastrowo) {} ;
+
+  
+protected:
   
   void copyTo(bill_jastrow_wavefunction<jastrow_t,tm> * wave2)
   {
     
-    wave2->qmc_obj=this->qmc_obj;
     wave2->src_particle_set=this->src_particle_set;
     wave2->target_particle_set=this->target_particle_set;
-    wave2->label=this->label;
+    wave2->jastrowc=jastrowc;
+    wave2->setGeometry(this->getGeometry());
     
   }
 };
@@ -642,6 +649,11 @@ string createJastrowId(xml_input* xml_wave);
 
 template<class comp>
 void load_wavefunctions(xml_input * xml_wave, vector< typename comp::swave_t* > &waves,comp* qmc_obj);
+
+
+
+
+
 #include "wavefunction/billJastrowWaveFunctionTwoBodySymmSpinOrbital.hpp"
 #include "wavefunction/billJastrowWaveFunctionOneBodySpinOrbital.hpp"
 #include "wavefunction.hpp"

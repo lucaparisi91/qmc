@@ -72,7 +72,7 @@ double bill_jastrow_wavefunction_two_body_asymmetric<jastrow_t,comp>::one_partic
   
   for (j=0;j<p1.size();j++)
     {
-      x=abs(this->qmc_obj->geo->distance_pbc(r,p1[j].position()));
+      x=abs(this->getGeometry()->distance_pbc(r,p1[j].position()));
 
       value+=log(this->jastrowc.d0(x));
       
@@ -97,7 +97,7 @@ double bill_jastrow_wavefunction_two_body_asymmetric<jastrow_t,comp>::log_evalua
       
       for (j=0;j<p2.size();j++)
 	{
-	  x=abs(this->qmc_obj->geo->distance_pbc(p1[i].position(),p2[j].position()));
+	  x=abs(this->getGeometry()->distance_pbc(p1[i].position(),p2[j].position()));
 	  value=value+log(this->jastrowc.d0(x));
 	}	  
     }
@@ -125,7 +125,7 @@ double bill_jastrow_wavefunction_two_body_symmetric<jastrow_t,comp>::one_particl
   for (j=0;j<iP;j++)
     {
       
-      x=abs(this->qmc_obj->geo->distance_pbc(r,p1[j].position()));
+      x=abs(this->getGeometry()->distance_pbc(r,p1[j].position()));
       
 
       value+=log(this->jastrowc.d0(x));
@@ -135,7 +135,7 @@ double bill_jastrow_wavefunction_two_body_symmetric<jastrow_t,comp>::one_particl
   for (j=iP+1;j<p1.size();j++)
     {
       
-      x=abs(this->qmc_obj->geo->distance_pbc(r,p1[j].position()));
+      x=abs(this->getGeometry()->distance_pbc(r,p1[j].position()));
 
       value+=log(this->jastrowc.d0(x));
      
@@ -159,7 +159,7 @@ double bill_jastrow_wavefunction_two_body_symmetric<X,comp>::log_evaluate(bill_j
       
       for (j=0;j<i;j++)
       {
-	x=abs(this->qmc_obj->geo->distance_pbc(p1[i].position(),p1[j].position()));
+	x=abs(this->getGeometry()->distance_pbc(p1[i].position(),p1[j].position()));
 	
 	value=value+log(this->jastrowc.d0(x));
       }
@@ -186,7 +186,7 @@ double bill_jastrow_wavefunction_spinor_two_body_symmetric<X,comp>::log_evaluate
     {
       for (j=0;j<i;j++)
       {
-	x=abs(this->qmc_obj->geo->distance_pbc(p1->position[i],p1->position[j]));
+	x=abs(this->getGeometry()->distance_pbc(p1->position[i],p1->position[j]));
 	value=value+log(abs(this->jastrowc.d0(x,p1->spinComp[i],p1->spinComp[j])));
       }
     
@@ -212,7 +212,7 @@ double bill_jastrow_wavefunction_one_body<X,comp>::one_particle_log_evaluate(bil
  
  
   
-  x=abs(this->qmc_obj->geo->distance_pbc(r,this->jastrowc.center));
+  x=abs(this->getGeometry()->distance_pbc(r,this->jastrowc.center));
   return (log(this->jastrowc.d0(x))); 
 }
 
@@ -228,7 +228,7 @@ double bill_jastrow_wavefunction_one_body<X,comp>::log_evaluate(bill_jastrow_wav
   for (i=0;i<p1.size();i++)
     {  
       //x=(qmc_obj->geo->pbc(p1->position[i]));
-      x=abs(this->qmc_obj->geo->distance_pbc(p1[i].position(),this->jastrowc.center));
+      x=abs(this->getGeometry()->distance_pbc(p1[i].position(),this->jastrowc.center));
       value=value+log(this->jastrowc.d0(x));
     }
   
@@ -249,7 +249,7 @@ double bill_jastrow_wavefunction_one_body<X,comp>::evaluate_derivative(bill_jast
   for (i=0;i<p1.size();i++)
     {  
       //x=(qmc_obj->geo->pbc(p1->position[i]));
-      x=this->qmc_obj->geo->distance_pbc(p1[i].position(),this->jastrowc.center);
+      x=this->getGeometry()->distance_pbc(p1[i].position(),this->jastrowc.center);
       
       value=value+this->jastrowc.dP0(x);
     }
@@ -276,7 +276,7 @@ double bill_jastrow_wavefunction_two_body_asymmetric<X,comp>::evaluate_derivativ
       for(j=0;j<p2.size();j++)
 	{
 	  //x=(qmc_obj->geo->pbc(p1->position[i]));
-	  x=this->qmc_obj->geo->distance_pbc(p1[i].position(),p2[j].position());
+	  x=this->getGeometry()->distance_pbc(p1[i].position(),p2[j].position());
 	  value=value+this->jastrowc.dP0(x);
 	}
     }
@@ -305,7 +305,7 @@ double bill_jastrow_wavefunction_one_body<X,comp>::evaluate_derivative_second(bi
   for (i=0;i<p1.size();i++)
     {  
       //x=(qmc_obj->geo->pbc(p1->position[i]));
-      x=this->qmc_obj->geo->distance_pbc(p1[1].position(),this->jastrowc.center);
+      x=this->getGeometry()->distance_pbc(p1[1].position(),this->jastrowc.center);
       
       value=value+this->jastrowc.pD0(x);
     }
@@ -334,7 +334,7 @@ double bill_jastrow_wavefunction_two_body_asymmetric<X,comp>::evaluate_derivativ
       for(j=0;j<p2.size();j++)
 	{
 	  //x=(qmc_obj->geo->pbc(p1->position[i]));
-	  x=this->qmc_obj->geo->distance_pbc(p1[i].position(),p2[j].position());
+	  x=this->getGeometry()->distance_pbc(p1[i].position(),p2[j].position());
 	  value=value+this->jastrowc.pD0(x);
 	}
     }
@@ -443,14 +443,16 @@ void total_wavefunction<comp>::link_wavefunctions(xml_input* xml_wave,vector<wav
 template<class comp>
 wavefunction<comp>::wavefunction(wavefunction<comp>::qmc_t * qmc_obj_)
 {
-  qmc_obj=qmc_obj_;
+  
   sign=1;
   phase=0;
   toOptimize=false;
   energy_first_term=0;
   wavefunction_derivative=0;
   log_wavefunction_value=0;
+  setGeometry(qmc_obj_->geo);
 }
+
 
 template<class comp>
 // prints all availible kind of jastrows
@@ -528,13 +530,14 @@ void load_wavefunctions(xml_input * xml_wave, vector< typename comp::swave_t* > 
 
   fac.registerType("bill_jastrow_spin_orbital1bgaussgauss",& ( buildBillJastrowSpinOneBody<jastrowSpinOrbitalOneBody<jastrow_gaussian,jastrow_gaussian> ,comp> ) );
 
-    fac.registerType("bill_jastrow_spin_orbital1bspinOrbital",& ( buildBillJastrowSpinOneBody<jastrowSpinOrbitalOneBody<jastrowSpinOrbital,jastrowSpinOrbital> ,comp> ) );
+  fac.registerType("bill_jastrow_spin_orbital1bspinOrbital",& ( buildBillJastrowSpinOneBody<jastrowSpinOrbitalOneBody<jastrowSpinOrbital,jastrowSpinOrbital> ,comp> ) );
   
   fac.registerType("bill_jastrowasymm2bdelta_in_trap",& ( createBillJastrowTwoBodyAsymmetric<jastrowOptimized<jastrow_delta_in_trap>,comp> ) );
   fac.registerType("bill_jastrow1bdelta_in_trap",& ( createBillJastrowOneBody<jastrowOptimized<jastrow_delta_in_trap>,comp> ) );
   fac.registerType("bill_jastrow1bdelta",& ( createBillJastrowOneBody<jastrowOptimized<jastrow_delta>,comp> ) );
   fac.registerType("bill_jastrow1bdelta_bound_state",& ( createBillJastrowOneBody<jastrowOptimized<jastrow_delta_bound_state>,comp> ) );
   fac.registerType("bill_jastrow1bgauss",& ( createBillJastrowOneBody<jastrowOptimized<jastrow_gaussian>,comp> ) );
+  fac.registerType("bill_jastrow1bsmoothStep",& ( createBillJastrowOneBody<jastrowSmoothStep,comp> ) );
   fac.registerType("bill_jastrow1bOpt0gauss",& ( createBillJastrowOneBody<jastrowOptimized<jastrow_gaussian,jastrowDerivativeAlphaGaussian>,comp> ) );
   fac.registerType("bill_jastrow1bOpt1gauss",& ( createBillJastrowOneBody<jastrowOptimized<jastrow_gaussian,jastrowDerivativeBetaGaussian>,comp> ) );
   fac.registerType("bill_jastrow1bOpt2gauss",& ( createBillJastrowOneBody<jastrowOptimized<jastrow_gaussian,jastrowDerivativeBetaGaussianReverse>,comp> ) );

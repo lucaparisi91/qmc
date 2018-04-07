@@ -15,7 +15,7 @@ void bill_jastrow_wavefunction_two_body_symmetric<X,comp>::laplacianMinusGradien
     {
       for(int j=0;j<i;j++)
 	{
-	  x=this->qmc_obj->geo->distance_pbc(p1[i].position(),p1[j].position());
+	  x=this->getGeometry()->distance_pbc(p1[i].position(),p1[j].position());
 	  d=abs(x);
 	  if (d!=0)
 	    {
@@ -56,7 +56,7 @@ void bill_jastrow_wavefunction_two_body_symmetric<X,comp>::laplacianMinusGradien
     {
       for(int j=0;j<i;j++)
 	{
-	  x=this->qmc_obj->geo->distance_pbc(p1[i].position(),p1[j].position());
+	  x=this->getGeometry()->distance_pbc(p1[i].position(),p1[j].position());
 	  d=abs(x);
 	  
 	  sign=x/d;
@@ -91,7 +91,7 @@ void bill_jastrow_wavefunction_two_body_symmetric<X,comp>::gradient(const typena
     {
       for(int j=0;j<i;j++)
 	{
-	  x=this->qmc_obj->geo->distance_pbc(p1[i].position(),p1[j].position());
+	  x=this->getGeometry()->distance_pbc(p1[i].position(),p1[j].position());
 	  d=abs(x);
 	  if (d!=0)
 	    {

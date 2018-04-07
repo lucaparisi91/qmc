@@ -82,6 +82,7 @@ void walker_load_dynamic_measures(vector<measure_dynamic<qt> *> & md ,xml_input*
 	{
 	  bins=0;
 	}
+      
       if (xml_md->get_attribute("nFutureWalkers") != NULL)
 	{
 	  nFutureWalkers=xml_md->get_int();
@@ -108,6 +109,22 @@ void walker_load_dynamic_measures(vector<measure_dynamic<qt> *> & md ,xml_input*
 	}
       
       if(xml_md->get_name()=="centerOfMassDifferenceSquared" and futureWalkers==true )
+	{
+	  if (xml_md->get_attribute("nFutureWalkers") != NULL)
+	    {
+	      nFutureWalkers=xml_md->get_int();
+	      
+	    }
+	  else
+	    {
+	      cout << "No future walkers specified";
+	      exit(1);
+	    }
+	  
+	  md.push_back(new scalarForwardWalking<qt>(nFutureWalkers));
+	}
+      
+      if(xml_md->get_name()=="meanSquaresEstimator" and futureWalkers==true )
 	{
 	  if (xml_md->get_attribute("nFutureWalkers") != NULL)
 	    {
@@ -197,10 +214,27 @@ void walker_load_dynamic_measures(vector<measure_dynamic<qt> *> & md ,xml_input*
 	   md.push_back(new scalarForwardWalking<qt>(bins) );
 	 }
        
+       if (xml_md->get_name()=="centerOfMassDifferenceImaginaryTimeCorrelation")
+	 {
+	   md.push_back(new scalarForwardWalking<qt>(bins) );
+	 }
+
+       if (xml_md->get_name()=="centerOfMassSumSquaredImaginaryTimeCorrelation")
+	 {
+	   md.push_back(new scalarForwardWalking<qt>(bins) );
+	 }
+       
        if(xml_md->get_name()=="centerOfMassSpinDifferenceSquared" and futureWalkers==true )
 	{
 	  md.push_back(new scalarForwardWalking<qt>(nFutureWalkers) );
 	}
+
+       if(xml_md->get_name()=="density" and futureWalkers==true )
+	 {
+	   md.push_back(new vectorForwardWalking<qt>(nFutureWalkers,bins) );
+	 }
+
+       
        
        xml_md->get_next();
     }
@@ -367,24 +401,30 @@ void dmc_walker<comp>::update(qmc_type* dmc_obj)
   
   //cout << 2*(wavefunction_value - old_wavefunction_value) + Q_probability(state,state_tmp,dmc_obj->delta_tau) <<endl;
 
-  
-  if (dmc_obj->qmcMoverO->getOrder()==2)
+  if (dmc_obj->qmcMoverO->getMetropolisStepStatus())
     {
-      // compute F(R2 prime)
-      dmc_obj->qmcMoverO->computeEffectiveDriftForce((*(this->state)),this->particlesGradient);
+  
+      if (dmc_obj->qmcMoverO->getOrder()==2)
+	{
+	  // compute F(R2 prime)
+	  dmc_obj->qmcMoverO->computeEffectiveDriftForce((*(this->state)),this->particlesGradient);
 
-      this->accept=metropolis(2*(this->wavefunction_value - old_wavefunction_value)+ Q_probability( dmc_obj->qmcMoverO->getEffectiveDriftForce()  ,this->particlesGradientBackup,*(this->state),*(this->state_tmp),dmc_obj->delta_tau),dmc_obj->rand);
+	  this->accept=metropolis(2*(this->wavefunction_value - old_wavefunction_value)+ Q_probability( dmc_obj->qmcMoverO->getEffectiveDriftForce()  ,this->particlesGradientBackup,*(this->state),*(this->state_tmp),dmc_obj->delta_tau),dmc_obj->rand);
+	}
+      else
+	if (dmc_obj->qmcMoverO->getOrder()==1)
+	  {
+      
+      
+	    this->accept=metropolis(2*(this->wavefunction_value - old_wavefunction_value)+ Q_probability(this->particlesGradient,this->particlesGradientBackup,*(this->state),*(this->state_tmp),dmc_obj->delta_tau),dmc_obj->rand);
+
+	    
+	  }
     }
   else
-  if (dmc_obj->qmcMoverO->getOrder()==1)
     {
-      
-      
-      this->accept=metropolis(2*(this->wavefunction_value - old_wavefunction_value)+ Q_probability(this->particlesGradient,this->particlesGradientBackup,*(this->state),*(this->state_tmp),dmc_obj->delta_tau),dmc_obj->rand);
-
-      
+      this->accept=true;
     }
-
   
   
   if ( this->accept )
