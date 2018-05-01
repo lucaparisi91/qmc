@@ -1114,3 +1114,25 @@ def analStructureFactor(f,label,bins=None,makePlot=False,jumps=0):
     df["x"]= df["x"]*qStep + 2*pi/float(f.get_lBox()) 
     return df
 
+def getDensity(f,label,normalize=1,makePlot=False):
+    densityMeasure=f.get_measure_by_label(label)
+    df=pd.read_csv(f.dir_path + "/" +label + "_t.dat",delim_whitespace=True,names=["x","value","delta","conv"],header=None,index_col=False)
+    lBox=float(f.get_lBox())
+    df["x"]=df["x"]/len(df["x"])*lBox - lBox/2.
+    if normalize is not None:
+        step=abs(df["x"][1]-df["x"][0])
+        A=np.sum(df["value"])*step
+        if normalize=="N":
+            normalize=float(f.get_n_particles(index=0)) + float(f,get_n_particles(index=1))
+        df["value"]/=A
+        df["value"]*=normalize
+
+    if makePlot:
+        plt.errorbar(df["x"],df["value"],df["delta"],fmt="or")
+        
+    return df
+    
+    
+    
+    
+    

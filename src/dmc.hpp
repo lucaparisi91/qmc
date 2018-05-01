@@ -1,6 +1,5 @@
 #include "timer.h"
 
-
 template<class comp>
 dmc<comp>::dmc() : qmc<comp>()
 {  
@@ -12,7 +11,7 @@ dmc<comp>::dmc() : qmc<comp>()
   
   xml_walkers=new xml_input;
   detailed_balance=0;
-  
+  vmcSteps=0;
   
   mean_walkers=this->main_input->reset()->get_child("method")->get_child("mean_walkers")->get_value()->get_int();
   
@@ -32,6 +31,13 @@ dmc<comp>::dmc() : qmc<comp>()
   else
     {
       smart_vmc=false;
+      
+      if (
+	  this->main_input->reset()->get_child("method")->get_attribute("vmcSteps") != NULL
+	  )
+	{
+	  vmcSteps=this->main_input->get_int();
+	}
     }
   
   delta_tau_or=this->delta_tau;
@@ -720,12 +726,25 @@ void dmc<comp>::run()
 {
   int i,j;
   double start,stop;
-  
+  bool smart_vmcB;
   // load input files(only the master)
   load();
   
   cout<<"Starting... "<<endl;
   this->startTimers();
+  // vmc run
+  
+  if (!smart_vmc)
+    {
+      cout << "Performing " << vmcSteps << " variational steps"<<endl;
+      smart_vmc=true;
+      for(i=0;i<vmcSteps;i++)
+	{
+	  warmup_step(); // performs a veriational 
+	}
+      smart_vmc=false;
+    }
+  cout << "Warmup..."<<endl;
   // warmup
   for(i=0;i<this->warmupBlocks;i++)
     {
@@ -734,7 +753,7 @@ void dmc<comp>::run()
 	  warmup_step(); // performs a MC step
 	}
     }
-  
+  cout << "Measuring..."<<endl;
   // assuemes termalized
   for(i=0;i<this->nBlocks;i++)
     {

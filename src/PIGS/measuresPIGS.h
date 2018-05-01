@@ -2,11 +2,14 @@
 #define MEASURESPIGS_H
 
 #include "../measures.h"
+#include "pigsTools.h"
 
-template<class walker_t,class wave_t>
-class energyTail : public measurement_scalar<walker_t,wave_t>
+class energyTail : public measurement_scalar<qmcDriver_t::walker_t,qmcDriver_t::wave_t>
 {
 public:
+  typedef qmcDriver_t::wave_t wave_t;
+  typedef qmcDriver_t::walker_t walker_t;
+  
   typedef typename wave_t::grad_t grad_t;
   
   energyTail(measure_scalar* mScal,string filename) :  measurement_scalar<walker_t,wave_t>::measurement_scalar(mScal){init(filename);};
@@ -27,40 +30,47 @@ private:
   grad_t gradParticles;
 };
 
-
-
-template<class measures_t>
-void buildPIGSMeasures(string filename,measures_t & ms)
+class energyThermodynamic : public measurement_scalar<qmcDriver_t::walker_t,qmcDriver_t::wave_t>
 {
-  xml_input* main_input;
-  string label;
-  int i=0;
-  main_input=new xml_input;
-  main_input->open("input.xml");
-  main_input->reset()->get_child("measures")->get_first_child();
-  while( main_input->check() )
-    {
-      i=i+1;
-      
-      if (main_input->get_name() == "energyTail")
-	{
-
-	  if (main_input->get_attribute("label") != NULL)
-	    {
-	      label=main_input->get_string();
-	    }
-	  else
-	    {
-	      label="energyTail";
-	    }
-	  
-	  ms.push_back(new energyTail<typename measures_t::walker_t,typename measures_t::wave_t >(build_measure_scalar(main_input,label),"input.xml"));
-	}
-      
-      main_input->get_next();
-    }
+public:
+  typedef qmcDriver_t::wave_t wave_t;
+  typedef qmcDriver_t::walker_t walker_t;
   
-  delete main_input;
-}
+  typedef typename wave_t::grad_t grad_t;
+  typedef typename qmcDriver_t::propagator_t propagator_t;
+  
+  energyThermodynamic() :  measurement_scalar<walker_t,wave_t>::measurement_scalar(){};
+  
+  void make_measurement(walker_t* w,wave_t* wave);
+  
+  void setPropagator(propagator_t * p){prop=p;}
+  
+private:
+  propagator_t *prop;
+  
+};
+
+
+
+class pairCorrelationPigs :  public measurement<qmcDriver_t::walker_t,qmcDriver_t::wave_t,space_measure<measure_vector> >
+{
+public:
+  typedef qmcDriver_t::configurations_t walker_t;
+  typedef qmcDriver_t::wave_t wave_t;
+  
+  pairCorrelationPigs() : measurement<walker_t,wave_t,space_measure<measure_vector> >() {setA=0,setB=0;};
+  
+  virtual void make_measurement(walker_t * w,wave_t * wave);
+  
+  void setTimeSliceBegin(int i){iTimeSliceBegin=i;};
+  void setTimeSliceEnd(int i){iTimeSliceEnd=i;}
+  
+private:
+  
+  int iTimeSliceBegin;
+  int iTimeSliceEnd;
+  int setA;
+  int setB;
+};
 
 #endif

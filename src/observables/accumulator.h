@@ -4,7 +4,9 @@
 #include <vector>
 
 using namespace std;
-  
+
+
+
 template<class T >
 class vectorAccumulator
 {
@@ -113,5 +115,6 @@ private:
   vectorAccumulatorType accumulatorSquares;
   vector<T> scratch;
 };
+
 
 #endif

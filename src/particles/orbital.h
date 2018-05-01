@@ -18,7 +18,7 @@ public:
   inline double& positionNoBC(){return x;};
   inline double& positionBC(){return xBC;};
   
-  inline const double& position() const{return positionBC();};
+  inline const double& position() const {return positionBC();};
   inline const double& positionNoBC() const{return x;};
   inline const double& positionBC() const{return xBC;};
   
@@ -43,7 +43,6 @@ public:
   }
   
 private:
-  
   double x;
   double xBC;
 };
@@ -86,10 +85,6 @@ private:
   int spinValue;
   
 };
-
-
-  
-
 
 template<class orbital_t>
 class orbitals
@@ -169,14 +164,13 @@ public:
   {
     orbitalsStorage.push_back(orbitalToAdd); 
   }
-
-  
 private:
   vector<orbital_t> orbitalsStorage;
   string label;
   
 };
 
+  
 int getMagnetization(orbitals<spinOrbital1D> &p);
 int getMagnetization(orbitals<orbital1D> &p);
 

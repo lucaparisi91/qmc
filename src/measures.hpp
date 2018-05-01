@@ -1502,7 +1502,7 @@ void measures<tm>::make_measurements(measures<tm>::measure_obj_t* w,measures<tm>
   unsigned int i;
   for(i=0;i<ms.size();i++)
     {
-     
+      
       if (ms[i]->check() == 2)
 	{
 	  ms[i]->make_measurement(w,wave);
@@ -1556,5 +1556,5 @@ void measures<tm>::reduce()
     {
       ms[i]->reduce(0);
     }
-
+  
 }

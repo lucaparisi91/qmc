@@ -401,7 +401,7 @@ void vmc<comp>::optimizationOut()
       
       this->wave->getParameters(mO.getPlan(),optParameters);
       mO.getMeanError(means,errors);
-    
+      
       /*
 	Prints out information on the last run
        */
@@ -585,17 +585,18 @@ void vmc<comp>::runOptimize()
       do
 	{
       // correlated energy measurements for stabilization
-      for(j=0;j<correlatedEnergySteps;j++)
-	{
-	  for(k=0;k<this->unCorrelationSteps;k++)
+	  for(j=0;j<correlatedEnergySteps;j++)
 	    {
-	      warmup_step(); // performs a MC step
+	      for(k=0;k<this->unCorrelationSteps;k++)
+		{
+		  warmup_step(); // performs a MC step
+		}
+	      stabilizationStep();
 	    }
-	  stabilizationStep();
-	}
       
       stabilizationOut();
 	}
+      
       while(statusCorrelated!=0);
       chooseNextOptimizationParameters();
       
@@ -699,10 +700,11 @@ void vmc<comp>::chooseNextOptimizationParameters()
 	    {
 	      ofstream f;
 	      vector<double> mean;
+	      vector<double> errors;
 	      f.open("optimization.dat",fstream::app);
-	      mO.getMean(mean);
+	      mO.getMeanError(mean,errors);
 	      
-	      f<<mean[mean.size()-1]<< " ";
+	      f<<mean[mean.size()-1]<< " "<<errors[errors.size()-1]<<" ";
 	      for(int k=0;k<optParameters.size();k++)
 		{
 		  f<<optParameters[k]<<" ";

@@ -100,7 +100,7 @@ qmc<comp>::qmc()
       seed=main_input->get_value()->get_int();
     }
   
-  rand=new random1(123456 + mpi_task);
+  rand=new random1(seed + mpi_task);
   
   c=new counter(jumps,skip);
   

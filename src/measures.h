@@ -816,6 +816,8 @@ class measurement : public measurementInterface<walker_t,wave_function_t>
 public:
   measurement(estimator_t* ms_){ms=ms_;};
   measurement(){};
+  void setEstimator(estimator_t * ms_){ms=ms_;}
+  
   measurement<walker_t,wave_function_t,estimator_t>& operator()(const measurement<walker_t,wave_function_t,estimator_t> &m)
   {
     ms(*m);
@@ -832,6 +834,8 @@ public:
   virtual void reduce(int i){ms->reduce(i);};
   virtual void increment(){ms->increment();};
   virtual void make_measurement(walker_t* w,wave_function_t* wave)=0;
+
+  
 protected:
   estimator_t* ms;  
 };
@@ -844,9 +848,11 @@ template<class walker_t,class wavefunction_t>
 class measurement_scalar : public measurement<walker_t,wavefunction_t,measure_scalar>
 {
 public:
+  
   measurement_scalar(string label){this->ms=new measure_scalar(label);}
   measurement_scalar(measure_scalar* es_) : measurement<walker_t,wavefunction_t,measure_scalar>::measurement(es_) {};
-  
+
+  measurement_scalar() : measurement<walker_t,wavefunction_t,measure_scalar>::measurement(){};
 };
 
 // get the DMC energy from a value stored in the walker
@@ -1323,6 +1329,10 @@ template<class walker_t,class wave_t>
 class pair_correlation_m : public measurement<walker_t,wave_t,space_measure<measure_vector> >
 {
 public:
+  
+  void setSetA(int set){setA=set;}
+  void setSetB(int set){setB=set;}
+  
   pair_correlation_m(space_measure<measure_vector>* ms_,int setA_,int setB_) : measurement<walker_t,wave_t,space_measure<measure_vector> >(ms_),setA(setA_),setB(setB_) {};
 
   virtual void make_measurement(walker_t* w,wave_t* wave);

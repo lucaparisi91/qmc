@@ -1,115 +1,72 @@
 #ifndef PIGS_H
 #define PIGS_H
 
+#include "../qmc.h"
 #include "../random.h"
 #include "../wavefunction.h"
 #include "configurations.h"
-#include "measuresPIGS.h"
-#include "PIGSpropagator.h"
+#include "pigsTraits.h"
 
-class pigs_t
-{
-  
-};
+class pigs_t{};
 
-template<class comp>
-class contactInteractions1DProp
-{
-public:
-  typedef freePropagator1D freeParticlePropagator_t;
-  typedef pairApproximationPropagator1DUnitary pairParticlePropagator_t;
-  
-  typedef typename comp::geometry_t geometry_t;
-  typedef typename comp::configurations_t configurations_t;
-  typedef typename comp::wave_t wave_t;
-  typedef typename comp::pos_t pos_t;
-  
-};
+//advanced definitions
+class pairParticleApproximationChain;
+class pigsMover;
 
-
-
-template<class comp>
-class pigsDriver : public qmc<comp>
+class pigsDriver : public qmc<system_t>
 {
   
 public:
   typedef pigs_t qmcKind;
-  typedef typename comp::rand_t rand_t;
-  typedef typename comp::geometry_t geometry_t;
+  typedef typename system_t::rand_t rand_t;
+  typedef typename system_t::geometry_t geometry_t;
   typedef double value_t;
-  typedef typename comp::all_particles_t all_particles_t;
-  typedef typename all_particles_t::particles_t particles_t;
-  typedef typename total_wavefunction<pigsDriver<comp> >::wave_t swave_t;
-  typedef total_wavefunction<pigsDriver<comp> > wave_t;
-  typedef typename comp::configurations_t configurations_t;
-  typedef typename comp::pos_t pos_t;
+  typedef system_t::all_particles_t all_particles_t;
+  typedef system_t::particles_t particles_t;
+  typedef total_wavefunction<pigsDriver >::wave_t swave_t;
+  typedef total_wavefunction<pigsDriver > wave_t;
+  typedef configurationsPIGS configurations_t;
+  typedef system_t::pos_t pos_t;
   typedef configurations_t walker_t;
+  typedef pairParticleApproximationChain propagator_t;
+  typedef pigsMover pigsMover_t;
   
-  typedef pairParticleApproximationChain< contactInteractions1DProp<pigsDriver<comp>   > > propagator_t;
+  void setWavefunction();
   
-  void setWavefunction()
-  {
-    vector<swave_t*> waves;
-    load_wavefunctions<pigsDriver<comp> >(this->main_input,waves,this);
-    wave=new wave_t(this);
-    wave->link_wavefunctions(this->main_input,waves,"main");
-    wave->print_jastrows();
-  }
-
   pigsDriver()
   {
     printf("Setting the wavefunction....\n");
     setWavefunction();
-
-  };
-  
-  void run()
-  {
-    printf("PIGS----------\n");
-    load();
-    
-    step();
     
   };
   
-  void step()
-  {
-    
-    pigsMoverO.move(configurations);
-    
-  }
+  void run();
   
-  void measure()
-  {
-    estimates.make_measurements(&configurations,wave);
-    estimates.increment();
-  }
+  void load();
   
-  void out()
-  {
-    estimates.out();
-  }
+  void step();
   
-  void load()
-  {
-    printf("...loading configurations\n");
-    buildConfigurationsPIGS<pigsDriver<comp> > configBuilder;
-    printf("...setting measurements\n");
-    configBuilder.initConfigurations(this);
-    buildPIGSMeasures("input.xml",estimates);
-  }
+  wave_t* getWave(){return wave;}
+  
+  void measure();
+  
+  void out();
   
   void setWavefunction(wave_t * wave_){wave=wave_;}
   configurations_t & getConfigurations(){return configurations;}
+  
+  int getNBeads(){return configurations.size();}
 
-  void getNBeads(){return configurations.size();}
-
+  pigsMover_t * getMover(){ return pigsMoverO;}
+  
 private:
-
+  
   wave_t* wave;
   configurations_t configurations;
-  measures<pigsDriver<comp> > estimates;
-  pigsMover< pigsDriver<comp> > pigsMoverO;
+  measures<pigsDriver > estimates;
+  pigsMover_t *pigsMoverO;
 };
+
+typedef pigsDriver qmcDriver_t;
 
 #endif

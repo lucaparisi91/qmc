@@ -652,7 +652,7 @@ def getMinPol(p,xmin,xmax):
 
 def getOptimizationTable(filename):
     
-    df=pd.read_csv(filename,sep=" ",index_col=False,header=None,names=["energy","parameter"])
+    df=pd.read_csv(filename,sep=" ",index_col=False,header=None,names=["energy","deltaEnergy","parameter"])
     df["step"]=df.index
     return df
     
@@ -665,45 +665,76 @@ def getMinEnergyParameter(df,cutOff=0):
     error=np.sqrt(np.average(parameters**2,weights=weights) - mean**2)
 
     return [mean,error]
-
-        
+class pigsConfiguration:
+    def __init__(self):
+        self.beads=0
+        self.orbitals=0
+        self.configurations=None
 
 def readConfigurations(filename):
     
     with open(filename) as f:
         content = f.readlines()
     configurations=[]
-    i=0
+    outs=[]
     positions=np.array([])
     spins=np.array([])
-    
-    nWalkers=int(string.split(content[i]," ")[1])
-    print nWalkers
-    for iW in range(0,nWalkers):
-        i+=4
+    i=0
+    while(i<len(content)):
+        configurations=[]
+        nWalkers=int(string.split(content[i]," ")[1])
+        #print nWalkers
         
-        nOrbitals=int(string.split(content[i]," ")[2])
-        print nOrbitals
-        positions=np.zeros(nOrbitals)
-        spins=np.zeros(nOrbitals)
+        for iW in range(0,nWalkers):
+            i+=4
+        
+            nOrbitals=int(string.split(content[i]," ")[2])
+            #print nOrbitals
+            positions=np.zeros(nOrbitals)
+            spins=np.zeros(nOrbitals)
         
         
-        orbitals=[]
-        for iOrbital in range(0,nOrbitals) :
+            orbitals=[]
+            for iOrbital in range(0,nOrbitals) :
+                i+=1
+                orbital=np.array((string.split(content[i])),dtype=float)
+                orbitals.append(orbital)
+        
+            configurations.append(np.array(orbitals))
             i+=1
-            orbital=np.array((string.split(content[i])),dtype=float)
-            orbitals.append(orbital)
-            
-        configurations.append(np.array(orbitals))
-    return configurations
+        i+=2
+        
+        out=pigsConfiguration()
+        out.beads=nWalkers
+        out.orbitals=nOrbitals
+        out.configurations=np.array(configurations)
+        outs.append(out)
+    return outs
 
+def plotConfiguration(conf):
     
+    cmap = plt.get_cmap('viridis')
+    fig, ax = plt.subplots()
+    for i in range(0,conf.orbitals):
+        ax.plot(conf.configurations[0:conf.beads,i,1],range(0,conf.beads),"o",color=cmap(i*1./conf.orbitals));
+        
+    return {"fig":fig,"ax":ax}
+
+def saveConfigurations(confs,name):
+    
+    if not os.path.exists(name):
+        os.makedirs(name)
+    
+    for i in range(0,len(confs)):
+        fig=plotConfiguration(confs[i])["fig"]
+        fig.savefig(name + "/"+str(i)+".png")
+        plt.close(fig)
+    
+
+
 def plot1DSpinorConfig(config):
     config2= config[config[:,2]==1]
     
     plt.plot(config2[:,0],config2[:,0]*0,"ob")
     config2= config[config[:,2]==-1]
     plt.plot(config2[:,0],config2[:,0]*0,"or")
-    
-    
-    

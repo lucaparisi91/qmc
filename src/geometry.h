@@ -8,6 +8,7 @@ using namespace std;
 template<class T>
 class pbcTools
 {
+  
 public:
   template<class obj> void bc(vector<obj> &vec)
   {

@@ -126,7 +126,7 @@ void  vectorAccumulatorVariance<T>::getMeanError(vector<T> & meanOut,vector<T> &
   getMeanSquares(errorOut);
   for(int i=0;i<this->size();i++)
     {
-      errorOut[i]=sqrt(abs(errorOut[i]-meanOut[i]))/this->getNmeasurements();
+      errorOut[i]=sqrt(abs(errorOut[i]-meanOut[i]*meanOut[i])/this->getNmeasurements());
     }
   
 }

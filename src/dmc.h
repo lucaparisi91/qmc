@@ -56,6 +56,7 @@ class dmc : public qmc<comp>
   char * inBuffer;
   double delta_walkers;//uncertainity on the walkers
   walkers<comp> *ws;
+  int vmcSteps;
   //measures* m;
   double e_t;// population control energy
   void run();// run the algorithm

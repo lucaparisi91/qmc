@@ -139,7 +139,6 @@ using namespace std;
 //   ws.resize(0);
 // }
 
-
 bool metropolis(double log_ratio,random1* rand)
 { 
   double random_number;
