@@ -137,7 +137,6 @@ vmc<comp>::vmc() : qmc<comp>()
   if (this->main_input->reset()->get_child("method")->get_attribute("optimize") != NULL)
     {
       setOptimize(this->main_input->get_bool());
-      
     }
   else
     {
@@ -180,37 +179,53 @@ vmc<comp>::vmc() : qmc<comp>()
       correlatedEnergySteps=this->main_input->reset()->get_child("correlatedEnergySteps")->get_value()->get_int();
 
       unCorrelationSteps=this->main_input->reset()->get_child("unCorrelationSteps")->get_value()->get_int();
-
       
-      this->main_input->reset()->get_child("absErrOptimization");
+      this->main_input->reset()->get_child("energyError");
       if (this->main_input->check())
 	{
-	  
-	  optimizationMode=absErrMode;
-	  absErrorLimit=this->main_input->get_value()->get_real();
-	 
-	}
-      else
-	{
-	  absErrorLimit=0;
-	  optimizationMode=countStepsMode;
-	  this->main_input->reset();
-	}
+	  string kind;
+	  if (this->main_input->get_attribute("kind")!=NULL)
+	    {
+	      kind=this->main_input->get_string();
+	    }
+	  else
+	    {
+	      kind="rel";
+	    }
 
-      this->main_input->reset()->get_child("absErrCorrelated");
-      if (this->main_input->check())
-	{ 
-	  correlationMode=absErrModeCorrelated;
-	  absErrorLimitCorrelated=this->main_input->get_value()->get_real();
-	 
+	  
+	  if (kind=="abs")
+	    {
+	      optimizationMode=absErrMode;
+	      errorLimit=this->main_input->get_value()->get_real();
+	      printf("Absoluter error limit: %f\n",errorLimit);
+	      
+	    }
+	  else
+	    {
+	      if (kind=="rel")
+		{
+		  optimizationMode=relErrMode;
+		  errorLimit=this->main_input->get_value()->get_real()/100.;
+		  printf("Relative error limit: %f %% \n",errorLimit*100);
+		}
+	      
+	      else
+		{
+		  printf("Unokn error kind\n");
+		  exit(0);
+		}
+	    }
 	}
       else
 	{
-	  absErrorLimitCorrelated=0;
-	  correlationMode=countStepsModeCorrelated;
-	  this->main_input->reset();
+	  printf("No error limit.\n");
+	  errorLimit=0;
+	  optimizationMode=countStepsMode;
+	  
 	}
     }
+  this->main_input->reset();
 }
 
 template<class comp>
@@ -410,7 +425,8 @@ void vmc<comp>::optimizationOut()
       
       cout<<"step:"<<this->current_step<<endl;
       cout<<"ratio: "<<this->success_metropolis/this->n_metropolis<<endl;
-      cout<<"energy: "<<means[means.size()-1]<<"+-"<< errors[errors.size()-1] << endl;
+      cout<<"energy: "<<means[means.size()-1]<<"+-"<< errors[errors.size()-1] << "( "<<abs(errors[errors.size()-1]/means[means.size()-1]*100)<<"% )"<< endl;
+      
       printf("Parameters\n");
       tools::print(optParameters);
       
@@ -438,7 +454,14 @@ void vmc<comp>::optimizationOut()
       if (optimizationMode==absErrMode)
 	{
 	  
-	  if (errors[errors.size()-1]>absErrorLimit)
+	  if (errors[errors.size()-1]>errorLimit)
+	    {
+	      statusGeneralizedEigenValue=-1;
+	    }
+	}
+      else if (optimizationMode==relErrMode)
+	{
+	  if (abs(errors[errors.size()-1]/means[means.size()-1]) > errorLimit)
 	    {
 	      statusGeneralizedEigenValue=-1;
 	    }
@@ -659,16 +682,21 @@ void vmc<comp>::stabilizationOut()
           #endif
 	  // check if below error
 	  
-	  
 	  vector<double> errors;
-	  
+	  vector<double> means;
 	  mEnergyCorrelated->getVariances(errors);
-	  printf ("nMeasurements: %i",mEnergyCorrelated->getNmeasurements());
+	  mEnergyCorrelated->getMean(means);
+	  
+	  printf ("nMeasurements: %i\n",mEnergyCorrelated->getNmeasurements());
 	  for(int i=0;i<errors.size();i++)
 	    {
 	      errors[i]=sqrt(abs(errors[i])/mEnergyCorrelated->getNmeasurements()  );
 	      
-	      if ( (correlationMode==absErrModeCorrelated) and (errors[i]>absErrorLimitCorrelated) )
+	      if ( (optimizationMode==absErrMode) and (errors[i]>errorLimit) )
+		{
+		  statusCorrelated=1;
+		}
+	      else if ( (optimizationMode==relErrMode) and (abs(errors[i]/means[i])>errorLimit) )
 		{
 		  statusCorrelated=1;
 		}

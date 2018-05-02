@@ -69,7 +69,7 @@ public:
 	error=sqrt(abs(variances[i]))/sqrt(nMeasurements);
 	if (mean!=0)
 	  {
-	    printf("%f+-%f(%% %f)\n",mean,error,error/mean*100);
+	    printf("%f+-%f(%% %f)\n",mean,error,abs(error/mean)*100);
 	  }
 	else
 	  {

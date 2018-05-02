@@ -5,7 +5,6 @@
 
 class configurationsPIGS
 {
-  
 public:
   
   typedef system_t::all_particles_t configuration_t;
@@ -17,7 +16,7 @@ public:
   {
     configurations.push_back(config);
   }
-
+  
   inline size_t size() {return configurations.size();}
   
   void resize(int n){configurations.resize(n);}
@@ -29,11 +28,22 @@ public:
   double getTimeStep(){return deltaTau;}
   
   friend ostream& operator<<(ostream& out,configurationsPIGS & configurations);
+  
 private:
   vector<configuration_t> configurations;
-  double deltaTau;
+  double deltaTau;  
 };
 
+class distancesTable
+{  
+public:
+  double & distance(unsiged int i,unsigned int j,unsigned int k);
+  double & distance(unsigned int i,unsigned int k);
+private:
+  vector<double> singleParticleDistances;
+  vector<vector<double> > pairParticleDistances;
+  
+}
 #endif
 
 
