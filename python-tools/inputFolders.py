@@ -1132,7 +1132,43 @@ def getDensity(f,label,normalize=1,makePlot=False):
         
     return df
     
+
+def getPairCorrelation(f,label,makePlot=False):
+    densityMeasure=f.get_measure_by_label(label)
+    setA=float(densityMeasure.attrib["setA"])
+    setB=float(densityMeasure.attrib["setB"])
+    df=pd.read_csv(f.dir_path + "/" +label + "_t.dat",delim_whitespace=True,names=["x","value","delta","conv"],header=None,index_col=False)
+    lBox=float(f.get_lBox())
+    n=float(f.get_particles(index=0)) + float(f.get_particles(index=1))
     
+    df["x"]=df["x"]/len(df["x"])*lBox/2.
+    
+    df["x"]*=(n/lBox)
+
+    
+    nA=float(f.get_particles(index=setA))
+    nB=float(f.get_particles(index=setB))
+    if (setA == setB):
+        
+        normalize=nA*(nA-1)*1./n
+    else:
+        normalize=nA*nB*1./n
+        
+    
+    if normalize is not None:
+        step=abs(df["x"][1]-df["x"][0])
+        A=np.sum(df["value"])*step
+        if normalize=="N":
+            normalize=float(f.get_n_particles(index=0)) + float(f,get_n_particles(index=1))
+        df["value"]/=A
+        df["value"]*=normalize
+
+        df["delta"]=df["delta"]/A*normalize
+
+    if makePlot:
+        plt.errorbar(df["x"],df["value"],df["delta"],fmt="or")
+        
+    return df
     
     
     

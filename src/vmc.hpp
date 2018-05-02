@@ -678,7 +678,6 @@ void vmc<comp>::stabilizationOut()
 	  mEnergyCorrelated->print();
 	  
 	  printf("Chosen Parameter: %i\n",indexMinEnergyProposal);
-	  
           #endif
 	  // check if below error
 	  
